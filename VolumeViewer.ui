@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>VolumeViewer</class>
+ <widget class="QMainWindow" name="VolumeViewer">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>583</width>
+    <height>125</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Volume Viewer</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="icons.qrc">
+    <normaloff>:/Icons/Icon.ico</normaloff>:/Icons/Icon.ico</iconset>
+  </property>
+  <property name="toolTipDuration">
+   <number>-1</number>
+  </property>
+  <property name="iconSize">
+   <size>
+    <width>22</width>
+    <height>22</height>
+   </size>
+  </property>
+  <property name="animated">
+   <bool>true</bool>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <widget class="QPushButton" name="clear">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>10</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Clear</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>60</y>
+      <width>571</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>583</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <widget class="QMenu" name="menuSave">
+     <property name="title">
+      <string>Save</string>
+     </property>
+     <addaction name="actionSave_Screenshot"/>
+     <addaction name="actionSave_Volume"/>
+    </widget>
+    <widget class="QMenu" name="menuLoad">
+     <property name="title">
+      <string>Load</string>
+     </property>
+     <property name="icon">
+      <iconset resource="icons.qrc">
+       <normaloff>:/Icons/icons/open-file-icon.png</normaloff>:/Icons/icons/open-file-icon.png</iconset>
+     </property>
+     <addaction name="actionImage"/>
+     <addaction name="actionOpen"/>
+     <addaction name="actionImage_Sequence"/>
+    </widget>
+    <addaction name="menuLoad"/>
+    <addaction name="menuSave"/>
+    <addaction name="actionClose"/>
+    <addaction name="actionExit_2"/>
+   </widget>
+   <widget class="QMenu" name="menuTool">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <widget class="QMenu" name="menuPalette">
+     <property name="title">
+      <string>Palette</string>
+     </property>
+     <widget class="QMenu" name="menuPreset">
+      <property name="title">
+       <string>Preset</string>
+      </property>
+      <addaction name="actionGrey"/>
+      <addaction name="actionFibrosis"/>
+      <addaction name="actionR_to_B"/>
+      <addaction name="actionB_to_R"/>
+     </widget>
+     <addaction name="menuPreset"/>
+     <addaction name="actionCustom"/>
+    </widget>
+    <widget class="QMenu" name="menuRendering">
+     <property name="title">
+      <string>Rendering</string>
+     </property>
+     <widget class="QMenu" name="menuInterpolation">
+      <property name="title">
+       <string>Interpolation</string>
+      </property>
+      <addaction name="actionNearest"/>
+      <addaction name="actionLinear"/>
+      <addaction name="actionCubic"/>
+     </widget>
+     <addaction name="actionGPU_Texture"/>
+     <addaction name="actionRay_Cast"/>
+     <addaction name="actionSmart"/>
+     <addaction name="actionCPU_Texture"/>
+     <addaction name="actionRay_Cast_Texture"/>
+     <addaction name="menuInterpolation"/>
+    </widget>
+    <addaction name="menuPalette"/>
+    <addaction name="actionOpacity"/>
+    <addaction name="menuRendering"/>
+    <addaction name="actionClip"/>
+    <addaction name="actionSlice"/>
+    <addaction name="actionRotate"/>
+    <addaction name="actionAdd"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionHelp_Topics"/>
+    <addaction name="actionAbout"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <widget class="QMenu" name="menuVolume">
+     <property name="title">
+      <string>Volume </string>
+     </property>
+     <addaction name="actionDimensions"/>
+     <addaction name="actionColor"/>
+    </widget>
+    <addaction name="actionCamera"/>
+    <addaction name="actionLights"/>
+    <addaction name="actionBackground"/>
+    <addaction name="menuVolume"/>
+   </widget>
+   <widget class="QMenu" name="menuFilters">
+    <property name="title">
+     <string>Filters</string>
+    </property>
+    <widget class="QMenu" name="menuVolume_filter">
+     <property name="title">
+      <string>Volume</string>
+     </property>
+     <addaction name="actionIsosurface"/>
+    </widget>
+    <widget class="QMenu" name="menuImage_filter">
+     <property name="title">
+      <string>Image</string>
+     </property>
+     <addaction name="actionHessian"/>
+    </widget>
+    <addaction name="menuVolume_filter"/>
+    <addaction name="menuImage_filter"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuView"/>
+   <addaction name="menuFilters"/>
+   <addaction name="menuTool"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionOpenFile">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>:/Icons/fileopen.png</normaloff>:/Icons/fileopen.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open File...</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="icon">
+    <iconset>
+     <normaloff/>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionPrint">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/Icons/print.png</normaloff>:/Icons/print.png</iconset>
+   </property>
+   <property name="text">
+    <string>Print</string>
+   </property>
+  </action>
+  <action name="actionHelp">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/Icons/help.png</normaloff>:/Icons/help.png</iconset>
+   </property>
+   <property name="text">
+    <string>Help</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/Icons/filesave.png</normaloff>:/Icons/filesave.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="actionClose">
+   <property name="text">
+    <string>Close</string>
+   </property>
+  </action>
+  <action name="actionExit_2">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionOpacity">
+   <property name="text">
+    <string>Opacity</string>
+   </property>
+  </action>
+  <action name="actionGrey">
+   <property name="text">
+    <string>Grey</string>
+   </property>
+  </action>
+  <action name="actionFibrosis">
+   <property name="text">
+    <string>Fibrosis</string>
+   </property>
+  </action>
+  <action name="actionCustom">
+   <property name="text">
+    <string>Custom</string>
+   </property>
+  </action>
+  <action name="actionGPU_Texture">
+   <property name="text">
+    <string>GPU Texture</string>
+   </property>
+  </action>
+  <action name="actionRay_Cast">
+   <property name="text">
+    <string>Ray Cast</string>
+   </property>
+  </action>
+  <action name="actionSmart">
+   <property name="text">
+    <string>Smart</string>
+   </property>
+  </action>
+  <action name="actionCPU_Texture">
+   <property name="text">
+    <string>CPU Texture</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionHelp_Topics">
+   <property name="text">
+    <string>Help Topics</string>
+   </property>
+  </action>
+  <action name="actionClip">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Clip</string>
+   </property>
+  </action>
+  <action name="actionSlice">
+   <property name="text">
+    <string>Slice</string>
+   </property>
+  </action>
+  <action name="actionCamera">
+   <property name="text">
+    <string>Camera</string>
+   </property>
+  </action>
+  <action name="actionLights">
+   <property name="text">
+    <string>Lights</string>
+   </property>
+  </action>
+  <action name="actionBackground">
+   <property name="text">
+    <string>Background</string>
+   </property>
+  </action>
+  <action name="actionR_to_B">
+   <property name="text">
+    <string>R to B</string>
+   </property>
+  </action>
+  <action name="actionB_to_R">
+   <property name="text">
+    <string>B to R</string>
+   </property>
+  </action>
+  <action name="actionSave_Screenshot">
+   <property name="text">
+    <string>Screenshot</string>
+   </property>
+  </action>
+  <action name="actionRotate">
+   <property name="text">
+    <string>Rotate</string>
+   </property>
+  </action>
+  <action name="actionDimensions">
+   <property name="text">
+    <string>Dimensions</string>
+   </property>
+  </action>
+  <action name="actionSave_Volume">
+   <property name="text">
+    <string>Volume</string>
+   </property>
+  </action>
+  <action name="actionColor_Window">
+   <property name="text">
+    <string>Color Window</string>
+   </property>
+  </action>
+  <action name="actionColor_Level">
+   <property name="text">
+    <string>Color Level</string>
+   </property>
+  </action>
+  <action name="actionColor">
+   <property name="text">
+    <string>Color</string>
+   </property>
+  </action>
+  <action name="actionIsosurface">
+   <property name="text">
+    <string>Isosurface</string>
+   </property>
+  </action>
+  <action name="actionImage">
+   <property name="text">
+    <string>Image</string>
+   </property>
+  </action>
+  <action name="actionHessian">
+   <property name="text">
+    <string>Hessian</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="text">
+    <string>Volume</string>
+   </property>
+  </action>
+  <action name="actionAdd">
+   <property name="text">
+    <string>Add</string>
+   </property>
+  </action>
+  <action name="actionRay_Cast_Texture">
+   <property name="text">
+    <string>Ray Cast &amp; Texture</string>
+   </property>
+  </action>
+  <action name="actionNearest">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Nearest</string>
+   </property>
+  </action>
+  <action name="actionLinear">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Linear</string>
+   </property>
+  </action>
+  <action name="actionCubic">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Cubic</string>
+   </property>
+  </action>
+  <action name="actionImage_Sequence">
+   <property name="text">
+    <string>Image Sequence</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>
