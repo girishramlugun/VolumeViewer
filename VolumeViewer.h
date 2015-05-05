@@ -68,8 +68,6 @@ signals:
 public slots:
 
   virtual void slotExit();
-  void rendergpu(string);
-  void rendergputif(string);
   void rot();
   void setvolcol(int );
   void updateopacity(int);

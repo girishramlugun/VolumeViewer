@@ -1,6 +1,7 @@
 #include "vtkwidget.h"
-
-
+#include<vtkMarchingCubes.h>
+#include<vtkPolyDataConnectivityFilter.h>
+#include <vtkPointData.h>
 
 
 vtkwidget::vtkwidget(QWidget *parent) :
@@ -41,6 +42,12 @@ vtkwidget::vtkwidget(QWidget *parent) :
 	imgdata = vtkSmartPointer<vtkImageData>::New();
 
 	dsmapper = vtkSmartPointer<vtkDataSetMapper>::New();
+
+	input = vtkSmartPointer<vtkImageData>::New();
+
+	reader = vtkSmartPointer<vtkAlgorithm>::New();
+
+	
 
 	
 
@@ -93,6 +100,11 @@ void vtkwidget::initialize()
 
 void vtkwidget::render()
 {
+	//mapper->SetInputConnection(reader->GetOutputPort());
+	mapper->SetInputData(input);
+	mapper->SetRequestedRenderModeToRayCast();
+
+	
 	leftRenderer->ResetCamera();
 	//rcmapper->SetInteractiveUpdateRate(2);
 	
@@ -125,20 +137,32 @@ void vtkwidget::render()
 
 void vtkwidget::renderpoly()
 {
-	vtkSmartPointer<vtkImageDataGeometryFilter> imageDataGeometryFilter =
-		vtkSmartPointer<vtkImageDataGeometryFilter>::New();
 	
+	// Create a 3D model using marching cubes
+	vtkSmartPointer<vtkMarchingCubes> mc =
+		vtkSmartPointer<vtkMarchingCubes>::New();
+	mc->SetInputConnection(readertiff->GetOutputPort());
+	mc->ComputeNormalsOn();
+	mc->ComputeGradientsOn();
+	mc->SetValue(1, 100);
+	
+// second value acts as threshold
+
+	// To remain largest region
+	vtkSmartPointer<vtkPolyDataConnectivityFilter> confilter =
+		vtkSmartPointer<vtkPolyDataConnectivityFilter>::New();
+	confilter->SetInputConnection(mc->GetOutputPort());
+	//confilter->SetExtractionModeToLargestRegion();
+	//confilter->SetExtractionModeToAllRegions();
 
 
 
-	imageDataGeometryFilter->SetInputConnection(readertiff->GetOutputPort());
+	//imageDataGeometryFilter->SetInputConnection(input->);
 	//imageDataGeometryFilter->SetInputData(readertiff->GetOutput());
-	imageDataGeometryFilter->Update();
+	//imageDataGeometryFilter->Update();
 
 	vtkSmartPointer<vtkContourFilter> contour_filter = vtkSmartPointer<vtkContourFilter>::New();
-	contour_filter->SetInputData(imageDataGeometryFilter->GetOutput());
-	contour_filter->GenerateValues(10, 0, 255);
-	poly_mapper->SetInputData(contour_filter->GetOutput());
+	poly_mapper->SetInputConnection(confilter->GetOutputPort());
 	
 	//poly_mapper->SetColorModeToMapScalars();
 	
@@ -147,12 +171,7 @@ void vtkwidget::renderpoly()
 	vtkSmartPointer<vtkActor> poly_actor =
 		vtkSmartPointer<vtkActor>::New();
 	
-	
-	
-	poly_actor->GetProperty()->SetColor(100, 10, 100);
-	poly_actor->GetProperty()->SetOpacity(1);
 	poly_actor->SetMapper(poly_mapper);
-	LightKit->AddLightsToRenderer(leftRenderer);
 	leftRenderer->AddActor(poly_actor);
 	GetRenderWindow()->AddRenderer(leftRenderer);
 	GetInteractor()->Render();

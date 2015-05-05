@@ -57,6 +57,9 @@
 #include<vtkImageMapToColors.h>
 #include<vtkImageActor.h>
 #include<vtkImageReader.h>
+#include<vtkImageData.h>
+#include<vtkAlgorithm.h>
+#include<vtkMatlabMexAdapter.h>
 
 
 using namespace std;
@@ -115,6 +118,9 @@ public:
 
    vtkSmartPointer<vtkDataSetMapper>dsmapper;
    
+   vtkSmartPointer<vtkImageData> input;
+
+   vtkSmartPointer<vtkAlgorithm> reader;
 
    
 

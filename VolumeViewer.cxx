@@ -44,9 +44,12 @@
 #include<vtkIdTypeArray.h>
 #include<vtkImageActor.h>
 #include<vtkImageReader.h>
-
-
-
+#include<vtkUnsignedShortArray.h>
+#include<vtkMatlabMexAdapter.h>
+#include<mat.h>
+#include<vtkDataArray.h>
+#include<vtkImageData.h>
+#include <vtkPointData.h>
 
 using namespace std;
 std::string inputFilename;
@@ -137,24 +140,8 @@ void VolumeViewer::slotExit()
 
 }
 
-void VolumeViewer::rendergpu(string)
-{
 
-	vtkwid->rcmapper->SetInputConnection(vtkwid->readervti->GetOutputPort());
-	//vtkwid->mapper->SetInputData(vtkwid->readervti->GetOutput());
-	     vtkwid->initialize();
-}
 
-void VolumeViewer::rendergputif(string)
-{
-	if (data_size > (vtkwid->mapper->GetMaxMemoryInBytes()/1000000))
-	{
-		vtkwid->mapper->SetRequestedRenderMode(vtkSmartVolumeMapper::RayCastRenderMode);
-	}
-	vtkwid->mapper->SetInputConnection(vtkwid->readertiff->GetOutputPort());
-	//vtkwid->mapper->SetInputData(vtkwid->readertiff->GetOutput());
-	vtkwid->initialize();
-}
 
 void VolumeViewer::on_clear_clicked()
 {
@@ -182,7 +169,7 @@ void VolumeViewer::on_actionOpen_triggered()
       qDebug("Not empty");
     }
 
-    QString Filename = QFileDialog::getOpenFileName(this,tr("Open Volume"), "", tr("TIFF (*.tif);;VTK Files (*.vti)"));
+	QString Filename = QFileDialog::getOpenFileName(this, tr("Open Volume"), "", tr("TIFF (*.tif);;VTK Files (*.vti);; MATLAB Files(*.mat)"));
     if (Filename.isEmpty()==0){
     QFileInfo fi(Filename);
     ext = fi.suffix();
@@ -281,8 +268,10 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 	//int dims[6]; readimg->GetOutput()->GetInformation();
 	//readimg->GetOutput()->GetExtent(dims);
 	
-	
-	//dims[5] = list.size();
+	int dims[6];
+	readimg->GetOutput()->GetExtent(dims);
+	int N = list.size();
+	dims[5] = N;
 	//ui->label->setText(QString::number(dims[0]) + QString::number(dims[1]) + QString::number(dims[2]) + QString::number(dims[3]) + QString::number(dims[4]) + QString::number(dims[5]));
 
 	//Create new render window and connect signals to slots
@@ -298,24 +287,53 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 	connect(diacol, SIGNAL(wincol(double)), vtkwid, SLOT(updatewincol(double)));
 
 	
+	vtkSmartPointer<vtkImageData> volume = vtkSmartPointer<vtkImageData>::New();
+	volume->SetExtent(dims);
+	int ncells = volume->GetNumberOfCells();
 	
+	
+	
+		vtkSmartPointer <vtkUnsignedShortArray> volarray = vtkSmartPointer<vtkUnsignedShortArray>::New();
+	volarray->SetNumberOfValues(volume->GetNumberOfPoints());
+	
+	vtkSmartPointer<vtkImageData> img = vtkSmartPointer<vtkImageData>::New();
+	/*
+	for (int i = 0; i < N - 1; i++)
+	{
+		vtkwid->imseq->SetFileName(filenames->GetValue(i));
+		vtkwid->imseq->Update();
+		img = vtkwid->imseq->GetOutput();
+		vtkDataArray *vals = img->GetPointData()->GetArray("Tiff Scalars");
+		int offset = i*(N-1);
+		int v;
+		for (int m = 0; m < dims[1] - 1; m++)
+			for (int n = 0; n < dims[3] - 1; n++)
+			{
+				v = vals->GetComponent(m, n);
+			}
+		
+		
+		volarray->SetValue(i, v);
 
+	}
+	*/
+	vtkwid->input->GetPointData()->AddArray(volarray);
 
-	vtkwid->imseq->SetFileNames(filenames);
-	vtkwid->imseq->Update();
-	vtkwid->imseq->UpdateInformation();
+	//vtkwid->imseq->SetFileNames(filenames);
+	//vtkwid->imseq->Update();
+	//vtkwid->imseq->UpdateInformation();
 	//vtkwid->imseq->SetDataExtent(0,1223,0,1223,0,559);
 	
 
 	//ui->label->setText(QString::number(dims[0]) + QString::number(dims[1]) + QString::number(dims[2]) + QString::number(dims[3]) + QString::number(dims[4]) + QString::number(dims[5]));
 
-	vtkwid->imseq->Update();
+//	vtkwid->imseq->Update();
 		
-	vtkwid->mapper->SetRequestedRenderMode(vtkSmartVolumeMapper::RayCastRenderMode);
+//	vtkwid->mapper->SetRequestedRenderMode(vtkSmartVolumeMapper::RayCastRenderMode);
 	
-	vtkwid->mapper->SetInputData(vtkwid->imseq->GetOutput());
+	//vtkwid->mapper->SetInputData(vtkwid->imseq->GetOutput());
 	
-	
+
 	
 	
 	vtkwid->initialize();
@@ -350,10 +368,13 @@ void VolumeViewer::openvol(string inputFilename)
 		
 		if (ext == QString("vti"))
 		{
-
+			
 			vtkwid->readervti->SetFileName(inputFilename.c_str());
 			vtkwid->readervti->Update();
-			rendergpu(inputFilename);
+			vtkwid->input = vtkwid->readervti->GetOutput();
+			vtkwid->reader = vtkwid->readervti;
+			vtkwid->initialize();
+			
 		}
 
 		else if (ext == QString("tif"))
@@ -361,7 +382,45 @@ void VolumeViewer::openvol(string inputFilename)
 
 			vtkwid->readertiff->SetFileName(inputFilename.c_str());
 			vtkwid->readertiff->Update();
-			rendergputif(inputFilename);
+			vtkwid->input = vtkwid->readertiff->GetOutput();
+			vtkwid->reader = vtkwid->readertiff;
+			vtkwid->initialize();
+			
+		}
+		else if (ext == QString("mat"))
+		{
+			vtkSmartPointer<vtkMatlabMexAdapter> readermat = vtkSmartPointer<vtkMatlabMexAdapter>::New();
+			mxArray *matarr;
+			MATFile *matf;
+			vtkArray *matvtkarr;
+			matf = matOpen(inputFilename.c_str(),"r");
+			if (matf == NULL) {
+				                QMessageBox::critical(0, QObject::tr("Error"), "Error Loading File");
+		                    	}
+			else{
+
+				matarr = matGetVariable(matf, "IM");
+				
+
+				if (matarr == NULL) {
+					QMessageBox::critical(0, QObject::tr("Error"), "Could not copy to array");
+				}
+			
+				matvtkarr = readermat->mxArrayTovtkArray(matarr);
+				
+				
+				
+				
+
+				
+
+
+			}
+			
+
+			
+			//vtkwid->initialize();
+
 		}
 		else
 			QMessageBox::critical(0, QObject::tr("Error"), "Cannot Render; wrong format!");
@@ -372,6 +431,9 @@ void VolumeViewer::openvol(string inputFilename)
 		return;
 		//	QMessageBox::critical(0, QObject::tr("Error"), "No File Loaded");
 	}
+
+
+
 }
 
 void VolumeViewer::on_actionExit_2_triggered()
