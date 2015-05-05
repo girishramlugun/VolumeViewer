@@ -297,7 +297,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 	volarray->SetNumberOfValues(volume->GetNumberOfPoints());
 	
 	vtkSmartPointer<vtkImageData> img = vtkSmartPointer<vtkImageData>::New();
-	/*
+	
 	for (int i = 0; i < N - 1; i++)
 	{
 		vtkwid->imseq->SetFileName(filenames->GetValue(i));
@@ -306,18 +306,15 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 		vtkDataArray *vals = img->GetPointData()->GetArray("Tiff Scalars");
 		int offset = i*(N-1);
 		int v;
-		for (int m = 0; m < dims[1] - 1; m++)
-			for (int n = 0; n < dims[3] - 1; n++)
-			{
-				v = vals->GetComponent(m, n);
-			}
+
+		ui->label->setNum(int(vals->GetNumberOfTuples()));
 		
 		
-		volarray->SetValue(i, v);
 
 	}
-	*/
-	vtkwid->input->GetPointData()->AddArray(volarray);
+	
+
+//	vtkwid->input->GetPointData()->AddArray(volarray);
 
 	//vtkwid->imseq->SetFileNames(filenames);
 	//vtkwid->imseq->Update();
