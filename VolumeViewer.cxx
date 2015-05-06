@@ -45,11 +45,15 @@
 #include<vtkImageActor.h>
 #include<vtkImageReader.h>
 #include<vtkUnsignedShortArray.h>
-#include<vtkMatlabMexAdapter.h>
-#include<mat.h>
 #include<vtkDataArray.h>
 #include<vtkImageData.h>
 #include <vtkPointData.h>
+#include<vtkMatlabMexAdapter.h>
+#include<mat.h>
+#include <matrix.h>
+#include<vtkDoubleArray.h>
+#include<vtkTypedArray.h>
+#include<vtkArrayIterator.h>
 
 using namespace std;
 std::string inputFilename;
@@ -212,129 +216,122 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 	//dir->Open(dirchar);
 	//starr = dir->GetFiles();
 	//starr->
+	if (!Dir_Str.isEmpty()){
 
 
+		//vtkSmartPointer<vtkImageReader2> imgrd = vtkSmartPointer<vtkImageReader2>::New();
 
-	//vtkSmartPointer<vtkImageReader2> imgrd = vtkSmartPointer<vtkImageReader2>::New();
 
+		// set path to user chosen folder
+		QDir dir = QDir(Dir_Str);
 
-	// set path to user chosen folder
-	QDir dir = QDir(Dir_Str);
+		// set filter to only search for bmp files
+		QStringList filters;
+		filters << "*.tiff";
+		dir.setNameFilters(filters);
 
-	// set filter to only search for bmp files
-    QStringList filters;
-	filters << "*.tiff";
-	dir.setNameFilters(filters);
-
-	// Create list of all *.dcm filenames
-	QStringList list = dir.entryList();
-	vtkSmartPointer<vtkStringArray> filenames = vtkSmartPointer<vtkStringArray>::New();
-	filenames->SetNumberOfValues(list.size());
-	if (list.size() == 0) { QMessageBox::critical(0, QObject::tr("Error"), "No Files Found"); }
-	else
-	{
-		// if there exist DICOM files in directory, create vector containing them all
-		
-		//filenames->SetNumberOfValues(list.size());
-		filenames->SetName("List_of_Filenames");
-		for (int i = 0; i < list.size(); i++)
+		// Create list of all *.dcm filenames
+		QStringList list = dir.entryList();
+		vtkSmartPointer<vtkStringArray> filenames = vtkSmartPointer<vtkStringArray>::New();
+		filenames->SetNumberOfValues(list.size());
+		if (list.size() == 0) { QMessageBox::critical(0, QObject::tr("Error"), "No Files Found"); }
+		else
 		{
+			// if there exist tiff files in directory, create vector containing them all
+
+			//filenames->SetNumberOfValues(list.size());
+			filenames->SetName("List_of_Filenames");
+			for (int i = 0; i < list.size(); i++)
+			{
+
+
+				QString temp = Dir_Str + "/" + list.at(i);
+				QByteArray tempbyte = temp.toUtf8();
+
+
+
+				//to assign data use setnumberofvalues and setvalue or insertnextvalue
+				filenames->SetValue(i, tempbyte.data());
+
+				//filenames->InsertNextValue(temp);
+
+
+			}
+
+
+
 
 			
-			QString temp = Dir_Str + "/" + list.at(i);
-			QByteArray tempbyte = temp.toUtf8();
-	
-			
-			
-			//to assign data use setnumberofvalues and setvalue or insertnextvalue
-			filenames->SetValue(i, tempbyte.data());
 
-			//filenames->InsertNextValue(temp);
 
+
+			vtkSmartPointer<vtkTIFFReader>readimg = vtkSmartPointer<vtkTIFFReader>::New();
+			readimg->SetFileName(filenames->GetValue(0));
+			readimg->Update();
+
+			//int dims[6]; readimg->GetOutput()->GetInformation();
+			//readimg->GetOutput()->GetExtent(dims);
+
+			int dims[3];
+			readimg->GetOutput()->GetDimensions(dims);
 			
+			int N = list.size();
+		
+			dims[2] = N;
+			//ui->label->setText(QString::number(dims[0]) + QString::number(dims[1]) + QString::number(dims[2]));
+
+			//Create new render window and connect signals to slots
+			vtkwid = new vtkwidget;
+			ui->actionClip->setChecked(false);
+			vtkwid->setGeometry(50, 50, 800, 800);
+			vtkwid->setWindowTitle("Render Window");
+			connect(diabg, SIGNAL(sendbgparams(double, double, double)), vtkwid, SLOT(setbg(double, double, double)));
+			connect(diavolprop, SIGNAL(send_dims(double, double, double)), vtkwid, SLOT(setdims(double, double, double)));
+			connect(dialight, SIGNAL(sendlights(double, double, double, double, double, double, double, double, double, double, double, double, double, double)), vtkwid,
+				SLOT(updatelights(double, double, double, double, double, double, double, double, double, double, double, double, double, double)));
+			connect(diacol, SIGNAL(volcol(double)), vtkwid, SLOT(updatevolcol(double)));
+			connect(diacol, SIGNAL(wincol(double)), vtkwid, SLOT(updatewincol(double)));
+
+
+
+			vtkwid->input->SetDimensions(dims);
+			vtkSmartPointer <vtkUnsignedShortArray> volarray = vtkSmartPointer<vtkUnsignedShortArray>::New();
+			volarray->SetNumberOfValues(vtkwid->input->GetNumberOfPoints());
+			
+			
+		
+			
+			
+			for (int k = 0; k <N; k++)
+			{
+				
+				vtkwid->imseq->SetFileName(filenames->GetValue(k));
+				vtkwid->imseq->Update();
+				vtkSmartPointer<vtkImageData> img = vtkSmartPointer<vtkImageData>::New();
+				img = vtkwid->imseq->GetOutput();
+				vtkDataArray *vals = img->GetPointData()->GetArray("Tiff Scalars");
+				
+	            int offset = k*vals->GetNumberOfTuples();
+
+				
+
+				for (int  j = 0; j < vals->GetNumberOfTuples(); j++)
+					
+				{
+						double v = vals->GetComponent(j, 0);
+						volarray->SetValue(offset + j, v);
+
+				}
+				
+
+			}
+
+			vtkwid->input->SetSpacing(1.0, 1.0, 1.0);
+			vtkwid->input->GetPointData()->SetScalars(volarray);
+
+			vtkwid->initialize();
 		}
-
-
-		
-		
-
 	}
-
-	
-	vtkSmartPointer<vtkTIFFReader>readimg = vtkSmartPointer<vtkTIFFReader>::New();
-	readimg->SetFileName(filenames->GetValue(0));
-	readimg->Update(); 
-	
-	//int dims[6]; readimg->GetOutput()->GetInformation();
-	//readimg->GetOutput()->GetExtent(dims);
-	
-	int dims[6];
-	readimg->GetOutput()->GetExtent(dims);
-	int N = list.size();
-	dims[5] = N;
-	//ui->label->setText(QString::number(dims[0]) + QString::number(dims[1]) + QString::number(dims[2]) + QString::number(dims[3]) + QString::number(dims[4]) + QString::number(dims[5]));
-
-	//Create new render window and connect signals to slots
-	vtkwid = new vtkwidget;
-	ui->actionClip->setChecked(false);
-	vtkwid->setGeometry(50, 50, 800, 800);
-	vtkwid->setWindowTitle("Render Window");
-	connect(diabg, SIGNAL(sendbgparams(double, double, double)), vtkwid, SLOT(setbg(double, double, double)));
-	connect(diavolprop, SIGNAL(send_dims(double, double, double)), vtkwid, SLOT(setdims(double, double, double)));
-	connect(dialight, SIGNAL(sendlights(double, double, double, double, double, double, double, double, double, double, double, double, double, double)), vtkwid,
-	SLOT(updatelights(double, double, double, double, double, double, double, double, double, double, double, double, double, double)));
-	connect(diacol, SIGNAL(volcol(double)), vtkwid, SLOT(updatevolcol(double)));
-	connect(diacol, SIGNAL(wincol(double)), vtkwid, SLOT(updatewincol(double)));
-
-	
-	vtkSmartPointer<vtkImageData> volume = vtkSmartPointer<vtkImageData>::New();
-	volume->SetExtent(dims);
-	int ncells = volume->GetNumberOfCells();
-	
-	
-	
-		vtkSmartPointer <vtkUnsignedShortArray> volarray = vtkSmartPointer<vtkUnsignedShortArray>::New();
-	volarray->SetNumberOfValues(volume->GetNumberOfPoints());
-	
-	vtkSmartPointer<vtkImageData> img = vtkSmartPointer<vtkImageData>::New();
-	
-	for (int i = 0; i < N - 1; i++)
-	{
-		vtkwid->imseq->SetFileName(filenames->GetValue(i));
-		vtkwid->imseq->Update();
-		img = vtkwid->imseq->GetOutput();
-		vtkDataArray *vals = img->GetPointData()->GetArray("Tiff Scalars");
-		int offset = i*(N-1);
-		int v;
-
-		ui->label->setNum(int(vals->GetNumberOfTuples()));
-		
-		
-
-	}
-	
-
-//	vtkwid->input->GetPointData()->AddArray(volarray);
-
-	//vtkwid->imseq->SetFileNames(filenames);
-	//vtkwid->imseq->Update();
-	//vtkwid->imseq->UpdateInformation();
-	//vtkwid->imseq->SetDataExtent(0,1223,0,1223,0,559);
-	
-
-	//ui->label->setText(QString::number(dims[0]) + QString::number(dims[1]) + QString::number(dims[2]) + QString::number(dims[3]) + QString::number(dims[4]) + QString::number(dims[5]));
-
-//	vtkwid->imseq->Update();
-		
-//	vtkwid->mapper->SetRequestedRenderMode(vtkSmartVolumeMapper::RayCastRenderMode);
-	
-	//vtkwid->mapper->SetInputData(vtkwid->imseq->GetOutput());
-	
-
-	
-	
-	vtkwid->initialize();
-	
 }
 
 void VolumeViewer::on_actionHessian_triggered()
@@ -362,16 +359,16 @@ void VolumeViewer::openvol(string inputFilename)
 			SLOT(updatelights(double, double, double, double, double, double, double, double, double, double, double, double, double, double)));
 		connect(diacol, SIGNAL(volcol(double)), vtkwid, SLOT(updatevolcol(double)));
 		connect(diacol, SIGNAL(wincol(double)), vtkwid, SLOT(updatewincol(double)));
-		
+
 		if (ext == QString("vti"))
 		{
-			
+
 			vtkwid->readervti->SetFileName(inputFilename.c_str());
 			vtkwid->readervti->Update();
 			vtkwid->input = vtkwid->readervti->GetOutput();
 			vtkwid->reader = vtkwid->readervti;
 			vtkwid->initialize();
-			
+
 		}
 
 		else if (ext == QString("tif"))
@@ -382,47 +379,74 @@ void VolumeViewer::openvol(string inputFilename)
 			vtkwid->input = vtkwid->readertiff->GetOutput();
 			vtkwid->reader = vtkwid->readertiff;
 			vtkwid->initialize();
-			
+
 		}
 		else if (ext == QString("mat"))
 		{
+
 			vtkSmartPointer<vtkMatlabMexAdapter> readermat = vtkSmartPointer<vtkMatlabMexAdapter>::New();
 			mxArray *matarr;
 			MATFile *matf;
 			vtkArray *matvtkarr;
-			matf = matOpen(inputFilename.c_str(),"r");
+			vtkDataArray *dataarr;
+			
+			matf = matOpen(inputFilename.c_str(), "r");
 			if (matf == NULL) {
-				                QMessageBox::critical(0, QObject::tr("Error"), "Error Loading File");
-		                    	}
+				QMessageBox::critical(0, QObject::tr("Error"), "Error Loading File");
+			}
 			else{
 
 				matarr = matGetVariable(matf, "IM");
-				
+				const mwSize * matsize = mxGetDimensions(matarr);
+
+
 
 				if (matarr == NULL) {
 					QMessageBox::critical(0, QObject::tr("Error"), "Could not copy to array");
 				}
-			
+
 				matvtkarr = readermat->mxArrayTovtkArray(matarr);
-				
-				
-				
-				
+				vtkwid->input->SetDimensions(matsize[0], matsize[1], matsize[2]);
+				vtkwid->input->AllocateScalars(VTK_INT, 1);
 
 				
+				dataarr->SetNumberOfComponents(vtkwid->input->GetNumberOfPoints());
+
+				 
+				for (int i = 0; i < matsize[0] * matsize[1] * matsize[2]; i++)
+				{
+							
+						//	vtkVariant v;
 
 
-			}
+					//		v = matvtkarr->GetVariantValueN(i);
+					//		double v1 = v.ToDouble;
+					//		dataarr->SetComponent(i, 0, v1);
+		         }
+
+				
 			
-
 			
-			//vtkwid->initialize();
+				
+	    	vtkwid->input->GetPointData()->SetScalars(dataarr);
+			ui->label->setNum(int(vtkwid->input->GetNumberOfPoints()));
+
+
+
+
 
 		}
-		else
-			QMessageBox::critical(0, QObject::tr("Error"), "Cannot Render; wrong format!");
+
+		
+
+		vtkwid->initialize();
 
 	}
+	else
+		QMessageBox::critical(0, QObject::tr("Error"), "Cannot Render; wrong format!");
+
+}
+
 	else
 	{
 		return;
