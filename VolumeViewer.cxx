@@ -55,7 +55,7 @@
 #include<vtkTypedArray.h>
 #include<vtkArrayIterator.h>
 #include<vtkUnsignedShortArray.h>
-
+#include<QStringList>
 using namespace std;
 std::string inputFilename;
 QString ext;
@@ -274,8 +274,10 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			//int dims[6]; readimg->GetOutput()->GetInformation();
 			//readimg->GetOutput()->GetExtent(dims);
 
-			int dims[3];
+			int dims[3]; int ext[6];
 			readimg->GetOutput()->GetDimensions(dims);
+			
+
 			
 			int N = list.size();
 			__int64 dim1, dim2, dim3;
@@ -283,8 +285,8 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			
 			dims[2] = N;
 			dim1 = dims[0]; dim2 = dims[1]; dim3 = dims[2];
-			//ui->label->setText(QString::number(dims[0]) + QString::number(dims[1]) + QString::number(dims[2]));
-
+			ui->label->setText(QString::number(ext[0]) + QString::number(ext[1]) + QString::number(ext[2]));
+			
 			//Create new render window and connect signals to slots
 			vtkwid = new vtkwidget;
 			ui->actionClip->setChecked(false);
@@ -344,7 +346,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			vtkwid->input->GetPointData()->SetScalars(volarray);
 			ui->label->setText(QString::number(vtkwid->input->GetActualMemorySize()));
 			vtkwid->initialize();
-		}
+					}
 		
 	}
 	
@@ -493,6 +495,26 @@ diabg->show();
 void VolumeViewer::on_actionCustom_triggered()
 {
  diatfn->show();
+}
+
+void VolumeViewer::on_actionLoadLUT_triggered()
+{
+	QString Filename = QFileDialog::getOpenFileName(this, tr("Load Transfer Function"), "", tr("CSV (*.csv)"));
+	if (!Filename.isEmpty()){
+		QFile flut(Filename); QStringList listA;
+		if (flut.open(QIODevice::ReadOnly)){
+			while (!flut.atEnd()){
+				QString line = flut.readLine();
+				listA = line.split(",");
+			}
+
+		}
+		
+		
+
+flut.close();
+diatfn->loadlut(listA);
+	}
 }
 
 void VolumeViewer::on_actionFibrosis_triggered()

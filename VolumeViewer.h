@@ -126,6 +126,8 @@ private slots:
 
   void on_actionImage_Sequence_triggered();
 
+  void on_actionLoadLUT_triggered();
+
   
 
 private:

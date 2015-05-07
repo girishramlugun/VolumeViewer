@@ -4,6 +4,8 @@
 #include <QDialog>
 #include <QAbstractItemModel>
 #include <iostream>
+#include<QStandardItemModel>
+
 
 namespace Ui {
 class dialog_tfn;
@@ -18,7 +20,8 @@ public:
     ~dialog_tfn();
     QAbstractItemModel* model;
     int rowcnt;
-
+	QStandardItemModel*mod;
+	void loadlut(QStringList);
 signals:
     void sendtfn (int);
 
@@ -27,9 +30,9 @@ private slots:
 
     void on_delrow_clicked();
 
+	void on_save_clicked();
 
-
-
+	
 
     void on_settfn_clicked();
 

@@ -75,7 +75,7 @@
      <x>0</x>
      <y>0</y>
      <width>583</width>
-     <height>18</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -126,6 +126,7 @@
      </widget>
      <addaction name="menuPreset"/>
      <addaction name="actionCustom"/>
+     <addaction name="actionLoadLUT"/>
     </widget>
     <widget class="QMenu" name="menuRendering">
      <property name="title">
@@ -450,6 +451,11 @@
   <action name="actionGreen">
    <property name="text">
     <string>Green</string>
+   </property>
+  </action>
+  <action name="actionLoadLUT">
+   <property name="text">
+    <string>Load</string>
    </property>
   </action>
  </widget>
