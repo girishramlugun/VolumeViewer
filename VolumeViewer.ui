@@ -122,6 +122,7 @@
       <addaction name="actionFibrosis"/>
       <addaction name="actionR_to_B"/>
       <addaction name="actionB_to_R"/>
+      <addaction name="actionGreen"/>
      </widget>
      <addaction name="menuPreset"/>
      <addaction name="actionCustom"/>
@@ -444,6 +445,11 @@
   <action name="actionImage_Sequence">
    <property name="text">
     <string>Image Sequence</string>
+   </property>
+  </action>
+  <action name="actionGreen">
+   <property name="text">
+    <string>Green</string>
    </property>
   </action>
  </widget>

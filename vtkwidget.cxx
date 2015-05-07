@@ -2,7 +2,7 @@
 #include<vtkMarchingCubes.h>
 #include<vtkPolyDataConnectivityFilter.h>
 #include <vtkPointData.h>
-
+#include<vtkGPUInfo.h>
 
 vtkwidget::vtkwidget(QWidget *parent) :
     QVTKWidget(parent)
@@ -102,7 +102,11 @@ void vtkwidget::render()
 {
 	//mapper->SetInputConnection(reader->GetOutputPort());
 	mapper->SetInputData(input);
-	mapper->SetRequestedRenderModeToRayCast();
+	unsigned long vidmem = mapper->GetMaxMemoryInBytes();
+	if (input->GetActualMemorySize() / 1024 > vidmem){
+		mapper->SetRequestedRenderModeToRayCast();
+	}
+	else{ mapper->SetRequestedRenderModeToDefault(); }
 
 	
 	leftRenderer->ResetCamera();

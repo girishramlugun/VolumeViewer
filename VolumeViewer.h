@@ -93,7 +93,7 @@ private slots:
   void on_actionFibrosis_triggered();
   void on_actionAdd_triggered();
   void on_actionR_to_B_triggered();
-
+  void on_actionGreen_triggered();
   void on_actionB_to_R_triggered();
 
   void on_actionSave_Screenshot_triggered();

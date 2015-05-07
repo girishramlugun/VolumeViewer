@@ -59,7 +59,7 @@
 #include<vtkImageReader.h>
 #include<vtkImageData.h>
 #include<vtkAlgorithm.h>
-#include<vtkMatlabMexAdapter.h>
+//#include<vtkMatlabMexAdapter.h>
 
 
 using namespace std;

@@ -48,18 +48,20 @@
 #include<vtkDataArray.h>
 #include<vtkImageData.h>
 #include <vtkPointData.h>
-#include<vtkMatlabMexAdapter.h>
-#include<mat.h>
-#include <matrix.h>
+//#include<vtkMatlabMexAdapter.h>
+//#include<mat.h>
+//#include <matrix.h>
 #include<vtkDoubleArray.h>
 #include<vtkTypedArray.h>
 #include<vtkArrayIterator.h>
+#include<vtkUnsignedShortArray.h>
 
 using namespace std;
 std::string inputFilename;
 QString ext;
 bool wrmv=0;
 float data_size;
+
 
 
 
@@ -227,7 +229,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 
 		// set filter to only search for bmp files
 		QStringList filters;
-		filters << "*.tiff";
+		filters << "*.tiff"<<"*.tif";
 		dir.setNameFilters(filters);
 
 		// Create list of all *.dcm filenames
@@ -276,8 +278,11 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			readimg->GetOutput()->GetDimensions(dims);
 			
 			int N = list.size();
-		
+			__int64 dim1, dim2, dim3;
+			
+			
 			dims[2] = N;
+			dim1 = dims[0]; dim2 = dims[1]; dim3 = dims[2];
 			//ui->label->setText(QString::number(dims[0]) + QString::number(dims[1]) + QString::number(dims[2]));
 
 			//Create new render window and connect signals to slots
@@ -291,47 +296,58 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 				SLOT(updatelights(double, double, double, double, double, double, double, double, double, double, double, double, double, double)));
 			connect(diacol, SIGNAL(volcol(double)), vtkwid, SLOT(updatevolcol(double)));
 			connect(diacol, SIGNAL(wincol(double)), vtkwid, SLOT(updatewincol(double)));
-
-
-
+	
+			
+			
+			__int64 npoints = (dim1*dim2*dim3);
 			vtkwid->input->SetDimensions(dims);
 			vtkSmartPointer <vtkUnsignedShortArray> volarray = vtkSmartPointer<vtkUnsignedShortArray>::New();
-			volarray->SetNumberOfValues(vtkwid->input->GetNumberOfPoints());
+			volarray->SetNumberOfComponents(1);
+			vtkwid->input->AllocateScalars(VTK_UNSIGNED_SHORT, 1);
+			
+			volarray->SetNumberOfValues(npoints);
 			
 			
-		
 			
 			
-			for (int k = 0; k <N; k++)
+			
+			for (__int64 k = 0; k <N; k++)
 			{
 				
 				vtkwid->imseq->SetFileName(filenames->GetValue(k));
 				vtkwid->imseq->Update();
-				vtkSmartPointer<vtkImageData> img = vtkSmartPointer<vtkImageData>::New();
-				img = vtkwid->imseq->GetOutput();
+				
+				vtkImageData *img = vtkwid->imseq->GetOutput();
 				vtkDataArray *vals = img->GetPointData()->GetArray("Tiff Scalars");
 				
-	            int offset = k*vals->GetNumberOfTuples();
+				
+				__int64 vals64 = vals->GetNumberOfTuples();
+				__int64 offset = k*vals64;
 
 				
 
 				for (int  j = 0; j < vals->GetNumberOfTuples(); j++)
 					
 				{
+					
 						double v = vals->GetComponent(j, 0);
-						volarray->SetValue(offset + j, v);
+						volarray->SetValue(offset + j, int(v));
 
 				}
 				
 
 			}
-
+			
+			
 			vtkwid->input->SetSpacing(1.0, 1.0, 1.0);
+			vtkwid->input->SetOrigin(0.0, 0.0, 0.0);
 			vtkwid->input->GetPointData()->SetScalars(volarray);
-
+			ui->label->setText(QString::number(vtkwid->input->GetActualMemorySize()));
 			vtkwid->initialize();
 		}
+		
 	}
+	
 }
 
 void VolumeViewer::on_actionHessian_triggered()
@@ -381,9 +397,9 @@ void VolumeViewer::openvol(string inputFilename)
 			vtkwid->initialize();
 
 		}
-		else if (ext == QString("mat"))
+		/*else if (ext == QString("mat"))
 		{
-
+			
 			vtkSmartPointer<vtkMatlabMexAdapter> readermat = vtkSmartPointer<vtkMatlabMexAdapter>::New();
 			mxArray *matarr;
 			MATFile *matf;
@@ -410,7 +426,7 @@ void VolumeViewer::openvol(string inputFilename)
 				vtkwid->input->AllocateScalars(VTK_INT, 1);
 
 				
-				dataarr->SetNumberOfComponents(vtkwid->input->GetNumberOfPoints());
+/			dataarr->SetNumberOfComponents(vtkwid->input->GetNumberOfPoints());
 
 				 
 				for (int i = 0; i < matsize[0] * matsize[1] * matsize[2]; i++)
@@ -433,15 +449,17 @@ void VolumeViewer::openvol(string inputFilename)
 
 
 
-
+			
 
 		}
 
 		
 
 		vtkwid->initialize();
+		
 
 	}
+	*/
 	else
 		QMessageBox::critical(0, QObject::tr("Error"), "Cannot Render; wrong format!");
 
@@ -519,6 +537,15 @@ void VolumeViewer::on_actionR_to_B_triggered()
     vtkwid->volumeColor->AddRGBPoint(255,0, 0.0, 1);
     vtkwid-> volumeProperty->SetColor(vtkwid->volumeColor);
     vtkwid->GetRenderWindow()->Render();
+}
+
+void VolumeViewer::on_actionGreen_triggered()
+{
+	vtkwid->volumeColor->RemoveAllPoints();
+	vtkwid->volumeColor->AddRGBPoint(0, 0.0, 0.0, 0.0);
+	vtkwid->volumeColor->AddRGBPoint(255, 0, 1.0, 0.0);
+	vtkwid->volumeProperty->SetColor(vtkwid->volumeColor);
+	vtkwid->GetRenderWindow()->Render();
 }
 
 void VolumeViewer::on_actionGrey_triggered()
