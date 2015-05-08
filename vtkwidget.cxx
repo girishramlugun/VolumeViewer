@@ -102,12 +102,8 @@ void vtkwidget::render()
 {
 	//mapper->SetInputConnection(reader->GetOutputPort());
 	mapper->SetInputData(input);
-	unsigned long vidmem = mapper->GetMaxMemoryInBytes();
-	if (input->GetActualMemorySize() / 1024 > vidmem){
 		mapper->SetRequestedRenderModeToRayCast();
-	}
-	else{ mapper->SetRequestedRenderModeToDefault(); }
-
+	
 	
 	leftRenderer->ResetCamera();
 	//rcmapper->SetInteractiveUpdateRate(2);

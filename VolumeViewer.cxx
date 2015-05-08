@@ -56,6 +56,13 @@
 #include<vtkArrayIterator.h>
 #include<vtkUnsignedShortArray.h>
 #include<QStringList>
+#include<vtkXMLImageDataReader.h>
+#include<vtkXMLImageDataWriter.h>
+#include <cstdio>
+#include <ctime>
+#include<vtkDenseArray.h>
+#include<vtkDataArrayIteratorMacro.h>
+
 using namespace std;
 std::string inputFilename;
 QString ext;
@@ -260,13 +267,6 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 
 			}
 
-
-
-
-			
-
-
-
 			vtkSmartPointer<vtkTIFFReader>readimg = vtkSmartPointer<vtkTIFFReader>::New();
 			readimg->SetFileName(filenames->GetValue(0));
 			readimg->Update();
@@ -295,7 +295,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			connect(diabg, SIGNAL(sendbgparams(double, double, double)), vtkwid, SLOT(setbg(double, double, double)));
 			connect(diavolprop, SIGNAL(send_dims(double, double, double)), vtkwid, SLOT(setdims(double, double, double)));
 			connect(dialight, SIGNAL(sendlights(double, double, double, double, double, double, double, double, double, double, double, double, double, double)), vtkwid,
-				SLOT(updatelights(double, double, double, double, double, double, double, double, double, double, double, double, double, double)));
+			SLOT(updatelights(double, double, double, double, double, double, double, double, double, double, double, double, double, double)));
 			connect(diacol, SIGNAL(volcol(double)), vtkwid, SLOT(updatevolcol(double)));
 			connect(diacol, SIGNAL(wincol(double)), vtkwid, SLOT(updatewincol(double)));
 	
@@ -303,49 +303,50 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			
 			__int64 npoints = (dim1*dim2*dim3);
 			vtkwid->input->SetDimensions(dims);
-			vtkSmartPointer <vtkUnsignedShortArray> volarray = vtkSmartPointer<vtkUnsignedShortArray>::New();
+			vtkSmartPointer<vtkUnsignedShortArray> volarray = vtkSmartPointer<vtkUnsignedShortArray>::New();
+			
 			volarray->SetNumberOfComponents(1);
 			vtkwid->input->AllocateScalars(VTK_UNSIGNED_SHORT, 1);
 			
 			volarray->SetNumberOfValues(npoints);
+
 			
 			
-			
-			
-			
+			clock_t start = clock();
 			for (__int64 k = 0; k <N; k++)
 			{
 				
 				vtkwid->imseq->SetFileName(filenames->GetValue(k));
 				vtkwid->imseq->Update();
-				
-				vtkImageData *img = vtkwid->imseq->GetOutput();
-				vtkDataArray *vals = img->GetPointData()->GetArray("Tiff Scalars");
-				
-				
-				__int64 vals64 = vals->GetNumberOfTuples();
+				//vtkImageData *img = vtkwid->imseq->GetOutput();
+				vtkDataArray *vals = vtkwid->imseq->GetOutput()->GetPointData()->GetArray("Tiff Scalars");
+				vals->SetNumberOfComponents(1);
+				__int64 vals64 = vals->GetNumberOfComponents();
 				__int64 offset = k*vals64;
 
 				
 
-				for (int  j = 0; j < vals->GetNumberOfTuples(); j++)
+				for (__int64  j = 0; j < vals64; j++)
 					
 				{
 					
-						double v = vals->GetComponent(j, 0);
-						volarray->SetValue(offset + j, int(v));
-
+					volarray->SetValue(offset + j, vals->GetComponent(j, 0));
+					
 				}
 				
 
 			}
 			
-			
+			ui->label->setText(QString::number(((double)clock() - start) / CLOCKS_PER_SEC));
 			vtkwid->input->SetSpacing(1.0, 1.0, 1.0);
 			vtkwid->input->SetOrigin(0.0, 0.0, 0.0);
+			
 			vtkwid->input->GetPointData()->SetScalars(volarray);
-			ui->label->setText(QString::number(vtkwid->input->GetActualMemorySize()));
-			vtkwid->initialize();
+			
+			//volarray->Delete();
+			//ui->label->setText(QString::number(vtkwid->input->GetActualMemorySize()));
+			
+			//vtkwid->initialize();
 					}
 		
 	}
@@ -380,23 +381,25 @@ void VolumeViewer::openvol(string inputFilename)
 
 		if (ext == QString("vti"))
 		{
-
-			vtkwid->readervti->SetFileName(inputFilename.c_str());
-			vtkwid->readervti->Update();
-			vtkwid->input = vtkwid->readervti->GetOutput();
-			vtkwid->reader = vtkwid->readervti;
+			vtkXMLImageDataReader *rvti = vtkXMLImageDataReader::New();
+			rvti->SetFileName(inputFilename.c_str());
+			rvti->Update();
+			vtkwid->input = rvti->GetOutput();
+			
+		//	vtkwid->reader = vtkwid->readervti;
 			vtkwid->initialize();
-
+			rvti->Delete();
 		}
 
 		else if (ext == QString("tif"))
 		{
-
-			vtkwid->readertiff->SetFileName(inputFilename.c_str());
-			vtkwid->readertiff->Update();
-			vtkwid->input = vtkwid->readertiff->GetOutput();
-			vtkwid->reader = vtkwid->readertiff;
+			vtkTIFFReader *rtiff = vtkTIFFReader::New();
+			rtiff->SetFileName(inputFilename.c_str());
+			rtiff->Update();
+			vtkwid->input = rtiff->GetOutput();
+			
 			vtkwid->initialize();
+			rtiff->Delete();
 
 		}
 		/*else if (ext == QString("mat"))
@@ -860,7 +863,7 @@ void VolumeViewer::on_actionSave_Volume_triggered()
 
 	QString fileNameSave = QFileDialog::getSaveFileName(this,
 		tr("Save Volume"), "",
-		tr("TIFF (*.tif);;VTK Files (*.vti)"));
+		tr("VTK File (*.vti)"));
 	string volname = fileNameSave.toStdString();
 	savevol(volname);
 
@@ -870,8 +873,8 @@ void VolumeViewer::savevol(string volname)
 {
 	if (!volname.empty())
 	{
-		vtkSmartPointer<vtkTIFFWriter> tiffwrite = vtkSmartPointer<vtkTIFFWriter>::New();
-		tiffwrite->SetInputConnection(vtkwid->readertiff->GetOutputPort());
+		vtkSmartPointer<vtkXMLImageDataWriter> tiffwrite = vtkSmartPointer<vtkXMLImageDataWriter>::New();
+		tiffwrite->SetInputData(vtkwid->input);
 		tiffwrite->SetFileName(volname.c_str());
 		tiffwrite->Write();
 	}
