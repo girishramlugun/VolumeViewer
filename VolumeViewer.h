@@ -79,6 +79,7 @@ public slots:
 private slots:
 
   void on_clear_clicked();
+  void on_actionAxes_triggered();
   void on_actionGPU_Texture_triggered();
   void on_actionRay_Cast_triggered();
   void on_actionCPU_Texture_triggered();

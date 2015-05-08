@@ -59,6 +59,7 @@
 #include<vtkImageReader.h>
 #include<vtkImageData.h>
 #include<vtkAlgorithm.h>
+#include<vtkOrientationMarkerWidget.h>
 //#include<vtkMatlabMexAdapter.h>
 
 
@@ -122,7 +123,7 @@ public:
 
    vtkSmartPointer<vtkAlgorithm> reader;
 
-   
+   vtkSmartPointer<vtkOrientationMarkerWidget> widget;
 
 
 signals:

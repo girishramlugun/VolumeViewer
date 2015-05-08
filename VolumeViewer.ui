@@ -177,6 +177,7 @@
     <addaction name="actionLights"/>
     <addaction name="actionBackground"/>
     <addaction name="menuVolume"/>
+    <addaction name="actionAxes"/>
    </widget>
    <widget class="QMenu" name="menuFilters">
     <property name="title">
@@ -189,6 +190,9 @@
      <addaction name="actionIsosurface"/>
     </widget>
     <widget class="QMenu" name="menuImage_filter">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="title">
       <string>Image</string>
      </property>
@@ -407,6 +411,9 @@
    </property>
   </action>
   <action name="actionAdd">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Add</string>
    </property>
@@ -454,8 +461,19 @@
    </property>
   </action>
   <action name="actionLoadLUT">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Load</string>
+   </property>
+  </action>
+  <action name="actionAxes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Axes</string>
    </property>
   </action>
  </widget>

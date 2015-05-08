@@ -48,6 +48,8 @@
 #include<vtkDataArray.h>
 #include<vtkImageData.h>
 #include <vtkPointData.h>
+#include <vtkClipVolume.h>
+#include <vtkDataSetMapper.h>
 //#include<vtkMatlabMexAdapter.h>
 //#include<mat.h>
 //#include <matrix.h>
@@ -62,6 +64,10 @@
 #include <ctime>
 #include<vtkDenseArray.h>
 #include<vtkDataArrayIteratorMacro.h>
+#include <vtkImplicitPlaneWidget.h>
+#include<vtkOrientationMarkerWidget.h>
+#include<vtkAxesActor.h>
+
 
 using namespace std;
 std::string inputFilename;
@@ -74,6 +80,7 @@ float data_size;
 
 vtkSmartPointer<vtkAVIWriter> movie = vtkSmartPointer <vtkAVIWriter>::New();
 vtkSmartPointer <vtkWindowToImageFilter> w2i = vtkSmartPointer <vtkWindowToImageFilter>::New();
+
 
 
 class vtkBoxWidgetCallback : public vtkCommand
@@ -673,6 +680,36 @@ void dialog_rotation::on_stoprot_clicked()
 
 }
 
+void VolumeViewer::on_actionAxes_triggered()
+{
+	if (ui->actionAxes->isChecked())
+	{
+		vtkwid->leftRenderer->ResetCamera();
+		vtkSmartPointer<vtkAxesActor> axes =
+			vtkSmartPointer<vtkAxesActor>::New();
+		vtkwid->widget->SetOutlineColor(0.9300, 0.5700, 0.1300);
+		vtkwid->widget->SetOrientationMarker(axes);
+		vtkwid->widget->SetInteractor(vtkwid->leftRenderer->GetRenderWindow()->GetInteractor());
+		vtkwid->widget->SetViewport(0.0, 0.0, 0.2, 0.2);
+		vtkwid->widget->SetEnabled(1);
+		vtkwid->widget->InteractiveOn();
+
+		vtkwid->GetRenderWindow()->Render();
+	}
+	else{
+			{
+
+
+				vtkwid->widget->SetEnabled(0);
+				vtkwid->leftRenderer->ResetCamera();
+				vtkwid->GetRenderWindow()->Render();
+
+
+			}
+	}
+
+}
+
 void VolumeViewer::on_actionClip_triggered()
 {
 
@@ -684,7 +721,7 @@ if (vtkwid->isVisible())
 {
 		box = vtkSmartPointer<vtkBoxWidget>::New();
 		vtkwid->leftRenderer->ResetCamera();
-        box->SetInputData(vtkwid->mapper->GetInput());
+        box->SetInputData(vtkwid->input);
     // Add a box widget for clipping
         box->SetInteractor(vtkwid->GetInteractor());
         box->SetDefaultRenderer(vtkwid->leftRenderer);
@@ -792,49 +829,35 @@ void VolumeViewer::rot()
 
 void VolumeViewer::on_actionSlice_triggered()
 {
+	vtkwid->leftRenderer->ResetCamera();
 
-vtkSmartPointer<vtkImageResliceMapper> im = vtkSmartPointer<vtkImageResliceMapper>::New();
- im->SetInputData(vtkwid->readervti->GetOutput());
- im->SliceFacesCameraOn();
- im->SliceAtFocalPointOn();
- im->BorderOn();
-
-vtkSmartPointer<vtkImageProperty> ip = vtkSmartPointer<vtkImageProperty>::New();
- ip->SetColorWindow(2000);
- ip->SetColorLevel(1000);
- ip->SetAmbient(0.0);
- ip->SetDiffuse(1.0);
- ip->SetOpacity(1.0);
- ip->SetInterpolationTypeToLinear();
-
-
-vtkSmartPointer<vtkImageSlice> ia = vtkSmartPointer<vtkImageSlice>::New();
-ia->SetMapper(im);
-ia->SetProperty(ip);
-
-vtkwid->leftRenderer->AddViewProp(ia);
-
-vtkSmartPointer<vtkInteractorStyleImage> imstyle = vtkSmartPointer <vtkInteractorStyleImage>::New();
-imstyle->SetInteractionModeToImage3D();
-vtkwid->GetInteractor()->SetInteractorStyle(imstyle);
-vtkwid->GetRenderWindow()->SetInteractor(vtkwid->GetInteractor());
-
-vtkwid->GetRenderWindow()->Render();
-vtkSmartPointer<vtkCamera> cam1 = vtkSmartPointer<vtkCamera>::New();
-cam1 = vtkwid->leftRenderer->GetActiveCamera();
-cam1->ParallelProjectionOn();
-vtkwid->leftRenderer->ResetCameraClippingRange();
-vtkwid->GetRenderWindow()->Render();
+	vtkSmartPointer <vtkImplicitPlaneWidget> planeWidget = vtkSmartPointer <vtkImplicitPlaneWidget>::New();
+	planeWidget->SetInteractor(vtkwid->GetInteractor());
+	planeWidget->SetInputData(vtkwid->input);
+	planeWidget->SetDefaultRenderer(vtkwid->leftRenderer);
+	
+	planeWidget->SetPlaceFactor(1.01);
+	planeWidget->PlaceWidget();
+	planeWidget->SetOrigin(vtkwid->volume->GetOrigin());
+	planeWidget->SetNormalToYAxis(1);
+	planeWidget->SetTubing(1);
+	planeWidget->UpdatePlacement();
+	
 
 
-
-
+	planeWidget->EnabledOn();
+	vtkwid->leftRenderer->Render();
+	
+	vtkSmartPointer<vtkPlane> plane = vtkSmartPointer<vtkPlane>::New();
+	planeWidget->GetPlane(plane);
+	
 
 
 }
 
 void VolumeViewer::on_actionGPU_Texture_triggered()
 {
+
     vtkwid->mapper->SetRequestedRenderMode(vtkSmartVolumeMapper::GPURenderMode);
     vtkwid->GetRenderWindow()->Render();
 }

@@ -1,8 +1,7 @@
 #include "vtkwidget.h"
 #include<vtkMarchingCubes.h>
 #include<vtkPolyDataConnectivityFilter.h>
-#include <vtkPointData.h>
-#include<vtkGPUInfo.h>
+
 
 vtkwidget::vtkwidget(QWidget *parent) :
     QVTKWidget(parent)
@@ -47,7 +46,7 @@ vtkwidget::vtkwidget(QWidget *parent) :
 
 	reader = vtkSmartPointer<vtkAlgorithm>::New();
 
-	
+	widget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
 
 	
 
@@ -55,6 +54,9 @@ vtkwidget::vtkwidget(QWidget *parent) :
 
 void vtkwidget::initialize()
 {
+
+
+
 	//Set default light parameters
 	
 	LightKit->SetKeyLightWarmth(0.6);LightKit->SetKeyLightIntensity(0.75); LightKit->SetKeyLightElevation(50); LightKit->SetKeyLightAzimuth(10);
@@ -100,6 +102,8 @@ void vtkwidget::initialize()
 
 void vtkwidget::render()
 {
+
+
 	//mapper->SetInputConnection(reader->GetOutputPort());
 	mapper->SetInputData(input);
 		mapper->SetRequestedRenderModeToRayCast();
@@ -132,6 +136,10 @@ void vtkwidget::render()
 	//  vtkwid-> renderWindowInteractor->Start();
 	GetRenderWindow()->AddRenderer(leftRenderer);
 	this->show();
+	// Set up axes widget
+	
+
+
 }
 
 
