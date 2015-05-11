@@ -95,17 +95,18 @@ void vtkwidget::initialize()
 	// volumeProperty->SetGradientOpacity(volumeGradientOpacity);
 	//volumeProperty->SetInterpolationType(VTK_NEAREST_INTERPOLATION);
 	//volumeProperty->ShadeOff();
-
+	LightKit->AddLightsToRenderer(leftRenderer);
+	mapper->SetInputData(input);
 	render();
 
 }
 
 void vtkwidget::render()
 {
-
+	
 
 	//mapper->SetInputConnection(reader->GetOutputPort());
-	mapper->SetInputData(input);
+
 		mapper->SetRequestedRenderModeToRayCast();
 	
 	
@@ -128,7 +129,7 @@ void vtkwidget::render()
 	// renderWindowInteractor->SetRenderWindow(qvtkWidgetLeft->GetRenderWindow());
 	// VTK/Qt wedded
 
-	LightKit->AddLightsToRenderer(leftRenderer);
+	
 	// Render and interact
 	//  vtkwid-> renderWindow->Render();
 	// renderer->AutomaticLightCreationOn();
@@ -201,14 +202,13 @@ void vtkwidget::setbg(double bg_r, double bg_g, double bg_b)
 
 void vtkwidget::setdims(double dim_x,  double dim_y, double dim_z)
 {
-	volpropchange->SetInputData(readertiff->GetOutput());
+	volpropchange->SetInputData(input);
     volpropchange->SetOutputSpacing(dim_x, dim_y, dim_z);
 	volpropchange->Update();
 	mapper->SetInputData(volpropchange->GetOutput());
-	//render();
-	leftRenderer->ResetCamera();
-	GetRenderWindow()->Render();
-		
+	//leftRenderer->ResetCamera();
+	//GetRenderWindow()->Render();
+	render();
 }
 
 void vtkwidget::updatelights(double kw, double ki, double ke, double ka, double fw, double fkf, double fe, double fa, double bw, double bkb, double be, double ba, double hw, double hkh)

@@ -67,7 +67,7 @@
 #include <vtkImplicitPlaneWidget.h>
 #include<vtkOrientationMarkerWidget.h>
 #include<vtkAxesActor.h>
-
+#include<vtk_tiff.h>
 
 using namespace std;
 std::string inputFilename;
@@ -330,9 +330,14 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 				vals->SetNumberOfComponents(1);
 				__int64 vals64 = vals->GetNumberOfComponents();
 				__int64 offset = k*vals64;
+				/*
+				vtkArrayIterator *iter = volarray->NewIterator();
 
-				
-
+				switch (volarray->GetDataType())
+				{
+					vtkArrayIteratorTemplateMacro()
+				}
+				*/
 				for (__int64  j = 0; j < vals64; j++)
 					
 				{
@@ -350,10 +355,10 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			
 			vtkwid->input->GetPointData()->SetScalars(volarray);
 			
-			//volarray->Delete();
+			volarray->Delete();
 			//ui->label->setText(QString::number(vtkwid->input->GetActualMemorySize()));
 			
-			//vtkwid->initialize();
+			vtkwid->initialize();
 					}
 		
 	}
@@ -402,6 +407,7 @@ void VolumeViewer::openvol(string inputFilename)
 		{
 			vtkTIFFReader *rtiff = vtkTIFFReader::New();
 			rtiff->SetFileName(inputFilename.c_str());
+			rtiff->SetOrientationType(ORIENTATION_TOPLEFT);
 			rtiff->Update();
 			vtkwid->input = rtiff->GetOutput();
 			
@@ -721,10 +727,11 @@ if (vtkwid->isVisible())
 {
 		box = vtkSmartPointer<vtkBoxWidget>::New();
 		vtkwid->leftRenderer->ResetCamera();
-        box->SetInputData(vtkwid->input);
+        box->SetInputData(vtkwid->mapper->GetInput());
     // Add a box widget for clipping
         box->SetInteractor(vtkwid->GetInteractor());
         box->SetDefaultRenderer(vtkwid->leftRenderer);
+		
 		box->SetPlaceFactor(1.02);
         box->InsideOutOn();
         box->PlaceWidget();
@@ -851,8 +858,6 @@ void VolumeViewer::on_actionSlice_triggered()
 	vtkSmartPointer<vtkPlane> plane = vtkSmartPointer<vtkPlane>::New();
 	planeWidget->GetPlane(plane);
 	
-
-
 }
 
 void VolumeViewer::on_actionGPU_Texture_triggered()
