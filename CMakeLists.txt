@@ -13,9 +13,6 @@ include(${VTK_USE_FILE})
  find_package(Qt5Widgets REQUIRED)
  include_directories(${Qt5Widgets_INCLUDES})
 
-find_package(ITK REQUIRED)
-include(${ITK_USE_FILE})
-
 
  # We need add -DQT_WIDGETS_LIB when using QtWidgets in Qt 5.
   add_definitions(${Qt5Widgets_DEFINITIONS})
@@ -46,7 +43,7 @@ file(GLOB CXX_FILES *.cxx)
   add_executable(VolumeViewer WIN32 MACOSX_BUNDLE ${CXX_FILES} ${UISrcs} ${MOCSrcs} ${VolumeViewer_RESOURCES_RCC})
 
 
-    target_link_libraries(VolumeViewer ${QT_QTMAIN_LIBRARY} ${VTK_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${ITK_LIBRARIES})
+    target_link_libraries(VolumeViewer ${QT_QTMAIN_LIBRARY} ${VTK_LIBRARIES} ${Qt5Widgets_LIBRARIES})
 
 
 IF(WIN32) # Check if we are on Windows

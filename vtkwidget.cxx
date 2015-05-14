@@ -3,6 +3,9 @@
 #include<vtkPolyDataConnectivityFilter.h>
 
 
+
+
+
 vtkwidget::vtkwidget(QWidget *parent) :
     QVTKWidget(parent)
 {
@@ -82,6 +85,7 @@ void vtkwidget::initialize()
 
 	volumeColor->AddRGBPoint(0, 0, 0, 0);
 	volumeColor->AddRGBPoint(255, 1, 1, 1);
+	
 
 	//Adjust Rotation Style of Camera
 	
@@ -97,6 +101,9 @@ void vtkwidget::initialize()
 	//volumeProperty->ShadeOff();
 	LightKit->AddLightsToRenderer(leftRenderer);
 	mapper->SetInputData(input);
+
+
+
 	render();
 
 }
@@ -109,7 +116,7 @@ void vtkwidget::render()
 
 		mapper->SetRequestedRenderModeToRayCast();
 	
-	
+
 	leftRenderer->ResetCamera();
 	//rcmapper->SetInteractiveUpdateRate(2);
 	

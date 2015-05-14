@@ -50,9 +50,9 @@
 #include <vtkPointData.h>
 #include <vtkClipVolume.h>
 #include <vtkDataSetMapper.h>
-//#include<vtkMatlabMexAdapter.h>
-//#include<mat.h>
-//#include <matrix.h>
+#include<vtkMatlabMexAdapter.h>
+#include<mat.h>
+#include <matrix.h>
 #include<vtkDoubleArray.h>
 #include<vtkTypedArray.h>
 #include<vtkArrayIterator.h>
@@ -68,13 +68,14 @@
 #include<vtkOrientationMarkerWidget.h>
 #include<vtkAxesActor.h>
 #include<vtk_tiff.h>
+#include<vtkArrayIteratorIncludes.h>
 
 using namespace std;
 std::string inputFilename;
 QString ext;
 bool wrmv=0;
-float data_size;
 
+//template <typename Iterator > void setval(Iterator begin, Iterator end) {  }
 
 
 
@@ -92,6 +93,7 @@ public:
 
     {
       vtkBoxWidget *widget = reinterpret_cast<vtkBoxWidget*>(caller);
+	  
       if (this->Mapper)
         {
         vtkPlanes *planes = vtkPlanes::New();
@@ -109,6 +111,25 @@ protected:
 
   vtkSmartVolumeMapper *Mapper;
 };
+
+class vtkIPWCallback : public vtkCommand
+{
+public:
+	static vtkIPWCallback *New()
+	{
+		return new vtkIPWCallback;
+	}
+	virtual void Execute(vtkObject *caller, unsigned long, void*)
+	{
+		vtkImplicitPlaneWidget *planeWidget =
+			reinterpret_cast<vtkImplicitPlaneWidget*>(caller);
+		planeWidget->GetPlane(this->Plane);
+		
+	}
+	vtkIPWCallback() :Plane(0)  {}
+	vtkPlane *Plane;
+};
+
 
 // Constructor
 
@@ -193,9 +214,9 @@ void VolumeViewer::on_actionOpen_triggered()
     if (Filename.isEmpty()==0){
     QFileInfo fi(Filename);
     ext = fi.suffix();
-	data_size = fi.size()/1000000;
+	
     //ui->label->setText(ext);
-	ui->label->setNum(data_size);
+
     inputFilename=Filename.toStdString();
 	openvol(inputFilename);
   //  if (ext==QString("tif")){
@@ -292,7 +313,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			
 			dims[2] = N;
 			dim1 = dims[0]; dim2 = dims[1]; dim3 = dims[2];
-			ui->label->setText(QString::number(ext[0]) + QString::number(ext[1]) + QString::number(ext[2]));
+			//ui->label->setText(QString::number(ext[0]) + QString::number(ext[1]) + QString::number(ext[2]));
 			
 			//Create new render window and connect signals to slots
 			vtkwid = new vtkwidget;
@@ -319,26 +340,29 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 
 			
 			
-			clock_t start = clock();
+			//clock_t start = clock();
 			for (__int64 k = 0; k <N; k++)
 			{
 				
 				vtkwid->imseq->SetFileName(filenames->GetValue(k));
 				vtkwid->imseq->Update();
 				//vtkImageData *img = vtkwid->imseq->GetOutput();
+				
 				vtkDataArray *vals = vtkwid->imseq->GetOutput()->GetPointData()->GetArray("Tiff Scalars");
+			
 				vals->SetNumberOfComponents(1);
-				__int64 vals64 = vals->GetNumberOfComponents();
+				__int64 vals64 = vals->GetNumberOfTuples();
 				__int64 offset = k*vals64;
-				/*
+				
 				vtkArrayIterator *iter = volarray->NewIterator();
-
+				/*
 				switch (volarray->GetDataType())
 				{
-					vtkArrayIteratorTemplateMacro()
+					vtkArrayIteratorTemplateMacro(volarray,setval(vtkDABegin,VTKDAEnd))
 				}
 				*/
-				for (__int64  j = 0; j < vals64; j++)
+				
+				for (__int64 j = 0; j < vals->GetNumberOfTuples(); j++)
 					
 				{
 					
@@ -349,13 +373,13 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 
 			}
 			
-			ui->label->setText(QString::number(((double)clock() - start) / CLOCKS_PER_SEC));
+			//ui->label->setText(QString::number(((double)clock() - start) / CLOCKS_PER_SEC));
 			vtkwid->input->SetSpacing(1.0, 1.0, 1.0);
 			vtkwid->input->SetOrigin(0.0, 0.0, 0.0);
 			
 			vtkwid->input->GetPointData()->SetScalars(volarray);
 			
-			volarray->Delete();
+			//volarray->Delete();
 			//ui->label->setText(QString::number(vtkwid->input->GetActualMemorySize()));
 			
 			vtkwid->initialize();
@@ -415,15 +439,16 @@ void VolumeViewer::openvol(string inputFilename)
 			rtiff->Delete();
 
 		}
-		/*else if (ext == QString("mat"))
+		else if (ext == QString("mat"))
 		{
 			
 			vtkSmartPointer<vtkMatlabMexAdapter> readermat = vtkSmartPointer<vtkMatlabMexAdapter>::New();
 			mxArray *matarr;
 			MATFile *matf;
 			vtkArray *matvtkarr;
-			vtkDataArray *dataarr;
+			vtkSmartPointer<vtkUnsignedShortArray> dataarr = vtkSmartPointer<vtkUnsignedShortArray>::New();
 			
+
 			matf = matOpen(inputFilename.c_str(), "r");
 			if (matf == NULL) {
 				QMessageBox::critical(0, QObject::tr("Error"), "Error Loading File");
@@ -433,7 +458,7 @@ void VolumeViewer::openvol(string inputFilename)
 				matarr = matGetVariable(matf, "IM");
 				const mwSize * matsize = mxGetDimensions(matarr);
 
-
+			//	dataarr->SetNumberOfTuples(matsize[0] * matsize[1] * matsize[2]);
 
 				if (matarr == NULL) {
 					QMessageBox::critical(0, QObject::tr("Error"), "Could not copy to array");
@@ -441,34 +466,24 @@ void VolumeViewer::openvol(string inputFilename)
 
 				matvtkarr = readermat->mxArrayTovtkArray(matarr);
 				vtkwid->input->SetDimensions(matsize[0], matsize[1], matsize[2]);
-				vtkwid->input->AllocateScalars(VTK_INT, 1);
+				
 
 				
-/			dataarr->SetNumberOfComponents(vtkwid->input->GetNumberOfPoints());
+			dataarr->SetNumberOfTuples(vtkwid->input->GetNumberOfPoints());
 
 				 
-				for (int i = 0; i < matsize[0] * matsize[1] * matsize[2]; i++)
+			for (vtkIdType i = 0; i < vtkwid->input->GetNumberOfPoints(); i++)
 				{
-							
-						//	vtkVariant v;
-
-
-					//		v = matvtkarr->GetVariantValueN(i);
-					//		double v1 = v.ToDouble;
-					//		dataarr->SetComponent(i, 0, v1);
+							dataarr->SetVariantValue(i, matvtkarr->GetVariantValueN(i));
 		         }
 
 				
 			
 			
-				
+			vtkwid->input->SetOrigin(0, 0, 0);
+			vtkwid->input->SetSpacing(1, 1, 1);
 	    	vtkwid->input->GetPointData()->SetScalars(dataarr);
-			ui->label->setNum(int(vtkwid->input->GetNumberOfPoints()));
-
-
-
-			
-
+			//ui->label->setNum(int(vtkwid->input->GetNumberOfPoints()));
 		}
 
 		
@@ -477,7 +492,7 @@ void VolumeViewer::openvol(string inputFilename)
 		
 
 	}
-	*/
+	
 	else
 		QMessageBox::critical(0, QObject::tr("Error"), "Cannot Render; wrong format!");
 
@@ -838,25 +853,73 @@ void VolumeViewer::on_actionSlice_triggered()
 {
 	vtkwid->leftRenderer->ResetCamera();
 
+	vtkSmartPointer<vtkPlane> plane = vtkSmartPointer<vtkPlane>::New();
+
+
+	vtkSmartPointer<vtkIPWCallback> myCallback =
+		vtkSmartPointer<vtkIPWCallback>::New();
+	myCallback->Plane = plane;
+	
+
 	vtkSmartPointer <vtkImplicitPlaneWidget> planeWidget = vtkSmartPointer <vtkImplicitPlaneWidget>::New();
 	planeWidget->SetInteractor(vtkwid->GetInteractor());
 	planeWidget->SetInputData(vtkwid->input);
 	planeWidget->SetDefaultRenderer(vtkwid->leftRenderer);
-	
+
 	planeWidget->SetPlaceFactor(1.01);
 	planeWidget->PlaceWidget();
 	planeWidget->SetOrigin(vtkwid->volume->GetOrigin());
-	planeWidget->SetNormalToYAxis(1);
-	planeWidget->SetTubing(1);
+	planeWidget->SetNormal(plane->GetNormal());
 	planeWidget->UpdatePlacement();
-	
+
+	planeWidget->AddObserver(vtkCommand::InteractionEvent, myCallback);
+
+
 
 
 	planeWidget->EnabledOn();
-	vtkwid->leftRenderer->Render();
 	
-	vtkSmartPointer<vtkPlane> plane = vtkSmartPointer<vtkPlane>::New();
-	planeWidget->GetPlane(plane);
+	vtkwid->leftRenderer->Render();
+
+	/*
+
+	vtkRenderer * renderer = vtkRenderer::New();
+	vtkRenderWindow *renwin = vtkRenderWindow::New();
+	vtkRenderWindowInteractor *iren = vtkRenderWindowInteractor::New();
+
+	renwin->AddRenderer(renderer);
+	iren->SetRenderWindow(renwin);
+	renwin->SetSize(800, 800);
+
+	vtkImageResliceMapper *mapper = vtkImageResliceMapper::New();
+	     mapper->SetInputData(vtkwid->mapper->GetInput());
+	     mapper->SetSlicePlane(plane);
+		 mapper->SliceFacesCameraOn();
+		 //mapper->SetSliceAtFocalPoint(1);
+		 vtkImageSlice *slice = vtkImageSlice::New();
+
+		 slice->SetMapper(mapper);
+		 
+
+
+		 renderer->AddViewProp(slice);
+		 vtkInteractorStyleImage *style = vtkInteractorStyleImage::New();
+		 style->SetInteractionModeToImage3D();
+		 iren->SetInteractorStyle(style);
+
+
+
+
+	 
+		    
+			 
+			 renwin->SetInteractor(iren);
+			 renwin->Render();
+			  vtkCamera * cam1 = renderer->GetActiveCamera();
+			  cam1->ParallelProjectionOn();
+			 renwin->Render();
+			 iren->Start();
+			 */
 	
 }
 
@@ -901,10 +964,10 @@ void VolumeViewer::savevol(string volname)
 {
 	if (!volname.empty())
 	{
-		vtkSmartPointer<vtkXMLImageDataWriter> tiffwrite = vtkSmartPointer<vtkXMLImageDataWriter>::New();
-		tiffwrite->SetInputData(vtkwid->input);
-		tiffwrite->SetFileName(volname.c_str());
-		tiffwrite->Write();
+		vtkSmartPointer<vtkXMLImageDataWriter> volwrite = vtkSmartPointer<vtkXMLImageDataWriter>::New();
+		volwrite->SetInputData(vtkwid->mapper->GetInput());
+		volwrite->SetFileName(volname.c_str());
+		volwrite->Write();
 	}
 }
 
