@@ -50,9 +50,9 @@
 #include <vtkPointData.h>
 #include <vtkClipVolume.h>
 #include <vtkDataSetMapper.h>
-#include<vtkMatlabMexAdapter.h>
-#include<mat.h>
-#include <matrix.h>
+//#include<vtkMatlabMexAdapter.h>
+//#include<mat.h>
+//#include <matrix.h>
 #include<vtkDoubleArray.h>
 #include<vtkTypedArray.h>
 #include<vtkArrayIterator.h>
@@ -69,6 +69,8 @@
 #include<vtkAxesActor.h>
 #include<vtk_tiff.h>
 #include<vtkArrayIteratorIncludes.h>
+#include<vtkBMPReader.h>
+#include<vtkDenseArray.h>
 
 using namespace std;
 std::string inputFilename;
@@ -264,7 +266,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 
 		// set filter to only search for bmp files
 		QStringList filters;
-		filters << "*.tiff"<<"*.tif";
+		filters << "*.tiff" << "*.tif";
 		dir.setNameFilters(filters);
 
 		// Create list of all *.dcm filenames
@@ -308,11 +310,11 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 
 			
 			int N = list.size();
-			__int64 dim1, dim2, dim3;
+			//__int64 dim1, dim2, dim3;
 			
 			
 			dims[2] = N;
-			dim1 = dims[0]; dim2 = dims[1]; dim3 = dims[2];
+			//dim1 = dims[0]; dim2 = dims[1]; dim3 = dims[2];
 			//ui->label->setText(QString::number(ext[0]) + QString::number(ext[1]) + QString::number(ext[2]));
 			
 			//Create new render window and connect signals to slots
@@ -329,22 +331,34 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 	
 			
 			
-			__int64 npoints = (dim1*dim2*dim3);
+			//__int64 npoints = (dim1*dim2*dim3);
 			vtkwid->input->SetDimensions(dims);
-			vtkSmartPointer<vtkUnsignedShortArray> volarray = vtkSmartPointer<vtkUnsignedShortArray>::New();
+			//vtkSmartPointer<vtkUnsignedShortArray> volarray = vtkSmartPointer<vtkUnsignedShortArray>::New();
 			
-			volarray->SetNumberOfComponents(1);
-			vtkwid->input->AllocateScalars(VTK_UNSIGNED_SHORT, 1);
+			//volarray->SetNumberOfComponents(1);
+			//vtkwid->input->AllocateScalars(VTK_UNSIGNED_SHORT, 1);
 			
-			volarray->SetNumberOfValues(npoints);
+			//volarray->SetNumberOfValues(npoints);
 
+
+			vtkTIFFReader *imgseq = vtkTIFFReader::New();
+			imgseq->SetDataScalarTypeToShort();
+			imgseq->SetFileNames(filenames);
+			imgseq->Update();
+			//vtkwid->input = imgseq->GetOutput();
+			vtkwid->input->GetPointData()->SetScalars(imgseq->GetOutput()->GetPointData()->GetArray("Tiff Scalars"));
 			
-			
+			vtkwid->initialize();
+			ui->label->setText(QString::number(vtkwid->input->GetActualMemorySize()));
+			imgseq->Delete();
+
+			/*
 			//clock_t start = clock();
 			for (__int64 k = 0; k <N; k++)
 			{
 				
-				vtkwid->imseq->SetFileName(filenames->GetValue(k));
+				//vtkwid->imseq->SetFileName(filenames->GetValue(k));
+				vtkwid->imseq->SetFileNames(filenames);
 				vtkwid->imseq->Update();
 				//vtkImageData *img = vtkwid->imseq->GetOutput();
 				
@@ -354,13 +368,13 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 				__int64 vals64 = vals->GetNumberOfTuples();
 				__int64 offset = k*vals64;
 				
-				vtkArrayIterator *iter = volarray->NewIterator();
+				//vtkArrayIterator *iter = volarray->NewIterator();
 				/*
 				switch (volarray->GetDataType())
 				{
 					vtkArrayIteratorTemplateMacro(volarray,setval(vtkDABegin,VTKDAEnd))
 				}
-				*/
+				
 				
 				for (__int64 j = 0; j < vals->GetNumberOfTuples(); j++)
 					
@@ -370,19 +384,16 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 					
 				}
 				
-
+				
 			}
+			*/
+		//	ui->label->setText(QString::number(vals->GetActualMemorySize()));
+		//	vtkwid->input->SetSpacing(1.0, 1.0, 1.0);
+		//	vtkwid->input->SetOrigin(0.0, 0.0, 0.0);
+			//vtkwid->input = imgseq->GetOutput();
 			
-			//ui->label->setText(QString::number(((double)clock() - start) / CLOCKS_PER_SEC));
-			vtkwid->input->SetSpacing(1.0, 1.0, 1.0);
-			vtkwid->input->SetOrigin(0.0, 0.0, 0.0);
 			
-			vtkwid->input->GetPointData()->SetScalars(volarray);
-			
-			//volarray->Delete();
-			//ui->label->setText(QString::number(vtkwid->input->GetActualMemorySize()));
-			
-			vtkwid->initialize();
+
 					}
 		
 	}
@@ -441,14 +452,14 @@ void VolumeViewer::openvol(string inputFilename)
 		}
 		else if (ext == QString("mat"))
 		{
-			
+			/*
 			vtkSmartPointer<vtkMatlabMexAdapter> readermat = vtkSmartPointer<vtkMatlabMexAdapter>::New();
 			mxArray *matarr;
 			MATFile *matf;
 			vtkArray *matvtkarr;
 			vtkSmartPointer<vtkUnsignedShortArray> dataarr = vtkSmartPointer<vtkUnsignedShortArray>::New();
 			
-
+			
 			matf = matOpen(inputFilename.c_str(), "r");
 			if (matf == NULL) {
 				QMessageBox::critical(0, QObject::tr("Error"), "Error Loading File");
@@ -463,7 +474,8 @@ void VolumeViewer::openvol(string inputFilename)
 				if (matarr == NULL) {
 					QMessageBox::critical(0, QObject::tr("Error"), "Could not copy to array");
 				}
-
+				matvtkarr->CreateArray(vtkArray::SPARSE, VTK_SHORT);
+				
 				matvtkarr = readermat->mxArrayTovtkArray(matarr);
 				vtkwid->input->SetDimensions(matsize[0], matsize[1], matsize[2]);
 				
@@ -472,7 +484,7 @@ void VolumeViewer::openvol(string inputFilename)
 			dataarr->SetNumberOfTuples(vtkwid->input->GetNumberOfPoints());
 
 				 
-			for (vtkIdType i = 0; i < vtkwid->input->GetNumberOfPoints(); i++)
+			for (vtkIdType i = 0; i!= matvtkarr->GetNonNullSize(); i++)
 				{
 							dataarr->SetVariantValue(i, matvtkarr->GetVariantValueN(i));
 		         }
@@ -483,10 +495,11 @@ void VolumeViewer::openvol(string inputFilename)
 			vtkwid->input->SetOrigin(0, 0, 0);
 			vtkwid->input->SetSpacing(1, 1, 1);
 	    	vtkwid->input->GetPointData()->SetScalars(dataarr);
-			//ui->label->setNum(int(vtkwid->input->GetNumberOfPoints()));
+			ui->label->setNum(int(vtkwid->input->GetActualMemorySize()));
+		
 		}
 
-		
+		*/
 
 		vtkwid->initialize();
 		

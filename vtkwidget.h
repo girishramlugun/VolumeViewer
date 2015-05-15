@@ -60,7 +60,7 @@
 #include<vtkImageData.h>
 #include<vtkAlgorithm.h>
 #include<vtkOrientationMarkerWidget.h>
-#include<vtkMatlabMexAdapter.h>
+//#include<vtkMatlabMexAdapter.h>
 #include<vtkProgressObserver.h>
 
 using namespace std;
