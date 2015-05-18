@@ -132,6 +132,9 @@ private slots:
   void on_actionAnaglyph_triggered();
 
   void on_actionRed_Blue_triggered();
+
+  void on_actionInterlaced_triggered();
+
 private:
 
 	

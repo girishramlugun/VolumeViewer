@@ -72,6 +72,9 @@
 #include<vtkBMPReader.h>
 #include<vtkDenseArray.h>
 
+
+
+
 using namespace std;
 std::string inputFilename;
 QString ext;
@@ -1032,6 +1035,19 @@ void VolumeViewer::on_actionRed_Blue_triggered()
 {
 	if (ui->actionRed_Blue->isChecked()){
 		vtkwid->GetRenderWindow()->SetStereoTypeToRedBlue();
+		vtkwid->GetRenderWindow()->SetStereoRender(1);
+		vtkwid->GetRenderWindow()->Render();
+	}
+	else{
+		vtkwid->leftRenderer->ResetCamera();
+		vtkwid->GetRenderWindow()->SetStereoRender(0);
+		vtkwid->GetRenderWindow()->Render();
+	}
+}
+void VolumeViewer::on_actionInterlaced_triggered()
+{
+	if (ui->actionInterlaced->isChecked()){
+		vtkwid->GetRenderWindow()->SetStereoTypeToInterlaced();
 		vtkwid->GetRenderWindow()->SetStereoRender(1);
 		vtkwid->GetRenderWindow()->Render();
 	}

@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>VolumeViewer</class>
  <widget class="QMainWindow" name="VolumeViewer">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
   <property name="enabled">
    <bool>true</bool>
   </property>
@@ -75,7 +78,7 @@
      <x>0</x>
      <y>0</y>
      <width>583</width>
-     <height>18</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -179,6 +182,7 @@
      </property>
      <addaction name="actionAnaglyph"/>
      <addaction name="actionRed_Blue"/>
+     <addaction name="actionInterlaced"/>
     </widget>
     <addaction name="actionCamera"/>
     <addaction name="actionLights"/>
@@ -498,6 +502,14 @@
    </property>
    <property name="text">
     <string>Red-Blue</string>
+   </property>
+  </action>
+  <action name="actionInterlaced">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Interlaced</string>
    </property>
   </action>
  </widget>
