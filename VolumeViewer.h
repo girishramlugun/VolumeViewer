@@ -129,8 +129,9 @@ private slots:
 
   void on_actionLoadLUT_triggered();
 
-  
+  void on_actionAnaglyph_triggered();
 
+  void on_actionRed_Blue_triggered();
 private:
 
 	

@@ -75,7 +75,7 @@
      <x>0</x>
      <y>0</y>
      <width>583</width>
-     <height>21</height>
+     <height>18</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -173,11 +173,19 @@
      <addaction name="actionDimensions"/>
      <addaction name="actionColor"/>
     </widget>
+    <widget class="QMenu" name="menuStereo">
+     <property name="title">
+      <string>Stereo</string>
+     </property>
+     <addaction name="actionAnaglyph"/>
+     <addaction name="actionRed_Blue"/>
+    </widget>
     <addaction name="actionCamera"/>
     <addaction name="actionLights"/>
     <addaction name="actionBackground"/>
     <addaction name="menuVolume"/>
     <addaction name="actionAxes"/>
+    <addaction name="menuStereo"/>
    </widget>
    <widget class="QMenu" name="menuFilters">
     <property name="title">
@@ -474,6 +482,22 @@
    </property>
    <property name="text">
     <string>Axes</string>
+   </property>
+  </action>
+  <action name="actionAnaglyph">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Anaglyph</string>
+   </property>
+  </action>
+  <action name="actionRed_Blue">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Red-Blue</string>
    </property>
   </action>
  </widget>

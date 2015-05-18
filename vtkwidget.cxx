@@ -135,8 +135,7 @@ void vtkwidget::render()
 	//     vtkSmartPointer<vtkRenderWindowInteractor>::New();
 	// renderWindowInteractor->SetRenderWindow(qvtkWidgetLeft->GetRenderWindow());
 	// VTK/Qt wedded
-	GetRenderWindow()->SetStereoTypeToRedBlue();
-	GetRenderWindow()->SetStereoRender(1);
+
 	
 	// Render and interact
 	//  vtkwid-> renderWindow->Render();

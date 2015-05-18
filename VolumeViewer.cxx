@@ -1011,3 +1011,33 @@ void VolumeViewer::on_actionCubic_triggered()
 	vtkwid->volumeProperty->SetInterpolationType(VTK_CUBIC_INTERPOLATION);
 	vtkwid->GetRenderWindow()->Render();
 }
+
+
+void VolumeViewer::on_actionAnaglyph_triggered()
+{
+	if (ui->actionAnaglyph->isChecked()){
+		vtkwid->GetRenderWindow()->SetStereoTypeToAnaglyph();
+		vtkwid->GetRenderWindow()->SetStereoRender(1);
+		vtkwid->GetRenderWindow()->Render();
+	}
+	else{
+		vtkwid->leftRenderer->ResetCamera();
+		vtkwid->GetRenderWindow()->SetStereoRender(0);
+		vtkwid->GetRenderWindow()->Render();
+	    }
+
+}
+
+void VolumeViewer::on_actionRed_Blue_triggered()
+{
+	if (ui->actionRed_Blue->isChecked()){
+		vtkwid->GetRenderWindow()->SetStereoTypeToRedBlue();
+		vtkwid->GetRenderWindow()->SetStereoRender(1);
+		vtkwid->GetRenderWindow()->Render();
+	}
+	else{
+		vtkwid->leftRenderer->ResetCamera();
+		vtkwid->GetRenderWindow()->SetStereoRender(0);
+		vtkwid->GetRenderWindow()->Render();
+	}
+}
