@@ -78,7 +78,7 @@
      <x>0</x>
      <y>0</y>
      <width>583</width>
-     <height>21</height>
+     <height>18</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -510,6 +510,14 @@
    </property>
    <property name="text">
     <string>Interlaced</string>
+   </property>
+  </action>
+  <action name="actionUpsample">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Upsample</string>
    </property>
   </action>
  </widget>

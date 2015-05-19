@@ -4,7 +4,7 @@
 #include <QVTKWidget.h>
 #include<QtCore>
 #include <vtkPolyDataMapper.h>
-#include <vtkQtTableView.h>
+//#include <vtkQtTableView.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkSmartPointer.h>
@@ -62,7 +62,7 @@
 #include<vtkOrientationMarkerWidget.h>
 //#include<vtkMatlabMexAdapter.h>
 #include<vtkProgressObserver.h>
-
+#include<vtkBMPReader.h>
 using namespace std;
 
 class vtkwidget : public QVTKWidget

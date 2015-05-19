@@ -114,7 +114,11 @@ void vtkwidget::render()
 
 	//mapper->SetInputConnection(reader->GetOutputPort());
 
-		mapper->SetRequestedRenderModeToRayCast();
+		//mapper->SetRequestedRenderModeToRayCast();
+	//if (input->GetActualMemorySize() > 0.8*(mapper->GetMaxMemoryInBytes())/1024)
+	//{
+	//	mapper->SetRequestedRenderModeToRayCast();
+	//}
 	
 
 	leftRenderer->ResetCamera();

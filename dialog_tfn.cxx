@@ -8,6 +8,8 @@
 #include<QModelIndex>
 #include<QFileDialog>
 #include<QTableWidgetItem>
+
+
 //This a dialog for adding a custom transfer function
 
 dialog_tfn::dialog_tfn(QWidget *parent) :

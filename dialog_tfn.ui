@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>551</width>
-    <height>203</height>
+    <width>558</width>
+    <height>509</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -59,7 +59,7 @@
      <x>450</x>
      <y>20</y>
      <width>79</width>
-     <height>170</height>
+     <height>182</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -107,17 +107,14 @@
     </item>
    </layout>
   </widget>
-  <widget class="QLabel" name="label">
+  <widget class="QWidget" name="Plot" native="true">
    <property name="geometry">
     <rect>
-     <x>50</x>
-     <y>230</y>
-     <width>331</width>
-     <height>181</height>
+     <x>10</x>
+     <y>220</y>
+     <width>431</width>
+     <height>281</height>
     </rect>
-   </property>
-   <property name="text">
-    <string/>
    </property>
   </widget>
  </widget>

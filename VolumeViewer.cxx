@@ -71,9 +71,9 @@
 #include<vtkArrayIteratorIncludes.h>
 #include<vtkBMPReader.h>
 #include<vtkDenseArray.h>
-
-
-
+#include<vtkImageResample.h>
+#include <vtkGPUInfo.h>
+#include <vtkGPUInfoList.h>
 
 using namespace std;
 std::string inputFilename;
@@ -269,7 +269,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 
 		// set filter to only search for bmp files
 		QStringList filters;
-		filters << "*.tiff" << "*.tif";
+		filters << "*.tiff" << "*.tif" << "*.bmp";
 		dir.setNameFilters(filters);
 
 		// Create list of all *.dcm filenames
@@ -346,15 +346,29 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 
 			vtkTIFFReader *imgseq = vtkTIFFReader::New();
 			imgseq->SetDataScalarTypeToShort();
+			imgseq->SetOrientationType(1);
 			imgseq->SetFileNames(filenames);
+			imgseq->SetOrientationType(ORIENTATION_LEFTTOP);
 			imgseq->Update();
 			//vtkwid->input = imgseq->GetOutput();
-			vtkwid->input->GetPointData()->SetScalars(imgseq->GetOutput()->GetPointData()->GetArray("Tiff Scalars"));
+
+			vtkwid->input->GetPointData()->SetScalars(imgseq->GetOutput()->GetPointData()->GetScalars());
+
+			vtkImageResample *imgrs = vtkImageResample::New();
+			imgrs->SetInputData(vtkwid->input);
+			imgrs->SetInterpolationModeToNearestNeighbor();
+			imgrs->SetAxisMagnificationFactor(0, 0.5);
+			imgrs->SetAxisMagnificationFactor(1, 0.5);
+			imgrs->SetAxisMagnificationFactor(2, 0.5);
+			imgrs->Update();
+
+			vtkwid->input->ReleaseData();
+			vtkwid->input = imgrs->GetOutput();
 			
 			vtkwid->initialize();
 			ui->label->setText(QString::number(vtkwid->input->GetActualMemorySize()));
 			imgseq->Delete();
-
+			imgrs->Delete();
 			/*
 			//clock_t start = clock();
 			for (__int64 k = 0; k <N; k++)
@@ -445,12 +459,21 @@ void VolumeViewer::openvol(string inputFilename)
 		{
 			vtkTIFFReader *rtiff = vtkTIFFReader::New();
 			rtiff->SetFileName(inputFilename.c_str());
-			rtiff->SetOrientationType(ORIENTATION_TOPLEFT);
+			rtiff->SetOrientationType(ORIENTATION_LEFTTOP);
+
 			rtiff->Update();
-			vtkwid->input = rtiff->GetOutput();
-			
+			vtkImageResample *imgrs = vtkImageResample::New();
+			imgrs->SetInputData(rtiff->GetOutput());
+			imgrs->SetInterpolationModeToNearestNeighbor();
+			imgrs->SetAxisMagnificationFactor(0, 0.5);
+			imgrs->SetAxisMagnificationFactor(1, 0.5);
+			imgrs->SetAxisMagnificationFactor(2, 0.5);
+			imgrs->Update();
+			vtkwid->input = imgrs->GetOutput();
+			//ui->label->setText(QString::number(value));
 			vtkwid->initialize();
 			rtiff->Delete();
+			imgrs->Delete();
 
 		}
 		else if (ext == QString("mat"))
