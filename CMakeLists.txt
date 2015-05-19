@@ -13,6 +13,9 @@ include(${VTK_USE_FILE})
  find_package(Qt5Widgets REQUIRED)
  include_directories(${Qt5Widgets_INCLUDES})
 
+find_package(Qt5PrintSupport REQUIRED)
+ include_directories(${Qt5PrintSupport_INCLUDES})
+
 
  # We need add -DQT_WIDGETS_LIB when using QtWidgets in Qt 5.
   add_definitions(${Qt5Widgets_DEFINITIONS})

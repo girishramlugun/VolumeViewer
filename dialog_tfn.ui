@@ -107,7 +107,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="Plot" native="true">
+  <widget class="QCustomPlot" name="Plot" native="true">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -118,6 +118,14 @@
    </property>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QCustomPlot</class>
+   <extends>QWidget</extends>
+   <header location="global">qcustomplot.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
