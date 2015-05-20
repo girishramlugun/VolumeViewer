@@ -3757,6 +3757,8 @@ protected:
   
   // non-virtual methods:
   QPen mainPen() const;
+
+
 };
 
 #endif // QCUSTOMPLOT_H

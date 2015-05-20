@@ -10,6 +10,8 @@
 #include<QTableWidgetItem>
 
 
+
+
 //This a dialog for adding a custom transfer function
 
 dialog_tfn::dialog_tfn(QWidget *parent) :
@@ -17,9 +19,7 @@ dialog_tfn::dialog_tfn(QWidget *parent) :
     ui(new Ui::dialog_tfn)
 {
     ui->setupUi(this);
-
-
-
+	
 }
 
 dialog_tfn::~dialog_tfn()
@@ -44,7 +44,7 @@ void dialog_tfn::on_settfn_clicked()
     rowcnt = ui->tableWidget->rowCount();
     model = ui->tableWidget->model();
     emit sendtfn(rowcnt);
-
+	plot();
 
 }
 
@@ -81,16 +81,82 @@ void dialog_tfn::on_save_clicked()
 		}
 }
 
+void dialog_tfn::plot()
+{
+	ui->Plot->clearGraphs(); 
+	model = ui->tableWidget->model();
+	QModelIndex index;
+	QVector<double> In(rowcnt), R(rowcnt),G(rowcnt), B(rowcnt);
+	double val[4];
+	for (int r = 0; r < ui->tableWidget->rowCount(); ++r)
+	
+	{
+
+
+		for (int j = 0; j<4; j++)
+		{
+			index = model->index(r, j);
+			val[j] = model->data(index).toDouble();
+			
+		}
+		In[r] = val[0]; R[r] = val[1]; G[r] = val[2]; B[r] = val[3];
+
+	}
+	
+
+	QCPGraph *pointsR = new QCPGraph(ui->Plot->xAxis, ui->Plot->yAxis);
+	QCPGraph *pointsG = new QCPGraph(ui->Plot->xAxis, ui->Plot->yAxis);
+	QCPGraph *pointsB = new QCPGraph(ui->Plot->xAxis, ui->Plot->yAxis);
+
+	pointsR->setData(In, R);
+	pointsR->setLineStyle(QCPGraph::lsLine);
+	pointsR->setPen(QPen(QBrush(Qt::red), 1));
+	ui->Plot->addPlottable(pointsR);
+
+	pointsG->setData(In, G);
+	pointsG->setLineStyle(QCPGraph::lsLine);
+	pointsG->setPen(QPen(QBrush(Qt::green), 1));
+	ui->Plot->addPlottable(pointsG);
+
+	pointsB->setData(In, B);
+	pointsB->setLineStyle(QCPGraph::lsLine);
+	pointsB->setPen(QPen(QBrush(Qt::blue), 1));
+	ui->Plot->addPlottable(pointsB);
+	/*
+	ui->Plot->addGraph();
+	
+	ui->Plot->graph(0)->setPen(QPen(Qt::lightGray));
+
+	ui->Plot->graph(0)->setData(In, Va);
+	ui->Plot->addGraph();
+	ui->Plot->graph(1)->setPen(QPen(Qt::yellow));
+
+	ui->Plot->graph(1)->setData(In, Op);
+	*/
+	// set axes ranges, so we see all data:
+	//ui->Plot->graph(0)->rescaleAxes();
+	ui->Plot->replot();
+}
+
+
 void dialog_tfn::loadlut(QStringList LUTList)
 {
+	ui->tableWidget->clearContents();
 	int row = 0;
-	ui->tableWidget->setColumnCount(LUTList.size());
-	ui->tableWidget->insertRow(row);
-	for (int x = 0; x < 4; x++){
-		QTableWidgetItem *test = new QTableWidgetItem(LUTList.at(x));
-		ui->tableWidget->setItem(row, x, test);
-		row++;
+	int rc = LUTList.size() / 4;
+	ui->tableWidget->setRowCount(rc);
+	ui->tableWidget->setColumnCount(4);
+	int x = 0;
+	for (int r = 0; r < rc; r++){
+		for (int c = 0; c < 4; c++)
+		{
+			QTableWidgetItem *test = new QTableWidgetItem(LUTList.at(x));
+			ui->tableWidget->setItem(r, c, test);
+			x++;
+		}
 	}
+	rowcnt = ui->tableWidget->rowCount();
+	plot();
 	this->show();
-
 }
+

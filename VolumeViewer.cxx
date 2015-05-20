@@ -174,6 +174,7 @@ VolumeViewer::VolumeViewer()
   connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(diatfn,SIGNAL(sendtfn(int)),this,SLOT(setvolcol(int)));
   connect(diaopa,SIGNAL(sendopa(int)),this,SLOT(updateopacity(int)));
+  
   }
 
 void VolumeViewer::slotExit() 
@@ -575,7 +576,7 @@ void VolumeViewer::on_actionLoadLUT_triggered()
 		if (flut.open(QIODevice::ReadOnly)){
 			while (!flut.atEnd()){
 				QString line = flut.readLine();
-				listA = line.split(",");
+				listA.append(line.split(","));
 			}
 
 		}
@@ -583,6 +584,7 @@ void VolumeViewer::on_actionLoadLUT_triggered()
 		
 
 flut.close();
+
 diatfn->loadlut(listA);
 	}
 }

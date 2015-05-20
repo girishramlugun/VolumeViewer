@@ -22,6 +22,10 @@ public:
     int rowcnt;
 	QStandardItemModel*mod;
 	void loadlut(QStringList);
+	void plot();
+	
+
+
 signals:
     void sendtfn (int);
 
@@ -31,14 +35,12 @@ private slots:
     void on_delrow_clicked();
 
 	void on_save_clicked();
-
 	
-
     void on_settfn_clicked();
+
 
 private:
     Ui::dialog_tfn *ui;
-
 
 };
 
