@@ -72,8 +72,9 @@
 #include<vtkBMPReader.h>
 #include<vtkDenseArray.h>
 #include<vtkImageResample.h>
-#include <vtkGPUInfo.h>
-#include <vtkGPUInfoList.h>
+
+
+
 
 using namespace std;
 std::string inputFilename;
@@ -142,6 +143,10 @@ VolumeViewer::VolumeViewer()
 {
 	this->ui = new Ui_VolumeViewer;
     this->ui->setupUi(this);
+
+
+	
+	
 	
  
     //Load custom transfer function dialog
@@ -347,13 +352,14 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 
 			vtkTIFFReader *imgseq = vtkTIFFReader::New();
 			imgseq->SetDataScalarTypeToShort();
-			imgseq->SetOrientationType(1);
+			
 			imgseq->SetFileNames(filenames);
-			imgseq->SetOrientationType(ORIENTATION_LEFTTOP);
+			
 			imgseq->Update();
-			//vtkwid->input = imgseq->GetOutput();
+
 
 			vtkwid->input->GetPointData()->SetScalars(imgseq->GetOutput()->GetPointData()->GetScalars());
+			
 
 			vtkImageResample *imgrs = vtkImageResample::New();
 			imgrs->SetInputData(vtkwid->input);
@@ -367,9 +373,10 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			vtkwid->input = imgrs->GetOutput();
 			
 			vtkwid->initialize();
-			ui->label->setText(QString::number(vtkwid->input->GetActualMemorySize()));
+			ui->label->setText(QString::number(vtkwid->mapper->GetMaxMemoryInBytes()));
 			imgseq->Delete();
 			imgrs->Delete();
+
 			/*
 			//clock_t start = clock();
 			for (__int64 k = 0; k <N; k++)

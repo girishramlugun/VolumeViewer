@@ -58,7 +58,7 @@ vtkwidget::vtkwidget(QWidget *parent) :
 void vtkwidget::initialize()
 {
 
-
+	
 
 	//Set default light parameters
 	
@@ -110,7 +110,7 @@ void vtkwidget::initialize()
 
 void vtkwidget::render()
 {
-	
+	mapper->SetMaxMemoryInBytes(786432000);
 
 	//mapper->SetInputConnection(reader->GetOutputPort());
 

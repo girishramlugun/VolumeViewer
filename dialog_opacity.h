@@ -28,6 +28,10 @@ private slots:
 
     void on_bboxopa_accepted();
 
+	void plotopa();
+
+	void on_SetOpa_clicked();
+
 private:
     Ui::dialog_opacity *ui;
 

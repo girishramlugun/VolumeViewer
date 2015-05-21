@@ -62,7 +62,7 @@
 #include<vtkOrientationMarkerWidget.h>
 //#include<vtkMatlabMexAdapter.h>
 #include<vtkProgressObserver.h>
-#include<vtkBMPReader.h>
+
 using namespace std;
 
 class vtkwidget : public QVTKWidget

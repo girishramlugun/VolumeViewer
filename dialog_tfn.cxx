@@ -19,7 +19,28 @@ dialog_tfn::dialog_tfn(QWidget *parent) :
     ui(new Ui::dialog_tfn)
 {
     ui->setupUi(this);
-	
+    // give the axes some labels:
+    ui->Plot->xAxis->setLabel("Intensity");
+    ui->Plot->yAxis->setLabel("Value");
+    // set axes ranges, so we see all data:
+    ui->Plot->xAxis->setRange(0, 255);
+    ui->Plot->yAxis->setRange(0, 1);
+	ui->Plot->setBackground(Qt::black);
+	ui->Plot->xAxis->setLabelColor(Qt::white);
+	ui->Plot->yAxis->setLabelColor(Qt::white);
+	ui->Plot->yAxis->setTickLabelColor(Qt::white);
+	ui->Plot->xAxis->setTickLabelColor(Qt::white);
+	ui->Plot->xAxis->grid()->setVisible(false);
+	ui->Plot->yAxis->grid()->setVisible(false);
+	ui->Plot->xAxis->setTickPen(QPen(Qt::white, 1));
+	ui->Plot->yAxis->setTickPen(QPen(Qt::white, 1));
+	ui->Plot->xAxis->setSubTickPen(QPen(Qt::white, 1));
+	ui->Plot->yAxis->setSubTickPen(QPen(Qt::white, 1));
+	ui->Plot->xAxis->setBasePen(QPen(Qt::white, 1));
+	ui->Plot->yAxis->setBasePen(QPen(Qt::white, 1));
+
+	ui->Plot->yAxis->grid()->setVisible(false);
+
 }
 
 dialog_tfn::~dialog_tfn()
@@ -43,8 +64,9 @@ void dialog_tfn::on_settfn_clicked()
 {
     rowcnt = ui->tableWidget->rowCount();
     model = ui->tableWidget->model();
-    emit sendtfn(rowcnt);
 	plot();
+	emit sendtfn(rowcnt);
+	
 
 }
 
@@ -83,6 +105,7 @@ void dialog_tfn::on_save_clicked()
 
 void dialog_tfn::plot()
 {
+	
 	ui->Plot->clearGraphs(); 
 	model = ui->tableWidget->model();
 	QModelIndex index;

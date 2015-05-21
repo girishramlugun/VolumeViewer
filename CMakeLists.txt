@@ -19,6 +19,7 @@ find_package(Qt5PrintSupport REQUIRED)
 
  # We need add -DQT_WIDGETS_LIB when using QtWidgets in Qt 5.
   add_definitions(${Qt5Widgets_DEFINITIONS})
+  add_definitions(${Qt5PrintSupport_DEFINITIONS})
 
   # Executables fail to build with Qt 5 in the default configuration
   # without -fPIE. We add that here.
@@ -46,7 +47,7 @@ file(GLOB CXX_FILES *.cxx)
   add_executable(VolumeViewer WIN32 MACOSX_BUNDLE ${CXX_FILES} ${UISrcs} ${MOCSrcs} ${VolumeViewer_RESOURCES_RCC})
 
 
-    target_link_libraries(VolumeViewer ${QT_QTMAIN_LIBRARY} ${VTK_LIBRARIES} ${Qt5Widgets_LIBRARIES})
+    target_link_libraries(VolumeViewer ${QT_QTMAIN_LIBRARY} ${VTK_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5PrintSupport_LIBRARIES} )
 
 
 IF(WIN32) # Check if we are on Windows

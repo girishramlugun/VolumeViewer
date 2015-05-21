@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>411</width>
-    <height>170</height>
+    <width>666</width>
+    <height>738</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -63,13 +63,13 @@
     </property>
    </item>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>240</x>
      <y>10</y>
-     <width>158</width>
-     <height>83</height>
+     <width>162</width>
+     <height>89</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -99,7 +99,38 @@
     </item>
    </layout>
   </widget>
+  <widget class="QCustomPlot" name="opaplot" native="true">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>180</y>
+     <width>601</width>
+     <height>541</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="SetOpa">
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>120</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Set</string>
+   </property>
+  </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QCustomPlot</class>
+   <extends>QWidget</extends>
+   <header location="global">qcustomplot.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>
