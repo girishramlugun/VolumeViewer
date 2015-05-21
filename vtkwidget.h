@@ -70,7 +70,7 @@ class vtkwidget : public QVTKWidget
     Q_OBJECT
 public:
 
-	void initialize();
+	void initialize(vtkImageData *);
 
 	
 	void render();
@@ -115,7 +115,7 @@ public:
 
    vtkSmartPointer<vtkTIFFReader>imseq;
 
-   vtkSmartPointer<vtkImageData>imgdata;
+   //vtkSmartPointer<vtkImageData>imgdata;
 
    vtkSmartPointer<vtkDataSetMapper>dsmapper;
    
@@ -135,7 +135,9 @@ signals:
    void updatelights(double, double, double, double, double, double, double, double, double, double, double, double, double, double);
    void updatevolcol(double);
    void updatewincol(double);
-
+   void readvti(string);
+   void readtif(string);
+   void resample(vtkImageData*);
 	   
 
 };

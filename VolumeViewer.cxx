@@ -372,7 +372,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			vtkwid->input->ReleaseData();
 			vtkwid->input = imgrs->GetOutput();
 			
-			vtkwid->initialize();
+		//	vtkwid->initialize();
 			ui->label->setText(QString::number(vtkwid->mapper->GetMaxMemoryInBytes()));
 			imgseq->Delete();
 			imgrs->Delete();
@@ -453,36 +453,12 @@ void VolumeViewer::openvol(string inputFilename)
 
 		if (ext == QString("vti"))
 		{
-			vtkXMLImageDataReader *rvti = vtkXMLImageDataReader::New();
-			rvti->SetFileName(inputFilename.c_str());
-			rvti->Update();
-			vtkwid->input = rvti->GetOutput();
-			
-		//	vtkwid->reader = vtkwid->readervti;
-			vtkwid->initialize();
-			rvti->Delete();
+			vtkwid->readvti(inputFilename);
 		}
 
 		else if (ext == QString("tif"))
 		{
-			vtkTIFFReader *rtiff = vtkTIFFReader::New();
-			rtiff->SetFileName(inputFilename.c_str());
-			rtiff->SetOrientationType(ORIENTATION_LEFTTOP);
-
-			rtiff->Update();
-			vtkImageResample *imgrs = vtkImageResample::New();
-			imgrs->SetInputData(rtiff->GetOutput());
-			imgrs->SetInterpolationModeToNearestNeighbor();
-			imgrs->SetAxisMagnificationFactor(0, 0.5);
-			imgrs->SetAxisMagnificationFactor(1, 0.5);
-			imgrs->SetAxisMagnificationFactor(2, 0.5);
-			imgrs->Update();
-			vtkwid->input = imgrs->GetOutput();
-			//ui->label->setText(QString::number(value));
-			vtkwid->initialize();
-			rtiff->Delete();
-			imgrs->Delete();
-
+			vtkwid->readtif(inputFilename);
 		}
 		else if (ext == QString("mat"))
 		{
@@ -535,7 +511,7 @@ void VolumeViewer::openvol(string inputFilename)
 
 		*/
 
-		vtkwid->initialize();
+	//	vtkwid->initialize();
 		
 
 	}

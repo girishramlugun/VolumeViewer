@@ -1,10 +1,10 @@
 #include "vtkwidget.h"
 #include<vtkMarchingCubes.h>
 #include<vtkPolyDataConnectivityFilter.h>
-
-
-
-
+#include<vtkImageResample.h>
+#include<vtkTIFFReader.h>
+#include<vtk_tiff.h>
+#include <math.h> 
 
 vtkwidget::vtkwidget(QWidget *parent) :
     QVTKWidget(parent)
@@ -41,7 +41,7 @@ vtkwidget::vtkwidget(QWidget *parent) :
 
 	imseq = vtkSmartPointer<vtkTIFFReader>::New();
 
-	imgdata = vtkSmartPointer<vtkImageData>::New();
+	//imgdata = vtkSmartPointer<vtkImageData>::New();
 
 	dsmapper = vtkSmartPointer<vtkDataSetMapper>::New();
 
@@ -55,7 +55,7 @@ vtkwidget::vtkwidget(QWidget *parent) :
 
 }
 
-void vtkwidget::initialize()
+void vtkwidget::initialize(vtkImageData *input)
 {
 
 	
@@ -110,7 +110,7 @@ void vtkwidget::initialize()
 
 void vtkwidget::render()
 {
-	mapper->SetMaxMemoryInBytes(786432000);
+	
 
 	//mapper->SetInputConnection(reader->GetOutputPort());
 
@@ -248,3 +248,53 @@ void vtkwidget::updatewincol(double wcol)
 }
 
 
+void vtkwidget::readvti(string inputFilename)
+{
+	vtkXMLImageDataReader *rvti = vtkXMLImageDataReader::New();
+	rvti->SetFileName(inputFilename.c_str());
+	rvti->Update();
+	resample(rvti->GetOutput());
+	rvti->Delete();
+	
+}
+
+void vtkwidget::readtif(string inputFilename)
+{
+	vtkTIFFReader *rtiff = vtkTIFFReader::New();
+	rtiff->SetFileName(inputFilename.c_str());
+	rtiff->SetOrientationType(ORIENTATION_LEFTTOP);
+	rtiff->Update();
+	
+	
+	resample(rtiff->GetOutput());
+	rtiff->Delete();
+
+}
+
+void vtkwidget::resample(vtkImageData *imgdata)
+{
+	double memsize = imgdata->GetActualMemorySize()*1024;
+	double gpumem = mapper->GetMaxMemoryInBytes();
+    double sf = 1/(ceil( memsize / gpumem));
+	
+	
+
+
+	if (sf<1){
+	vtkSmartPointer <vtkImageResample> imgrs =vtkSmartPointer <vtkImageResample>::New();
+	imgrs->SetInputData(imgdata);
+	imgrs->SetInterpolationModeToNearestNeighbor();
+	imgrs->SetAxisMagnificationFactor(0, sf);
+	imgrs->SetAxisMagnificationFactor(1, sf);
+	imgrs->SetAxisMagnificationFactor(2, sf);
+	imgrs->Update();
+
+	initialize(imgrs->GetOutput());
+
+	}
+	else{
+	
+		initialize(imgdata);
+	    }
+
+}
