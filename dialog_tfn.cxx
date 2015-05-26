@@ -38,7 +38,6 @@ dialog_tfn::dialog_tfn(QWidget *parent) :
 	ui->Plot->yAxis->setSubTickPen(QPen(Qt::white, 1));
 	ui->Plot->xAxis->setBasePen(QPen(Qt::white, 1));
 	ui->Plot->yAxis->setBasePen(QPen(Qt::white, 1));
-
 	ui->Plot->yAxis->grid()->setVisible(false);
 
 }
@@ -183,3 +182,19 @@ void dialog_tfn::loadlut(QStringList LUTList)
 	this->show();
 }
 
+void dialog_tfn::plothist(QVector<double> freq)
+{
+	QVector<double> ind(256);
+	for (int j = 0; j < 256; j++)
+	{
+		ind[j] = j;
+	}
+	QCPBars *hist = new QCPBars(ui->Plot->xAxis, ui->Plot->yAxis);
+	hist->setData(ind, freq);
+	hist->setPen(QPen(QBrush(Qt::gray), 1));
+	//hist->setBrush(QBrush(Qt::gray), 1);
+	ui->Plot->addPlottable(hist);
+	ui->Plot->xAxis->setRange(0, 255);
+	ui->Plot->yAxis->setRange(0, 300000);
+	ui->Plot->replot();
+}

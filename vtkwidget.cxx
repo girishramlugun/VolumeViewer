@@ -5,6 +5,13 @@
 #include<vtkTIFFReader.h>
 #include<vtk_tiff.h>
 #include <math.h> 
+#include <vtkGPUInfo.h>
+#include <vtkGPUInfoList.h>
+#include<vtkStringArray.h>
+#include <vtkPointData.h>
+#include<vtkImageAccumulate.h>
+#include<QVector>
+#include<vtkImageMagnitude.h>
 
 vtkwidget::vtkwidget(QWidget *parent) :
     QVTKWidget(parent)
@@ -59,7 +66,7 @@ void vtkwidget::initialize(vtkImageData *input)
 {
 
 	
-
+	
 	//Set default light parameters
 	
 	LightKit->SetKeyLightWarmth(0.6);LightKit->SetKeyLightIntensity(0.75); LightKit->SetKeyLightElevation(50); LightKit->SetKeyLightAzimuth(10);
@@ -111,7 +118,7 @@ void vtkwidget::initialize(vtkImageData *input)
 void vtkwidget::render()
 {
 	
-
+	mapper->SetBlendModeToComposite();
 	//mapper->SetInputConnection(reader->GetOutputPort());
 
 		//mapper->SetRequestedRenderModeToRayCast();
@@ -273,13 +280,16 @@ void vtkwidget::readtif(string inputFilename)
 
 void vtkwidget::resample(vtkImageData *imgdata)
 {
-	double memsize = imgdata->GetActualMemorySize()*1024;
-	double gpumem = mapper->GetMaxMemoryInBytes();
-    double sf = 1/(ceil( memsize / gpumem));
+	//Get the Graphics memory and find a scaling factor to match that, otherwise, render the imagedata without scaling
+	double memsize = imgdata->GetActualMemorySize() * 1024;
+	vtkGPUInfo *gpi = vtkGPUInfo::New();
+	long vram = gpi->GetDedicatedVideoMemory();
+	if (vram = 134217728){
+	mapper->SetMaxMemoryInBytes(805306368);
+}
+	//double gpumem = mapper->GetMaxMemoryInBytes();
+	double sf = 1 / (ceil(memsize / mapper->GetMaxMemoryInBytes()));
 	
-	
-
-
 	if (sf<1){
 	vtkSmartPointer <vtkImageResample> imgrs =vtkSmartPointer <vtkImageResample>::New();
 	imgrs->SetInputData(imgdata);
@@ -288,13 +298,64 @@ void vtkwidget::resample(vtkImageData *imgdata)
 	imgrs->SetAxisMagnificationFactor(1, sf);
 	imgrs->SetAxisMagnificationFactor(2, sf);
 	imgrs->Update();
-
+	buildhist(imgrs->GetOutput());
 	initialize(imgrs->GetOutput());
+	}
+
+	else
+	{
+		buildhist(imgdata);
+		initialize(imgdata);
+	}
+	
+
+
+
+}
+
+void vtkwidget::readimseq(vtkStringArray *filenames, int N)
+{
+	vtkSmartPointer<vtkTIFFReader>readimg = vtkSmartPointer<vtkTIFFReader>::New();
+	readimg->SetFileName(filenames->GetValue(0));
+	readimg->Update();
+	int dims[3]; int ext[6];
+	readimg->GetOutput()->GetDimensions(dims);
+	dims[2] = N;
+
+	vtkTIFFReader *imgseq = vtkTIFFReader::New();
+	imgseq->SetDataScalarTypeToShort();
+	imgseq->SetFileNames(filenames);
+	imgseq->Update();
+	
+	vtkImageData *imse = vtkImageData::New();
+	imse->SetDimensions(dims);
+	imse->GetPointData()->SetScalars(imgseq->GetOutput()->GetPointData()->GetScalars());
+	
+	resample(imse);
+
+	imgseq->Delete();
+	imse->Delete();
+}
+
+void vtkwidget::buildhist(vtkImageData* imgdata)
+{
+	vtkSmartPointer<vtkImageAccumulate> histogram =
+		vtkSmartPointer<vtkImageAccumulate>::New();
+	histogram->SetInputData(imgdata);
+	histogram->SetComponentExtent(0, 255, 0, 0, 0, 0);
+	histogram->SetComponentOrigin(0, 0, 0);
+	histogram->SetComponentSpacing(1, 0, 0);
+	histogram->IgnoreZeroOn();
+	histogram->Update();
+
+	QVector<double> freq(256);
+	int* output = static_cast<int*>(histogram->GetOutput()->GetScalarPointer());
+
+	for (int j = 0; j < 256; ++j)
+	{
+
+		freq[j] = *output++;
 
 	}
-	else{
-	
-		initialize(imgdata);
-	    }
-
+	emit sendhist(freq);
 }

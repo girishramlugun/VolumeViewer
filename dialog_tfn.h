@@ -39,8 +39,12 @@ private slots:
     void on_settfn_clicked();
 
 
+
 private:
     Ui::dialog_tfn *ui;
+
+public slots:
+     void plothist(QVector<double> freq);
 
 };
 

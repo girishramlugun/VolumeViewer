@@ -72,6 +72,8 @@
 #include<vtkBMPReader.h>
 #include<vtkDenseArray.h>
 #include<vtkImageResample.h>
+#include <vtkGPUInfo.h>
+#include <vtkGPUInfoList.h>
 
 
 
@@ -146,8 +148,6 @@ VolumeViewer::VolumeViewer()
 
 
 	
-	
-	
  
     //Load custom transfer function dialog
     diatfn = new dialog_tfn(this);
@@ -178,6 +178,7 @@ VolumeViewer::VolumeViewer()
   // Set up action signals and slots
   connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(diatfn,SIGNAL(sendtfn(int)),this,SLOT(setvolcol(int)));
+  
   connect(diaopa,SIGNAL(sendopa(int)),this,SLOT(updateopacity(int)));
   
   }
@@ -254,21 +255,11 @@ void VolumeViewer::openimg(string inputimgname)
 void VolumeViewer::on_actionImage_Sequence_triggered()
 {
 	//QString Filename = QFileDialog::getOpenFileName(this, tr("Open Image"), "", tr("TIFF (*.tif);;PNG Files (*.png)"));
-	//const char = QFileDialog::getExistingDirectory(this, tr("Set Directory"), "");
+
 	QString Dir_Str = QFileDialog::getExistingDirectory(this, tr("Set Directory"), "");
 
-	//vtkSmartPointer<vtkDirectory> dir = vtkSmartPointer<vtkDirectory>::New();
-	//vtkSmartPointer<vtkStringArray> starr = vtkSmartPointer<vtkStringArray>::New();
-	//string dirstr = Dir_Str.toStdString();
-	//const char *dirchar = dirstr.c_str();
-	//dir->Open(dirchar);
-	//starr = dir->GetFiles();
-	//starr->
+
 	if (!Dir_Str.isEmpty()){
-
-
-		//vtkSmartPointer<vtkImageReader2> imgrd = vtkSmartPointer<vtkImageReader2>::New();
-
 
 		// set path to user chosen folder
 		QDir dir = QDir(Dir_Str);
@@ -291,41 +282,18 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			filenames->SetName("List_of_Filenames");
 			for (int i = 0; i < list.size(); i++)
 			{
-
-
-				QString temp = Dir_Str + "/" + list.at(i);
+     			QString temp = Dir_Str + "/" + list.at(i);
 				QByteArray tempbyte = temp.toUtf8();
-
-
 
 				//to assign data use setnumberofvalues and setvalue or insertnextvalue
 				filenames->SetValue(i, tempbyte.data());
 
-				//filenames->InsertNextValue(temp);
-
-
+				
 			}
-
-			vtkSmartPointer<vtkTIFFReader>readimg = vtkSmartPointer<vtkTIFFReader>::New();
-			readimg->SetFileName(filenames->GetValue(0));
-			readimg->Update();
-
-			//int dims[6]; readimg->GetOutput()->GetInformation();
-			//readimg->GetOutput()->GetExtent(dims);
-
-			int dims[3]; int ext[6];
-			readimg->GetOutput()->GetDimensions(dims);
-			
-
-			
 			int N = list.size();
-			//__int64 dim1, dim2, dim3;
-			
-			
-			dims[2] = N;
-			//dim1 = dims[0]; dim2 = dims[1]; dim3 = dims[2];
-			//ui->label->setText(QString::number(ext[0]) + QString::number(ext[1]) + QString::number(ext[2]));
-			
+			//Read first image to extract dimensions
+
+
 			//Create new render window and connect signals to slots
 			vtkwid = new vtkwidget;
 			ui->actionClip->setChecked(false);
@@ -338,88 +306,10 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			connect(diacol, SIGNAL(volcol(double)), vtkwid, SLOT(updatevolcol(double)));
 			connect(diacol, SIGNAL(wincol(double)), vtkwid, SLOT(updatewincol(double)));
 	
-			
-			
-			//__int64 npoints = (dim1*dim2*dim3);
-			vtkwid->input->SetDimensions(dims);
-			//vtkSmartPointer<vtkUnsignedShortArray> volarray = vtkSmartPointer<vtkUnsignedShortArray>::New();
-			
-			//volarray->SetNumberOfComponents(1);
-			//vtkwid->input->AllocateScalars(VTK_UNSIGNED_SHORT, 1);
-			
-			//volarray->SetNumberOfValues(npoints);
+			vtkwid->readimseq(filenames, N);
 
 
-			vtkTIFFReader *imgseq = vtkTIFFReader::New();
-			imgseq->SetDataScalarTypeToShort();
-			
-			imgseq->SetFileNames(filenames);
-			
-			imgseq->Update();
-
-
-			vtkwid->input->GetPointData()->SetScalars(imgseq->GetOutput()->GetPointData()->GetScalars());
-			
-
-			vtkImageResample *imgrs = vtkImageResample::New();
-			imgrs->SetInputData(vtkwid->input);
-			imgrs->SetInterpolationModeToNearestNeighbor();
-			imgrs->SetAxisMagnificationFactor(0, 0.5);
-			imgrs->SetAxisMagnificationFactor(1, 0.5);
-			imgrs->SetAxisMagnificationFactor(2, 0.5);
-			imgrs->Update();
-
-			vtkwid->input->ReleaseData();
-			vtkwid->input = imgrs->GetOutput();
-			
-		//	vtkwid->initialize();
-			ui->label->setText(QString::number(vtkwid->mapper->GetMaxMemoryInBytes()));
-			imgseq->Delete();
-			imgrs->Delete();
-
-			/*
-			//clock_t start = clock();
-			for (__int64 k = 0; k <N; k++)
-			{
-				
-				//vtkwid->imseq->SetFileName(filenames->GetValue(k));
-				vtkwid->imseq->SetFileNames(filenames);
-				vtkwid->imseq->Update();
-				//vtkImageData *img = vtkwid->imseq->GetOutput();
-				
-				vtkDataArray *vals = vtkwid->imseq->GetOutput()->GetPointData()->GetArray("Tiff Scalars");
-			
-				vals->SetNumberOfComponents(1);
-				__int64 vals64 = vals->GetNumberOfTuples();
-				__int64 offset = k*vals64;
-				
-				//vtkArrayIterator *iter = volarray->NewIterator();
-				/*
-				switch (volarray->GetDataType())
-				{
-					vtkArrayIteratorTemplateMacro(volarray,setval(vtkDABegin,VTKDAEnd))
-				}
-				
-				
-				for (__int64 j = 0; j < vals->GetNumberOfTuples(); j++)
-					
-				{
-					
-					volarray->SetValue(offset + j, vals->GetComponent(j, 0));
-					
-				}
-				
-				
-			}
-			*/
-		//	ui->label->setText(QString::number(vals->GetActualMemorySize()));
-		//	vtkwid->input->SetSpacing(1.0, 1.0, 1.0);
-		//	vtkwid->input->SetOrigin(0.0, 0.0, 0.0);
-			//vtkwid->input = imgseq->GetOutput();
-			
-			
-
-					}
+		}
 		
 	}
 	
@@ -450,15 +340,19 @@ void VolumeViewer::openvol(string inputFilename)
 			SLOT(updatelights(double, double, double, double, double, double, double, double, double, double, double, double, double, double)));
 		connect(diacol, SIGNAL(volcol(double)), vtkwid, SLOT(updatevolcol(double)));
 		connect(diacol, SIGNAL(wincol(double)), vtkwid, SLOT(updatewincol(double)));
-
+		connect(vtkwid, SIGNAL(sendhist(QVector<double>)), diatfn, SLOT(plothist(QVector<double>)));
 		if (ext == QString("vti"))
 		{
 			vtkwid->readvti(inputFilename);
+			
 		}
 
 		else if (ext == QString("tif"))
 		{
 			vtkwid->readtif(inputFilename);
+			//ui->label->setText(QString::number(vtkwid->mapper->GetMaxMemoryInBytes()));
+
+			
 		}
 		else if (ext == QString("mat"))
 		{
@@ -665,6 +559,8 @@ vtkwid->GetRenderWindow()->Render();
 
 }
 
+
+
 void VolumeViewer::on_actionSave_Screenshot_triggered()
 {
     if ( vtkwid->isVisible())
@@ -676,7 +572,7 @@ void VolumeViewer::on_actionSave_Screenshot_triggered()
     vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter =
     vtkSmartPointer<vtkWindowToImageFilter>::New();
     windowToImageFilter->SetInput(vtkwid->GetRenderWindow());
-    windowToImageFilter->SetMagnification(1); //set the resolution of the output image (2 times the current resolution of vtk render window)
+    windowToImageFilter->SetMagnification(1); //set the resolution of the output image (1 times the current resolution of vtk render window)
     windowToImageFilter->SetInputBufferTypeToRGBA(); //also record the alpha (transparency) channel
     windowToImageFilter->Update();
     vtkSmartPointer<vtkPNGWriter> writer =

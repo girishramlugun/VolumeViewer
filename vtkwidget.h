@@ -62,7 +62,7 @@
 #include<vtkOrientationMarkerWidget.h>
 //#include<vtkMatlabMexAdapter.h>
 #include<vtkProgressObserver.h>
-
+#include<QVector>
 using namespace std;
 
 class vtkwidget : public QVTKWidget
@@ -128,6 +128,8 @@ public:
 
 signals:
 
+   void sendhist(QVector<double>);
+
    public slots :
 	   
    void setbg(double, double, double);
@@ -138,7 +140,8 @@ signals:
    void readvti(string);
    void readtif(string);
    void resample(vtkImageData*);
-	   
+   void readimseq(vtkStringArray*, int);
+   void buildhist(vtkImageData*);
 
 };
 
