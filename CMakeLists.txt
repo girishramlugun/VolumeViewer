@@ -16,6 +16,8 @@ include(${VTK_USE_FILE})
 find_package(Qt5PrintSupport REQUIRED)
  include_directories(${Qt5PrintSupport_INCLUDES})
 
+include_directories(C:/Program\ Files/MATLAB/R2013a/extern/include)
+
 
  # We need add -DQT_WIDGETS_LIB when using QtWidgets in Qt 5.
   add_definitions(${Qt5Widgets_DEFINITIONS})

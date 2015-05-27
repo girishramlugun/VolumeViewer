@@ -156,7 +156,7 @@ void dialog_tfn::plot()
 	ui->Plot->graph(1)->setData(In, Op);
 	*/
 	// set axes ranges, so we see all data:
-	//ui->Plot->graph(0)->rescaleAxes();
+	ui->Plot->rescaleAxes();
 	ui->Plot->replot();
 }
 
@@ -189,12 +189,16 @@ void dialog_tfn::plothist(QVector<double> freq)
 	{
 		ind[j] = j;
 	}
+	
 	QCPBars *hist = new QCPBars(ui->Plot->xAxis, ui->Plot->yAxis);
 	hist->setData(ind, freq);
 	hist->setPen(QPen(QBrush(Qt::gray), 1));
 	//hist->setBrush(QBrush(Qt::gray), 1);
 	ui->Plot->addPlottable(hist);
-	ui->Plot->xAxis->setRange(0, 255);
-	ui->Plot->yAxis->setRange(0, 300000);
+	//ui->Plot->xAxis->setRange(0, 255);
+	//ui->Plot->yAxis->setRange(0, 300000);
+	//ui->Plot->yAxis->setScaleType(QCPAxis::stLogarithmic);
+	
+	ui->Plot->rescaleAxes();
 	ui->Plot->replot();
 }

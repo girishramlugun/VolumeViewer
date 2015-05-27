@@ -50,9 +50,9 @@
 #include <vtkPointData.h>
 #include <vtkClipVolume.h>
 #include <vtkDataSetMapper.h>
-//#include<vtkMatlabMexAdapter.h>
-//#include<mat.h>
-//#include <matrix.h>
+#include<vtkMatlabMexAdapter.h>
+#include<mat.h>
+#include <matrix.h>
 #include<vtkDoubleArray.h>
 #include<vtkTypedArray.h>
 #include<vtkArrayIterator.h>
@@ -74,7 +74,7 @@
 #include<vtkImageResample.h>
 #include <vtkGPUInfo.h>
 #include <vtkGPUInfoList.h>
-
+#include <QInputDialog>
 
 
 
@@ -305,7 +305,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			SLOT(updatelights(double, double, double, double, double, double, double, double, double, double, double, double, double, double)));
 			connect(diacol, SIGNAL(volcol(double)), vtkwid, SLOT(updatevolcol(double)));
 			connect(diacol, SIGNAL(wincol(double)), vtkwid, SLOT(updatewincol(double)));
-	
+			connect(vtkwid, SIGNAL(sendhist(QVector<double>)), diatfn, SLOT(plothist(QVector<double>)));
 			vtkwid->readimseq(filenames, N);
 
 
@@ -356,13 +356,13 @@ void VolumeViewer::openvol(string inputFilename)
 		}
 		else if (ext == QString("mat"))
 		{
-			/*
+			
 			vtkSmartPointer<vtkMatlabMexAdapter> readermat = vtkSmartPointer<vtkMatlabMexAdapter>::New();
 			mxArray *matarr;
 			MATFile *matf;
 			vtkArray *matvtkarr;
 			vtkSmartPointer<vtkUnsignedShortArray> dataarr = vtkSmartPointer<vtkUnsignedShortArray>::New();
-			
+			vtkSmartPointer<vtkImageData> matimg = vtkSmartPointer<vtkImageData>::New();
 			
 			matf = matOpen(inputFilename.c_str(), "r");
 			if (matf == NULL) {
@@ -370,10 +370,41 @@ void VolumeViewer::openvol(string inputFilename)
 			}
 			else{
 
-				matarr = matGetVariable(matf, "IM");
+
+				const char **dir;
+				const char *name;
+				int	  ndir;
+				int i;
+				dir = (const char **)matGetDir(matf, &ndir);
+				if (dir == NULL) {
+					QMessageBox::critical(0, QObject::tr("Error"), "Error reading directory of file");
+					
+				}
+				else {
+					//printf("Directory of %s:\n", inputFilename);
+					QStringList arraystring; 
+					for (i = 0; i < ndir; i++)
+					{
+						arraystring.append(QString(dir[i]));
+					}
+					//	printf("%s\n", dir[i]);
+					//ui->label->setText(dir[0]);
+					bool ok;
+					QString text = QInputDialog::getItem(this, tr("Load Matlab array"),
+						tr("Select array to load:"),arraystring,0,false,&ok );
+					if (ok && !text.isEmpty()){
+						ui->label->setText(text);
+						string txtstring = text.toStdString();
+						const char *txtchar = txtstring.c_str();
+						matarr = matGetVariable(matf, txtchar);
+					}
+				}
+				mxFree(dir);
+				
+
 				const mwSize * matsize = mxGetDimensions(matarr);
 
-			//	dataarr->SetNumberOfTuples(matsize[0] * matsize[1] * matsize[2]);
+
 
 				if (matarr == NULL) {
 					QMessageBox::critical(0, QObject::tr("Error"), "Could not copy to array");
@@ -381,13 +412,15 @@ void VolumeViewer::openvol(string inputFilename)
 				matvtkarr->CreateArray(vtkArray::SPARSE, VTK_SHORT);
 				
 				matvtkarr = readermat->mxArrayTovtkArray(matarr);
-				vtkwid->input->SetDimensions(matsize[0], matsize[1], matsize[2]);
+
+				
+				matimg->SetDimensions(matsize[0], matsize[1], matsize[2]);
 				
 
 				
-			dataarr->SetNumberOfTuples(vtkwid->input->GetNumberOfPoints());
+				dataarr->SetNumberOfTuples(matimg->GetNumberOfPoints());
 
-				 
+			
 			for (vtkIdType i = 0; i!= matvtkarr->GetNonNullSize(); i++)
 				{
 							dataarr->SetVariantValue(i, matvtkarr->GetVariantValueN(i));
@@ -396,16 +429,18 @@ void VolumeViewer::openvol(string inputFilename)
 				
 			
 			
-			vtkwid->input->SetOrigin(0, 0, 0);
-			vtkwid->input->SetSpacing(1, 1, 1);
-	    	vtkwid->input->GetPointData()->SetScalars(dataarr);
-			ui->label->setNum(int(vtkwid->input->GetActualMemorySize()));
+			matimg->SetOrigin(0, 0, 0);
+			matimg->SetSpacing(1, 1, 1);
+	    	matimg->GetPointData()->SetScalars(dataarr);
+			vtkwid->resample(matimg);
+			
+			
 		
 		}
 
-		*/
+		
 
-	//	vtkwid->initialize();
+		
 		
 
 	}

@@ -12,6 +12,7 @@
 #include<vtkImageAccumulate.h>
 #include<QVector>
 #include<vtkImageMagnitude.h>
+#include<math.h>
 
 vtkwidget::vtkwidget(QWidget *parent) :
     QVTKWidget(parent)
@@ -285,24 +286,50 @@ void vtkwidget::resample(vtkImageData *imgdata)
 	vtkGPUInfo *gpi = vtkGPUInfo::New();
 	long vram = gpi->GetDedicatedVideoMemory();
 	if (vram = 134217728){
-	mapper->SetMaxMemoryInBytes(805306368);
+	mapper->SetMaxMemoryInBytes(3221225472);
 }
 	//double gpumem = mapper->GetMaxMemoryInBytes();
-	double sf = 1 / (ceil(memsize / mapper->GetMaxMemoryInBytes()));
+	double sf =ceil(memsize / mapper->GetMaxMemoryInBytes());
 	
-	if (sf<1){
+	if (sf>=1 && sf<2){
+
 	vtkSmartPointer <vtkImageResample> imgrs =vtkSmartPointer <vtkImageResample>::New();
 	imgrs->SetInputData(imgdata);
 	imgrs->SetInterpolationModeToNearestNeighbor();
-	imgrs->SetAxisMagnificationFactor(0, sf);
-	imgrs->SetAxisMagnificationFactor(1, sf);
-	imgrs->SetAxisMagnificationFactor(2, sf);
+	imgrs->SetAxisMagnificationFactor(0, 0.5);
+	imgrs->SetAxisMagnificationFactor(1, 0.5);
+	imgrs->SetAxisMagnificationFactor(2, 0.5);
 	imgrs->Update();
 	buildhist(imgrs->GetOutput());
 	initialize(imgrs->GetOutput());
 	}
+	else if (sf >= 2 && sf < 4)
 
-	else
+	{
+		vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
+		imgrs->SetInputData(imgdata);
+		imgrs->SetInterpolationModeToNearestNeighbor();
+		imgrs->SetAxisMagnificationFactor(0, 0.25);
+		imgrs->SetAxisMagnificationFactor(1, 0.25);
+		imgrs->SetAxisMagnificationFactor(2, 0.25);
+		imgrs->Update();
+		buildhist(imgrs->GetOutput());
+		initialize(imgrs->GetOutput());
+	}
+	else if (sf >= 4 && sf < 8)
+
+	{
+		vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
+		imgrs->SetInputData(imgdata);
+		imgrs->SetInterpolationModeToNearestNeighbor();
+		imgrs->SetAxisMagnificationFactor(0, 0.125);
+		imgrs->SetAxisMagnificationFactor(1, 0.125);
+		imgrs->SetAxisMagnificationFactor(2, 0.125);
+		imgrs->Update();
+		buildhist(imgrs->GetOutput());
+		initialize(imgrs->GetOutput());
+	}
+	else if (sf<1)
 	{
 		buildhist(imgdata);
 		initialize(imgdata);
@@ -355,7 +382,9 @@ void vtkwidget::buildhist(vtkImageData* imgdata)
 	{
 
 		freq[j] = *output++;
+		
 
 	}
+	freq[0] = 0;
 	emit sendhist(freq);
 }
