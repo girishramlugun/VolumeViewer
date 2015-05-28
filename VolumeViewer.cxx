@@ -381,14 +381,12 @@ void VolumeViewer::openvol(string inputFilename)
 					
 				}
 				else {
-					//printf("Directory of %s:\n", inputFilename);
 					QStringList arraystring; 
 					for (i = 0; i < ndir; i++)
 					{
 						arraystring.append(QString(dir[i]));
 					}
-					//	printf("%s\n", dir[i]);
-					//ui->label->setText(dir[0]);
+
 					bool ok;
 					QString text = QInputDialog::getItem(this, tr("Load Matlab array"),
 						tr("Select array to load:"),arraystring,0,false,&ok );
@@ -419,14 +417,15 @@ void VolumeViewer::openvol(string inputFilename)
 
 				
 				dataarr->SetNumberOfTuples(matimg->GetNumberOfPoints());
-
 			
-			for (vtkIdType i = 0; i!= matvtkarr->GetNonNullSize(); i++)
+			
+			for (vtkIdType i = 0; i<matvtkarr->GetSize(); i++)
 				{
 							dataarr->SetVariantValue(i, matvtkarr->GetVariantValueN(i));
+							
 		         }
 
-				
+			QCoreApplication::processEvents();
 			
 			
 			matimg->SetOrigin(0, 0, 0);

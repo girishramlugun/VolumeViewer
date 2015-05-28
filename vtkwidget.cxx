@@ -286,7 +286,7 @@ void vtkwidget::resample(vtkImageData *imgdata)
 	vtkGPUInfo *gpi = vtkGPUInfo::New();
 	long vram = gpi->GetDedicatedVideoMemory();
 	if (vram = 134217728){
-	mapper->SetMaxMemoryInBytes(3221225472);
+	mapper->SetMaxMemoryInBytes(805306368);
 }
 	//double gpumem = mapper->GetMaxMemoryInBytes();
 	double sf =ceil(memsize / mapper->GetMaxMemoryInBytes());
@@ -344,6 +344,7 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 {
 	vtkSmartPointer<vtkTIFFReader>readimg = vtkSmartPointer<vtkTIFFReader>::New();
 	readimg->SetFileName(filenames->GetValue(0));
+	QCoreApplication::processEvents();
 	readimg->Update();
 	int dims[3]; int ext[6];
 	readimg->GetOutput()->GetDimensions(dims);
@@ -356,10 +357,11 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 	
 	vtkImageData *imse = vtkImageData::New();
 	imse->SetDimensions(dims);
+	QCoreApplication::processEvents();
 	imse->GetPointData()->SetScalars(imgseq->GetOutput()->GetPointData()->GetScalars());
-	
+	QCoreApplication::processEvents();
 	resample(imse);
-
+	QCoreApplication::processEvents();
 	imgseq->Delete();
 	imse->Delete();
 }
