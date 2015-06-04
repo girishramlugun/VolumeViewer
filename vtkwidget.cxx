@@ -13,6 +13,9 @@
 #include<QVector>
 #include<vtkImageMagnitude.h>
 #include<math.h>
+#include<qprogressdialog.h>
+#include<vtkImageAppend.h>
+
 
 vtkwidget::vtkwidget(QWidget *parent) :
     QVTKWidget(parent)
@@ -261,7 +264,7 @@ void vtkwidget::readvti(string inputFilename)
 	vtkXMLImageDataReader *rvti = vtkXMLImageDataReader::New();
 	rvti->SetFileName(inputFilename.c_str());
 	rvti->Update();
-	resample(rvti->GetOutput());
+	resample(rvti->GetOutput(),1);
 	rvti->Delete();
 	
 }
@@ -274,15 +277,16 @@ void vtkwidget::readtif(string inputFilename)
 	rtiff->Update();
 	
 	
-	resample(rtiff->GetOutput());
+	resample(rtiff->GetOutput(),1);
 	rtiff->Delete();
 
 }
 
-void vtkwidget::resample(vtkImageData *imgdata)
+void vtkwidget::resample(vtkImageData *imgdata, int sf)
 {
+	/*
 	//Get the Graphics memory and find a scaling factor to match that, otherwise, render the imagedata without scaling
-	double memsize = imgdata->GetActualMemorySize() * 1024;
+	double memsize = imgdata->GetActualMemorySize();
 	vtkGPUInfo *gpi = vtkGPUInfo::New();
 	long vram = gpi->GetDedicatedVideoMemory();
 	if (vram = 134217728){
@@ -331,9 +335,16 @@ void vtkwidget::resample(vtkImageData *imgdata)
 	}
 	else if (sf<1)
 	{
+	*/
+	//vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
+	//imgrs->SetInputData(imgdata);
+	//imgrs->SetInterpolationModeToNearestNeighbor();
+	//imgrs->SetAxisMagnificationFactor(0, sf);
+	//imgrs->SetAxisMagnificationFactor(1, sf);
+	//imgrs->SetAxisMagnificationFactor(2, sf);
 		buildhist(imgdata);
 		initialize(imgdata);
-	}
+	//}
 	
 
 
@@ -342,28 +353,92 @@ void vtkwidget::resample(vtkImageData *imgdata)
 
 void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 {
+
 	vtkSmartPointer<vtkTIFFReader>readimg = vtkSmartPointer<vtkTIFFReader>::New();
 	readimg->SetFileName(filenames->GetValue(0));
 	QCoreApplication::processEvents();
+	sctype = readimg->GetOutput()->GetScalarTypeAsString();
 	readimg->Update();
 	int dims[3]; int ext[6];
+
+	
 	readimg->GetOutput()->GetDimensions(dims);
 	dims[2] = N;
-
+	
+	/*
 	vtkTIFFReader *imgseq = vtkTIFFReader::New();
-	imgseq->SetDataScalarTypeToShort();
 	imgseq->SetFileNames(filenames);
 	imgseq->Update();
 	
+	
+
+	*/
+	
+	
+	
+
+	
+
+
+	vtkSmartPointer<vtkTIFFReader>readslice = vtkSmartPointer<vtkTIFFReader>::New();
+
+
+	vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
+	imgrs->SetAxisMagnificationFactor(0, 0.5);
+	imgrs->SetAxisMagnificationFactor(1, 0.5);
+
+
 	vtkImageData *imse = vtkImageData::New();
-	imse->SetDimensions(dims);
-	QCoreApplication::processEvents();
-	imse->GetPointData()->SetScalars(imgseq->GetOutput()->GetPointData()->GetScalars());
-	QCoreApplication::processEvents();
-	resample(imse);
-	QCoreApplication::processEvents();
-	imgseq->Delete();
-	imse->Delete();
+	imse->SetDimensions(612, 612, 101);
+	imse->AllocateScalars(VTK_INT, 1);
+
+
+	QProgressDialog progress("Loading files...", "Abort", 0, N, this);
+	progress.setWindowModality(Qt::WindowModal);
+
+
+	unsigned long * VolPtr = (unsigned long *)imse->GetScalarPointer();
+
+
+	for (int i = 0; i < N; i++)
+{
+	
+	progress.setValue(i);
+	if (progress.wasCanceled())
+		break;
+
+		readslice->SetFileName(filenames->GetValue(i));
+		readslice->Update();
+
+		imgrs->SetInputConnection(readslice->GetOutputPort());
+		imgrs->Update();
+
+
+		*VolPtr = 100;
+		*VolPtr++;
+		
+	}
+
+
+	progress.setValue(N);
+	
+	//vtkImageData *imse = vtkImageData::New();
+	
+	//resample(imse, 1);
+	
+	
+	
+	//imse->GetPointData()->SetScalars(imgshr->GetOutput()->GetPointData()->GetScalars());
+	
+	
+	//QCoreApplication::processEvents();
+	//
+	//QCoreApplication::processEvents();
+	
+	//imgshr->Delete();
+	
+	//imse->Delete();
+	
 }
 
 void vtkwidget::buildhist(vtkImageData* imgdata)

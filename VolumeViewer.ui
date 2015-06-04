@@ -157,6 +157,7 @@
     <addaction name="actionSlice"/>
     <addaction name="actionRotate"/>
     <addaction name="actionAdd"/>
+    <addaction name="actionCrop"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -518,6 +519,11 @@
    </property>
    <property name="text">
     <string>Upsample</string>
+   </property>
+  </action>
+  <action name="actionCrop">
+   <property name="text">
+    <string>Crop</string>
    </property>
   </action>
  </widget>

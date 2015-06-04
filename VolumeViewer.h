@@ -135,6 +135,8 @@ private slots:
 
   void on_actionInterlaced_triggered();
 
+  void on_actionCrop_triggered();
+
   
 private:
 

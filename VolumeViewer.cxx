@@ -75,7 +75,7 @@
 #include <vtkGPUInfo.h>
 #include <vtkGPUInfoList.h>
 #include <QInputDialog>
-
+#include<vtkExtractVOI.h>
 
 
 using namespace std;
@@ -307,7 +307,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			connect(diacol, SIGNAL(wincol(double)), vtkwid, SLOT(updatewincol(double)));
 			connect(vtkwid, SIGNAL(sendhist(QVector<double>)), diatfn, SLOT(plothist(QVector<double>)));
 			vtkwid->readimseq(filenames, N);
-
+			ui->label->setText(vtkwid->sctype);
 
 		}
 		
@@ -350,7 +350,7 @@ void VolumeViewer::openvol(string inputFilename)
 		else if (ext == QString("tif"))
 		{
 			vtkwid->readtif(inputFilename);
-			//ui->label->setText(QString::number(vtkwid->mapper->GetMaxMemoryInBytes()));
+			ui->label->setText(QString::number(vtkwid->mapper->GetMaxMemoryInBytes()));
 
 			
 		}
@@ -431,7 +431,7 @@ void VolumeViewer::openvol(string inputFilename)
 			matimg->SetOrigin(0, 0, 0);
 			matimg->SetSpacing(1, 1, 1);
 	    	matimg->GetPointData()->SetScalars(dataarr);
-			vtkwid->resample(matimg);
+			vtkwid->resample(matimg,1);
 			
 			
 		
@@ -710,6 +710,8 @@ if (vtkwid->isVisible())
         box->EnabledOn();
 		
         vtkwid->leftRenderer->Render();
+
+		
         callback->Delete();}
     else{
         {
@@ -731,6 +733,49 @@ else {
 }
 
 
+}
+
+void VolumeViewer::on_actionCrop_triggered()
+{
+	
+//	vtkIdType id=0; double points[3];
+		vtkPolyData *Crop = vtkPolyData::New();
+		box->GetPolyData(Crop);
+		
+	//	Crop->GetPoint(id, points);
+
+
+		vtkSmartPointer <vtkExtractVOI> extvoi = vtkSmartPointer <vtkExtractVOI>::New();
+		double coord[3][6];
+			int j = 0;
+			for (vtkIdType i = 8; i < 14; i++)
+			{
+				double p[3];
+				Crop->GetPoint(i, p);
+				coord[0][j] = p[0]; coord[1][j] = p[1]; coord[2][j] = p[2];
+				j++;
+			}
+
+			extvoi->SetInputData(vtkwid->input);
+			extvoi->SetVOI(coord[0][0], coord[0][1], coord[1][2], coord[1][3], coord[2][4], coord[2][5]);
+			ui->label->setNum(coord[0][0]);
+			extvoi->Update();
+
+			/*
+			vtkSmartPointer<vtkXMLImageDataWriter> volwrite = vtkSmartPointer<vtkXMLImageDataWriter>::New();
+			volwrite->SetInputData(extvoi->GetOutput());
+			volwrite->SetFileName("Extvol.vti");
+			volwrite->Write();
+			*/
+		
+
+	
+
+
+
+
+	
+			
 }
 
 void VolumeViewer::on_actionDimensions_triggered()

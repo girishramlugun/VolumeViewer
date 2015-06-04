@@ -72,7 +72,8 @@ public:
 
 	void initialize(vtkImageData *);
 
-	
+	QString sctype;
+
 	void render();
 
 	void renderpoly();
@@ -139,7 +140,7 @@ signals:
    void updatewincol(double);
    void readvti(string);
    void readtif(string);
-   void resample(vtkImageData*);
+   void resample(vtkImageData*, int);
    void readimseq(vtkStringArray*, int);
    void buildhist(vtkImageData*);
 
