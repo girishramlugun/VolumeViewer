@@ -70,15 +70,15 @@ void vtkwidget::initialize(vtkImageData *input)
 {
 
 	
-	
+
 	//Set default light parameters
-	
-	LightKit->SetKeyLightWarmth(0.6);LightKit->SetKeyLightIntensity(0.75); LightKit->SetKeyLightElevation(50); LightKit->SetKeyLightAzimuth(10);
+
+	LightKit->SetKeyLightWarmth(0.6); LightKit->SetKeyLightIntensity(0.75); LightKit->SetKeyLightElevation(50); LightKit->SetKeyLightAzimuth(10);
 	LightKit->SetFillLightWarmth(0.40); LightKit->SetKeyToFillRatio(3); LightKit->SetFillLightElevation(-75); LightKit->SetFillLightAzimuth(-10);
 	LightKit->SetBackLightWarmth(0.5); LightKit->SetKeyToBackRatio(3.5); LightKit->SetBackLightElevation(0); LightKit->SetBackLightAzimuth(110);
 	LightKit->SetHeadLightWarmth(0.5); LightKit->SetKeyToHeadRatio(3);
-	
-	
+
+
 	//Add Volume Gradient Opacity
 	//vtkwid->volumeGradientOpacity->AddPoint(0,0);
 	//vtkwid->volumeGradientOpacity->AddPoint(100,1);
@@ -95,16 +95,41 @@ void vtkwidget::initialize(vtkImageData *input)
 	// and another color for bone (1150 and over).
 
 	volumeColor->AddRGBPoint(0, 0, 0, 0);
-	volumeColor->AddRGBPoint(255, 1, 1, 1);
-	
+	volumeColor->AddRGBPoint(255, 1, 1,1);
+
+
 
 	//Adjust Rotation Style of Camera
-	
+
 	GetInteractor()->SetInteractorStyle(style);
 
 	
 	//Set volumeProperty parameters
-	volumeProperty->SetColor(volumeColor);
+	if (input->GetNumberOfScalarComponents() < 3)
+    {
+		volumeProperty->SetColor(volumeColor);
+	
+    }
+      else
+   {
+	vtkSmartPointer <vtkColorTransferFunction> c1 = vtkSmartPointer<vtkColorTransferFunction>::New();
+	c1->AddRGBPoint(0, 0, 0, 0);
+	c1->AddRGBPoint(255, 1, 0, 0);
+	vtkSmartPointer <vtkColorTransferFunction> c2 = vtkSmartPointer<vtkColorTransferFunction>::New();
+
+	c2->AddRGBPoint(0, 0, 0, 0);
+	c2->AddRGBPoint(255, 0, 1, 0);
+	vtkSmartPointer <vtkColorTransferFunction> c3 = vtkSmartPointer<vtkColorTransferFunction>::New();
+
+	c3->AddRGBPoint(0, 0, 0, 0);
+	c3->AddRGBPoint(255, 0, 0, 1);
+
+
+	volumeProperty->SetColor(0,c1);
+	volumeProperty->SetColor(1,c2);
+	volumeProperty->SetColor(2,c3);
+    }
+
 	volumeProperty->SetScalarOpacity(volumeScalarOpacity);
 	
 	// volumeProperty->SetGradientOpacity(volumeGradientOpacity);
@@ -356,88 +381,31 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 
 	vtkSmartPointer<vtkTIFFReader>readimg = vtkSmartPointer<vtkTIFFReader>::New();
 	readimg->SetFileName(filenames->GetValue(0));
-	QCoreApplication::processEvents();
-	sctype = readimg->GetOutput()->GetScalarTypeAsString();
-	readimg->Update();
-	int dims[3]; int ext[6];
 
-	
+	readimg->Update();
+	int dims[3]; 
 	readimg->GetOutput()->GetDimensions(dims);
 	dims[2] = N;
 	
-	/*
+	int cols = readimg->GetOutput()->GetNumberOfScalarComponents();
+	
 	vtkTIFFReader *imgseq = vtkTIFFReader::New();
 	imgseq->SetFileNames(filenames);
+	//imgseq->SetNumberOfScalarComponents(3);
+
 	imgseq->Update();
 	
 	
-
-	*/
-	
-	
-	
-
-	
-
-
-	vtkSmartPointer<vtkTIFFReader>readslice = vtkSmartPointer<vtkTIFFReader>::New();
-
-
-	vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
-	imgrs->SetAxisMagnificationFactor(0, 0.5);
-	imgrs->SetAxisMagnificationFactor(1, 0.5);
-
-
 	vtkImageData *imse = vtkImageData::New();
-	imse->SetDimensions(612, 612, 101);
-	imse->AllocateScalars(VTK_INT, 1);
+	imse->AllocateScalars(VTK_INT, cols);
+	imse->SetDimensions(dims);
+	imse->GetPointData()->SetScalars(imgseq->GetOutput()->GetPointData()->GetScalars());
 
+	resample(imse,1);
 
-	QProgressDialog progress("Loading files...", "Abort", 0, N, this);
-	progress.setWindowModality(Qt::WindowModal);
+	imgseq->Delete();
 
-
-	unsigned long * VolPtr = (unsigned long *)imse->GetScalarPointer();
-
-
-	for (int i = 0; i < N; i++)
-{
-	
-	progress.setValue(i);
-	if (progress.wasCanceled())
-		break;
-
-		readslice->SetFileName(filenames->GetValue(i));
-		readslice->Update();
-
-		imgrs->SetInputConnection(readslice->GetOutputPort());
-		imgrs->Update();
-
-
-		*VolPtr = 100;
-		*VolPtr++;
-		
-	}
-
-
-	progress.setValue(N);
-	
-	//vtkImageData *imse = vtkImageData::New();
-	
-	//resample(imse, 1);
-	
-	
-	
-	//imse->GetPointData()->SetScalars(imgshr->GetOutput()->GetPointData()->GetScalars());
-	
-	
-	//QCoreApplication::processEvents();
-	//
-	//QCoreApplication::processEvents();
-	
-	//imgshr->Delete();
-	
-	//imse->Delete();
+	imse->Delete();
 	
 }
 

@@ -76,6 +76,8 @@
 #include <vtkGPUInfoList.h>
 #include <QInputDialog>
 #include<vtkExtractVOI.h>
+#include<qtablewidget.h>
+
 
 
 using namespace std;
@@ -95,29 +97,35 @@ vtkSmartPointer <vtkWindowToImageFilter> w2i = vtkSmartPointer <vtkWindowToImage
 class vtkBoxWidgetCallback : public vtkCommand
 {
 public:
+	
   static vtkBoxWidgetCallback *New()
     { return new vtkBoxWidgetCallback; }
   virtual void Execute(vtkObject *caller, unsigned long, void*)
 
     {
       vtkBoxWidget *widget = reinterpret_cast<vtkBoxWidget*>(caller);
-	  
-      if (this->Mapper)
+
+	  if (this->Mapper)
         {
         vtkPlanes *planes = vtkPlanes::New();
-        widget->GetPlanes(planes);
+        widget-> GetPlanes(planes);
         this->Mapper->SetClippingPlanes(planes);
         planes->Delete();
         }
     }
+  
+
   void SetMapper(vtkSmartVolumeMapper* m)
     { this->Mapper = m; }
 
 protected:
-  vtkBoxWidgetCallback()
-    { this->Mapper = 0; }
+	vtkBoxWidgetCallback() 
+	{this->Mapper = 0;}
 
   vtkSmartVolumeMapper *Mapper;
+  
+
+
 };
 
 class vtkIPWCallback : public vtkCommand
@@ -307,7 +315,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			connect(diacol, SIGNAL(wincol(double)), vtkwid, SLOT(updatewincol(double)));
 			connect(vtkwid, SIGNAL(sendhist(QVector<double>)), diatfn, SLOT(plothist(QVector<double>)));
 			vtkwid->readimseq(filenames, N);
-			ui->label->setText(vtkwid->sctype);
+			//ui->label->setText(QString::number(vtkwid->readimseq->dims[0]) + " " + QString::number(vtkwid->readimseq->dims[1]) + " " + QString::number(vtkwid->readimseq->dims[2]));
 
 		}
 		
@@ -701,17 +709,14 @@ if (vtkwid->isVisible())
         box->SetInteractor(vtkwid->GetInteractor());
         box->SetDefaultRenderer(vtkwid->leftRenderer);
 		
-		box->SetPlaceFactor(1.02);
+		box->SetPlaceFactor(1.00);
         box->InsideOutOn();
         box->PlaceWidget();
         vtkBoxWidgetCallback *callback = vtkBoxWidgetCallback::New();
         callback->SetMapper(vtkwid->mapper);
         box->AddObserver(vtkCommand::InteractionEvent, callback);
         box->EnabledOn();
-		
         vtkwid->leftRenderer->Render();
-
-		
         callback->Delete();}
     else{
         {
@@ -722,7 +727,7 @@ if (vtkwid->isVisible())
 			vtkwid->leftRenderer->ResetCameraClippingRange();
 			vtkwid->leftRenderer->ResetCamera();
 			vtkwid->GetRenderWindow()->Render();
-
+		
 
         }
     }
@@ -738,13 +743,13 @@ else {
 void VolumeViewer::on_actionCrop_triggered()
 {
 	
-//	vtkIdType id=0; double points[3];
+	vtkIdType id=0; double points[3];
 		vtkPolyData *Crop = vtkPolyData::New();
 		box->GetPolyData(Crop);
 		
-	//	Crop->GetPoint(id, points);
-
-
+		Crop->GetPoint(id, points);
+	
+	
 		vtkSmartPointer <vtkExtractVOI> extvoi = vtkSmartPointer <vtkExtractVOI>::New();
 		double coord[3][6];
 			int j = 0;
@@ -756,26 +761,17 @@ void VolumeViewer::on_actionCrop_triggered()
 				j++;
 			}
 
-			extvoi->SetInputData(vtkwid->input);
-			extvoi->SetVOI(coord[0][0], coord[0][1], coord[1][2], coord[1][3], coord[2][4], coord[2][5]);
-			ui->label->setNum(coord[0][0]);
-			extvoi->Update();
+		//	extvoi->SetInputData(vtkwid->input);
+		//	extvoi->SetVOI(coord[0][0], coord[0][1], coord[1][2], coord[1][3], coord[2][4], coord[2][5]);
+			ui->label->setText(QString::number(coord[0][0]) + " " + QString::number(coord[0][1]) + " " + QString::number(coord[1][2]) + " " + QString::number(coord[1][3]) + " " + QString::number(coord[2][4]) + " " + QString::number(coord[2][5]));
+		//	extvoi->Update();
+			//vtkImageData *ext;
+			//ext = extvoi->GetOutput();
+		//	vtkSmartPointer <vtkXMLImageDataWriter> twrite = vtkSmartPointer<vtkXMLImageDataWriter>::New();
+		//	twrite->SetInputData(extvoi->GetOutput());
+		//	twrite->SetFileName("saved.vti");
+		//	twrite->Write();
 
-			/*
-			vtkSmartPointer<vtkXMLImageDataWriter> volwrite = vtkSmartPointer<vtkXMLImageDataWriter>::New();
-			volwrite->SetInputData(extvoi->GetOutput());
-			volwrite->SetFileName("Extvol.vti");
-			volwrite->Write();
-			*/
-		
-
-	
-
-
-
-
-	
-			
 }
 
 void VolumeViewer::on_actionDimensions_triggered()
