@@ -187,7 +187,7 @@ VolumeViewer::VolumeViewer()
   connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(diatfn,SIGNAL(sendtfn(int)),this,SLOT(setvolcol(int)));
   
-  connect(diaopa,SIGNAL(sendopa(int)),this,SLOT(updateopacity(int)));
+  connect(diaopa,SIGNAL(sendopa(int,int)),this,SLOT(updateopacity(int,int)));
   
   }
 
@@ -418,28 +418,37 @@ void VolumeViewer::openvol(string inputFilename)
 				matvtkarr->CreateArray(vtkArray::SPARSE, VTK_SHORT);
 				
 				matvtkarr = readermat->mxArrayTovtkArray(matarr);
-
+				
+				ui->label->setText(QString::number(matvtkarr->GetSize()));
 				
 				matimg->SetDimensions(matsize[0], matsize[1], matsize[2]);
-				
+				matimg->AllocateScalars(VTK_INT, 3);
 
-				
+				dataarr->SetNumberOfComponents(3);
 				dataarr->SetNumberOfTuples(matimg->GetNumberOfPoints());
 			
-			
-			for (vtkIdType i = 0; i<matvtkarr->GetSize(); i++)
+				
+				for (vtkIdType i = 0; i< matsize[0]; i++)
+					for (vtkIdType j = 0; j< matsize[1]; j++)
+						for (vtkIdType k = 0; k< matsize[2]; k++)
 				{
-							dataarr->SetVariantValue(i, matvtkarr->GetVariantValueN(i));
+
+					       
+							vtkVariant *p = &(matvtkarr->GetVariantValue(k, j, i));
+							double pix[3];
+							pix[0] = p[0].ToDouble();
+							pix[1] = p[1].ToDouble();
+							pix[2] = p[2].ToDouble();
+							double* pixel = static_cast<double*>(matimg->GetScalarPointer(k, j, i));
+							pixel[0] = pix[0];
+							pixel[1] = pix[1];
+							pixel[2] = pix[2];
+							
 							
 		         }
 
-			QCoreApplication::processEvents();
-			
-			
-			matimg->SetOrigin(0, 0, 0);
-			matimg->SetSpacing(1, 1, 1);
-	    	matimg->GetPointData()->SetScalars(dataarr);
-			vtkwid->resample(matimg,1);
+
+				vtkwid->resample(matimg,1);
 			
 			
 		
@@ -794,21 +803,69 @@ void VolumeViewer::on_actionOpacity_triggered()
     diaopa->show();
 }
 
-void VolumeViewer::updateopacity(int rowcntopa)
+void VolumeViewer::updateopacity(int rowcntopa, int col)
 {
 
-    vtkwid->volumeScalarOpacity->RemoveAllPoints();
-    double tfopa[2];
-    QModelIndex indexopa;
-    for (int i=0;i<rowcntopa;i++)
-    {
-        for (int j=0;j<2;j++)
-        {
-            indexopa = diaopa->modelopa->index(i, j);
-            tfopa[j]=diaopa->modelopa->data(indexopa).toDouble();
-        }
-        vtkwid->volumeScalarOpacity->AddPoint(tfopa[0],tfopa[1]);
-    }
+	ui->label->setNum(col);
+
+	double tfopa[2];
+	QModelIndex indexopa;
+	if (col = 0)
+	{
+		vtkwid->volumeScalarOpacity->RemoveAllPoints();
+		for (int i = 0; i < rowcntopa; i++)
+		{
+			for (int j = 0; j < 2; j++)
+			{
+				indexopa = diaopa->modelopa->index(i, j);
+				tfopa[j] = diaopa->modelopa->data(indexopa).toDouble();
+			}
+			vtkwid->volumeScalarOpacity->AddPoint(tfopa[0], tfopa[1]);
+		}
+		
+	}
+
+
+
+	if (col = 1)
+	{
+		vtkwid->volumeScalarOpacity1->RemoveAllPoints();
+		vtkwid->volumeScalarOpacity2->RemoveAllPoints();
+		vtkwid->volumeScalarOpacity3->RemoveAllPoints();
+		for (int i = 0; i < rowcntopa; i++)
+		{
+			for (int j = 0; j < 2; j++)
+			{
+				indexopa = diaopa->modelopa->index(i, j);
+				tfopa[j] = diaopa->modelopa->data(indexopa).toDouble();
+			}
+			vtkwid->volumeScalarOpacity1->AddPoint(tfopa[0], tfopa[1]);
+		}
+
+
+		for (int i = 0; i < rowcntopa; i++)
+		{
+			for (int j = 0; j < 2; j++)
+			{
+				indexopa = diaopa->modelopa2->index(i, j);
+				tfopa[j] = diaopa->modelopa2->data(indexopa).toDouble();
+			}
+
+			vtkwid->volumeScalarOpacity2->AddPoint(tfopa[0], tfopa[1]);
+
+		}
+		for (int i = 0; i < rowcntopa; i++)
+		{
+			for (int j = 0; j < 2; j++)
+			{
+				indexopa = diaopa->modelopa3->index(i, j);
+				tfopa[j] = diaopa->modelopa3->data(indexopa).toDouble();
+			}
+			vtkwid->volumeScalarOpacity3->AddPoint(tfopa[0], tfopa[1]);
+		}
+
+	}
+
    vtkwid->GetRenderWindow()->Render();
 
 }

@@ -106,6 +106,7 @@ void dialog_tfn::plot()
 {
 	
 	ui->Plot->clearGraphs(); 
+	ui->Plot->yAxis2->setRange(0, 1);
 	model = ui->tableWidget->model();
 	QModelIndex index;
 	QVector<double> In(rowcnt), R(rowcnt),G(rowcnt), B(rowcnt);
@@ -126,9 +127,9 @@ void dialog_tfn::plot()
 	}
 	
 
-	QCPGraph *pointsR = new QCPGraph(ui->Plot->xAxis, ui->Plot->yAxis);
-	QCPGraph *pointsG = new QCPGraph(ui->Plot->xAxis, ui->Plot->yAxis);
-	QCPGraph *pointsB = new QCPGraph(ui->Plot->xAxis, ui->Plot->yAxis);
+	QCPGraph *pointsR = new QCPGraph(ui->Plot->xAxis, ui->Plot->yAxis2);
+	QCPGraph *pointsG = new QCPGraph(ui->Plot->xAxis, ui->Plot->yAxis2);
+	QCPGraph *pointsB = new QCPGraph(ui->Plot->xAxis, ui->Plot->yAxis2);
 
 	pointsR->setData(In, R);
 	pointsR->setLineStyle(QCPGraph::lsLine);
@@ -156,7 +157,7 @@ void dialog_tfn::plot()
 	ui->Plot->graph(1)->setData(In, Op);
 	*/
 	// set axes ranges, so we see all data:
-	ui->Plot->rescaleAxes();
+	//ui->Plot->rescaleAxes();
 	ui->Plot->replot();
 }
 

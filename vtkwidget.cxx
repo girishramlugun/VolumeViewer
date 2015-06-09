@@ -42,6 +42,12 @@ vtkwidget::vtkwidget(QWidget *parent) :
 
     volumeScalarOpacity = vtkSmartPointer<vtkPiecewiseFunction>::New();
 
+	volumeScalarOpacity1 = vtkSmartPointer<vtkPiecewiseFunction>::New();
+
+	volumeScalarOpacity2 = vtkSmartPointer<vtkPiecewiseFunction>::New();
+
+	volumeScalarOpacity3 = vtkSmartPointer<vtkPiecewiseFunction>::New();
+
     style = vtkSmartPointer <vtkInteractorStyleTrackballCamera>::New();
 
 	volumeGradientOpacity = vtkSmartPointer<vtkPiecewiseFunction>::New();
@@ -86,8 +92,7 @@ void vtkwidget::initialize(vtkImageData *input)
 	// The opacity transfer function is used to control the opacity
 	// of different tissue types.
 
-	volumeScalarOpacity->AddPoint(0, 0.00);
-	volumeScalarOpacity->AddPoint(255, 1.00);
+
 
 	// The color transfer function maps voxel intensities to colors.
 	// It is modality-specific, and often anatomy-specific as well.
@@ -107,10 +112,15 @@ void vtkwidget::initialize(vtkImageData *input)
 	//Set volumeProperty parameters
 	if (input->GetNumberOfScalarComponents() < 3)
     {
+		volumeScalarOpacity->AddPoint(0, 0.00);
+		volumeScalarOpacity->AddPoint(255, 1.00);
+
 		volumeProperty->SetColor(volumeColor);
+		volumeProperty->SetScalarOpacity(volumeScalarOpacity);
 	
     }
       else
+
    {
 	vtkSmartPointer <vtkColorTransferFunction> c1 = vtkSmartPointer<vtkColorTransferFunction>::New();
 	c1->AddRGBPoint(0, 0, 0, 0);
@@ -128,9 +138,22 @@ void vtkwidget::initialize(vtkImageData *input)
 	volumeProperty->SetColor(0,c1);
 	volumeProperty->SetColor(1,c2);
 	volumeProperty->SetColor(2,c3);
+
+
+	volumeScalarOpacity1->AddPoint(0, 0.00);
+	volumeScalarOpacity1->AddPoint(255, 1.00);
+	volumeScalarOpacity2->AddPoint(0, 0.00);
+	volumeScalarOpacity2->AddPoint(255, 1.00);
+	volumeScalarOpacity3->AddPoint(0, 0.00);
+	volumeScalarOpacity3->AddPoint(255, 1.00);
+	volumeProperty->SetScalarOpacity(0,volumeScalarOpacity1);
+	volumeProperty->SetScalarOpacity(1,volumeScalarOpacity2);
+	volumeProperty->SetScalarOpacity(2,volumeScalarOpacity3);
+
     }
 
-	volumeProperty->SetScalarOpacity(volumeScalarOpacity);
+	
+	
 	
 	// volumeProperty->SetGradientOpacity(volumeGradientOpacity);
 	//volumeProperty->SetInterpolationType(VTK_NEAREST_INTERPOLATION);
@@ -391,8 +414,6 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 	
 	vtkTIFFReader *imgseq = vtkTIFFReader::New();
 	imgseq->SetFileNames(filenames);
-	//imgseq->SetNumberOfScalarComponents(3);
-
 	imgseq->Update();
 	
 	
@@ -419,17 +440,17 @@ void vtkwidget::buildhist(vtkImageData* imgdata)
 	histogram->SetComponentSpacing(1, 0, 0);
 	histogram->IgnoreZeroOn();
 	histogram->Update();
-
 	QVector<double> freq(256);
 	int* output = static_cast<int*>(histogram->GetOutput()->GetScalarPointer());
-
+	
 	for (int j = 0; j < 256; ++j)
 	{
 
 		freq[j] = *output++;
 		
-
+		
 	}
 	freq[0] = 0;
+	
 	emit sendhist(freq);
 }

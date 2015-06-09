@@ -15,11 +15,13 @@ class dialog_opacity : public QDialog
 public:
     explicit dialog_opacity(QWidget *parent = 0);
     ~dialog_opacity();
-    QAbstractItemModel* modelopa;
+	QAbstractItemModel* modelopa;
+	QAbstractItemModel* modelopa2;
+	QAbstractItemModel* modelopa3;
     int rowcntopa;
 
 signals:
-    void sendopa(int);
+    void sendopa(int,int);
 
 private slots:
     void on_Addrow_clicked();
@@ -31,6 +33,9 @@ private slots:
 	void plotopa();
 
 	void on_SetOpa_clicked();
+
+	void on_ColChan_toggled(bool);
+
 
 private:
     Ui::dialog_opacity *ui;

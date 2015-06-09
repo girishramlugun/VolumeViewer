@@ -102,6 +102,12 @@ public:
 
     vtkSmartPointer<vtkPiecewiseFunction> volumeScalarOpacity;
 
+	vtkSmartPointer<vtkPiecewiseFunction> volumeScalarOpacity1;
+
+	vtkSmartPointer<vtkPiecewiseFunction> volumeScalarOpacity2;
+
+	vtkSmartPointer<vtkPiecewiseFunction> volumeScalarOpacity3;
+
    vtkSmartPointer<vtkInteractorStyleTrackballCamera> style;
 
    vtkSmartPointer<vtkPiecewiseFunction> volumeGradientOpacity;
