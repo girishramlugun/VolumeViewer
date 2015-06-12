@@ -62,6 +62,7 @@
 //#include<vtkMatlabMexAdapter.h>
 #include<vtkProgressObserver.h>
 #include<QVector>
+#include<vtkGlyph3DMapper.h>
 using namespace std;
 
 class vtkwidget : public QVTKWidget
@@ -79,7 +80,7 @@ public:
 
     explicit vtkwidget(QWidget *parent = 0);
 
-	void renderactor();
+	void renderactor(vtkImageData*);
     
 	vtkSmartPointer<vtkImageChangeInformation> volpropchange;
 

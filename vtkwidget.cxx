@@ -15,7 +15,9 @@
 #include<math.h>
 #include<qprogressdialog.h>
 #include<vtkImageAppend.h>
-
+#include<vtkGlyph3DMapper.h>
+#include<vtkGlyph3D.h>
+#include<vtkArrowSource.h>
 
 vtkwidget::vtkwidget(QWidget *parent) :
     QVTKWidget(parent)
@@ -258,9 +260,29 @@ void vtkwidget::renderpoly()
 	
 }
 
-void vtkwidget::renderactor()
+void vtkwidget::renderactor(vtkImageData *img)
 {
-	
+	vtkSmartPointer<vtkGlyph3D> glyph3D =
+		vtkSmartPointer<vtkGlyph3D>::New();
+	vtkSmartPointer<vtkPolyDataMapper> glyph3DMapper =
+		vtkSmartPointer<vtkPolyDataMapper>::New();
+	vtkSmartPointer<vtkArrowSource> arrowSource =
+		vtkSmartPointer<vtkArrowSource>::New();
+
+	vtkSmartPointer<vtkActor> glyph_actor =
+		vtkSmartPointer<vtkActor>::New();
+	glyph3D->SetSourceConnection(arrowSource->GetOutputPort());
+	glyph3D->SetVectorModeToUseVector();
+	glyph3D->SetInputData(img);
+	glyph3D->SetScaleFactor(0.1);
+	glyph3D->Update();
+
+	glyph3DMapper->SetInputConnection(glyph3D->GetOutputPort());
+	glyph_actor->SetMapper(glyph3DMapper);
+	leftRenderer->AddActor(glyph_actor);
+	GetRenderWindow()->AddRenderer(leftRenderer);
+	GetInteractor()->Render();
+	this->show();
 
 }
 
@@ -323,8 +345,6 @@ void vtkwidget::readtif(string inputFilename)
 	rtiff->SetFileName(inputFilename.c_str());
 	rtiff->SetOrientationType(ORIENTATION_LEFTTOP);
 	rtiff->Update();
-	
-	
 	resample(rtiff->GetOutput());
 	rtiff->Delete();
 
@@ -423,6 +443,7 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 	imse->GetPointData()->SetScalars(imgseq->GetOutput()->GetPointData()->GetScalars());
 
 	resample(imse);
+	//renderactor(imse);
 
 	imgseq->Delete();
 

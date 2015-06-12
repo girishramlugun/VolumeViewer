@@ -76,8 +76,9 @@
 #include <QInputDialog>
 #include<vtkExtractVOI.h>
 #include<qtablewidget.h>
-
-
+#include<vtkArrowSource.h>
+#include <vtkGlyph3D.h>
+#include <vtkGlyph3DMapper.h>
 
 using namespace std;
 std::string inputFilename;
@@ -385,10 +386,10 @@ void VolumeViewer::openvol(string inputFilename)
 				dir = (const char **)matGetDir(matf, &ndir);
 				if (dir == NULL) {
 					QMessageBox::critical(0, QObject::tr("Error"), "Error reading directory of file");
-					
+
 				}
 				else {
-					QStringList arraystring; 
+					QStringList arraystring;
 					for (i = 0; i < ndir; i++)
 					{
 						arraystring.append(QString(dir[i]));
@@ -396,7 +397,7 @@ void VolumeViewer::openvol(string inputFilename)
 
 					bool ok;
 					QString text = QInputDialog::getItem(this, tr("Load Matlab array"),
-						tr("Select array to load:"),arraystring,0,false,&ok );
+						tr("Select array to load:"), arraystring, 0, false, &ok);
 					if (ok && !text.isEmpty()){
 						ui->label->setText(text);
 						string txtstring = text.toStdString();
@@ -405,7 +406,7 @@ void VolumeViewer::openvol(string inputFilename)
 					}
 				}
 				mxFree(dir);
-				
+
 
 				const mwSize * matsize = mxGetDimensions(matarr);
 
@@ -415,49 +416,62 @@ void VolumeViewer::openvol(string inputFilename)
 					QMessageBox::critical(0, QObject::tr("Error"), "Could not copy to array");
 				}
 				matvtkarr->CreateArray(vtkArray::SPARSE, VTK_SHORT);
-				
+
 				matvtkarr = readermat->mxArrayTovtkArray(matarr);
-				
+
 
 				ui->label->setText(QString::number(matvtkarr->GetSize()));
-				
+
 				matimg->SetDimensions(matsize[0], matsize[1], matsize[2]);
 				matimg->AllocateScalars(VTK_INT, 3);
 
 				dataarr->SetNumberOfComponents(3);
-				dataarr->SetNumberOfTuples(matsize[0] * matsize[1] * matsize[2]);
-			
-				
-				for (vtkIdType i = 0; i < matsize[0] * matsize[1] * matsize[2]; i++)
+				dataarr->SetNumberOfTuples(matimg->GetNumberOfPoints());
+
+
+
+				/*
+				for (vtkIdType i = 0; i < matimg->GetNumberOfPoints(); i++)
 
 				{
 					int offset = 3 * i;
 					for (int h = 0; h < 2; h++)
 
 					{
-						vtkVariant *p = &(matvtkarr->GetVariantValueN(offset+h));
+						vtkArrayCoordinates c;
+						matvtkarr->GetCoordinatesN(i, c);
+						vtkVariant p = matvtkarr->GetVariantValueN(offset + h);
 						double pix;
-						pix = p[0].ToDouble();
-						dataarr->SetComponent(i, h, pix);
+						pix = p.ToDouble();
+						dataarr->SetComponent(i, h, 100);
+
+
 					}
-					
-						//double pix[3];
-						//pix[0] = p[0].ToDouble();
-						//pix[1] = p[1].ToDouble();
-						//pix[2] = p[2].ToDouble();
-						//
-						//double* pixel = static_cast<double*>(matimg->GetScalarPointer(i, j, k));
-						//pixel[0] = pix[0];
-						//pixel[1] = pix[1];
-						//pixel[2] = pix[2];
 
 
 				}
+				*/
+				//ui->label->setText(QString::number(dataarr->GetComponent(300,3)));
+				for (int i = 0; i < matsize[0]; i++)
+					for (int j = 0; j < matsize[0]; j++)
+						for (int k = 0; k < matsize[0]; k++)
+						{
+							vtkVariant *op = &(matvtkarr->GetVariantValue(k, j, i));
+							int pix[3];
+							pix[0] = op[0].ToInt();
+							pix[1] = op[1].ToInt();
+							pix[2] = op[2].ToInt();
+							int *p = (int*)matimg->GetScalarPointer(i, j, k);
+							p[0] = pix[0];
+							p[1] = pix[1];
+							p[2] = pix[2];
+						}
 
-				matimg->GetPointData()->SetScalars(dataarr);
+			             
+				//matimg->GetPointData()->SetScalars(dataarr);
+				
 				vtkwid->resample(matimg);
-			
-			
+				//vtkwid->renderactor(matimg);
 		
 		}
 
