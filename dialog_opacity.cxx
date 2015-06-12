@@ -50,16 +50,16 @@ void dialog_opacity::on_bboxopa_accepted()
 
 void dialog_opacity::on_SetOpa_clicked()
 {
-	int col;
+	bool col;
 	
 	if (ui->ColChan->isChecked())
 	{
-		col = 1;
+		col = true;
 	}
 	
 	else if (!ui->ColChan->isChecked())
 	{
-		col = 0;
+		col = false;
 	}
 	
 	rowcntopa = ui->opatable->rowCount();

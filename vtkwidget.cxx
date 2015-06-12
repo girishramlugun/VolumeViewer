@@ -110,10 +110,10 @@ void vtkwidget::initialize(vtkImageData *input)
 
 	
 	//Set volumeProperty parameters
-	if (input->GetNumberOfScalarComponents() < 3)
+	if (input->GetNumberOfScalarComponents() == 1)
     {
 		volumeScalarOpacity->AddPoint(0, 0.00);
-		volumeScalarOpacity->AddPoint(255, 1.00);
+		volumeScalarOpacity->AddPoint(500, 1.00);
 
 		volumeProperty->SetColor(volumeColor);
 		volumeProperty->SetScalarOpacity(volumeScalarOpacity);
@@ -312,7 +312,7 @@ void vtkwidget::readvti(string inputFilename)
 	vtkXMLImageDataReader *rvti = vtkXMLImageDataReader::New();
 	rvti->SetFileName(inputFilename.c_str());
 	rvti->Update();
-	resample(rvti->GetOutput(),1);
+	resample(rvti->GetOutput());
 	rvti->Delete();
 	
 }
@@ -325,14 +325,14 @@ void vtkwidget::readtif(string inputFilename)
 	rtiff->Update();
 	
 	
-	resample(rtiff->GetOutput(),1);
+	resample(rtiff->GetOutput());
 	rtiff->Delete();
 
 }
 
-void vtkwidget::resample(vtkImageData *imgdata, int sf)
+void vtkwidget::resample(vtkImageData *imgdata)
 {
-	/*
+	
 	//Get the Graphics memory and find a scaling factor to match that, otherwise, render the imagedata without scaling
 	double memsize = imgdata->GetActualMemorySize();
 	vtkGPUInfo *gpi = vtkGPUInfo::New();
@@ -383,7 +383,7 @@ void vtkwidget::resample(vtkImageData *imgdata, int sf)
 	}
 	else if (sf<1)
 	{
-	*/
+	
 	//vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
 	//imgrs->SetInputData(imgdata);
 	//imgrs->SetInterpolationModeToNearestNeighbor();
@@ -392,7 +392,7 @@ void vtkwidget::resample(vtkImageData *imgdata, int sf)
 	//imgrs->SetAxisMagnificationFactor(2, sf);
 		buildhist(imgdata);
 		initialize(imgdata);
-	//}
+	}
 	
 
 
@@ -422,7 +422,7 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 	imse->SetDimensions(dims);
 	imse->GetPointData()->SetScalars(imgseq->GetOutput()->GetPointData()->GetScalars());
 
-	resample(imse,1);
+	resample(imse);
 
 	imgseq->Delete();
 

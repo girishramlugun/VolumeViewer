@@ -419,36 +419,44 @@ void VolumeViewer::openvol(string inputFilename)
 				
 				matvtkarr = readermat->mxArrayTovtkArray(matarr);
 				
+
 				ui->label->setText(QString::number(matvtkarr->GetSize()));
 				
 				matimg->SetDimensions(matsize[0], matsize[1], matsize[2]);
 				matimg->AllocateScalars(VTK_INT, 3);
 
 				dataarr->SetNumberOfComponents(3);
-				dataarr->SetNumberOfTuples(matimg->GetNumberOfPoints());
+				dataarr->SetNumberOfTuples(matsize[0] * matsize[1] * matsize[2]);
 			
 				
-				for (vtkIdType i = 0; i< matsize[0]; i++)
-					for (vtkIdType j = 0; j< matsize[1]; j++)
-						for (vtkIdType k = 0; k< matsize[2]; k++)
+				for (vtkIdType i = 0; i < matsize[0] * matsize[1] * matsize[2]; i++)
+
 				{
+					int offset = 3 * i;
+					for (int h = 0; h < 2; h++)
 
-					       
-							vtkVariant *p = &(matvtkarr->GetVariantValue(k, j, i));
-							double pix[3];
-							pix[0] = p[0].ToDouble();
-							pix[1] = p[1].ToDouble();
-							pix[2] = p[2].ToDouble();
-							double* pixel = static_cast<double*>(matimg->GetScalarPointer(k, j, i));
-							pixel[0] = pix[0];
-							pixel[1] = pix[1];
-							pixel[2] = pix[2];
-							
-							
-		         }
+					{
+						vtkVariant *p = &(matvtkarr->GetVariantValueN(offset+h));
+						double pix;
+						pix = p[0].ToDouble();
+						dataarr->SetComponent(i, h, pix);
+					}
+					
+						//double pix[3];
+						//pix[0] = p[0].ToDouble();
+						//pix[1] = p[1].ToDouble();
+						//pix[2] = p[2].ToDouble();
+						//
+						//double* pixel = static_cast<double*>(matimg->GetScalarPointer(i, j, k));
+						//pixel[0] = pix[0];
+						//pixel[1] = pix[1];
+						//pixel[2] = pix[2];
 
 
-				vtkwid->resample(matimg,1);
+				}
+
+				matimg->GetPointData()->SetScalars(dataarr);
+				vtkwid->resample(matimg);
 			
 			
 		
@@ -803,14 +811,14 @@ void VolumeViewer::on_actionOpacity_triggered()
     diaopa->show();
 }
 
-void VolumeViewer::updateopacity(int rowcntopa, int col)
+void VolumeViewer::updateopacity(int rowcntopa, bool col)
 {
 
 	ui->label->setNum(col);
 
 	double tfopa[2];
 	QModelIndex indexopa;
-	if (col = 0)
+	if (col = false)
 	{
 		vtkwid->volumeScalarOpacity->RemoveAllPoints();
 		for (int i = 0; i < rowcntopa; i++)
@@ -827,7 +835,7 @@ void VolumeViewer::updateopacity(int rowcntopa, int col)
 
 
 
-	if (col = 1)
+	else if (col = true)
 	{
 		vtkwid->volumeScalarOpacity1->RemoveAllPoints();
 		vtkwid->volumeScalarOpacity2->RemoveAllPoints();

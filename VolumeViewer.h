@@ -70,7 +70,7 @@ public slots:
   virtual void slotExit();
   void rot();
   void setvolcol(int);
-  void updateopacity(int,int);
+  void updateopacity(int,bool);
   void rmovstat(int);
   
 

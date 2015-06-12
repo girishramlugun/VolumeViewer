@@ -21,7 +21,7 @@ public:
     int rowcntopa;
 
 signals:
-    void sendopa(int,int);
+    void sendopa(int,bool);
 
 private slots:
     void on_Addrow_clicked();

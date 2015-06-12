@@ -146,7 +146,7 @@ signals:
    void updatewincol(double);
    void readvti(string);
    void readtif(string);
-   void resample(vtkImageData*, int);
+   void resample(vtkImageData*);
    void readimseq(vtkStringArray*, int);
    void buildhist(vtkImageData*);
 
