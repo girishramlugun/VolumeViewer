@@ -29,6 +29,7 @@
 #include<vtkImageDataGeometryFilter.h>
 #include<vtkGPUVolumeRayCastMapper.h>
 #include<vtkSmartVolumeMapper.h>
+#include <vtkVolumeTextureMapper3D.h>
 #include <vtkLightKit.h>
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <vtkInteractorStyleImage.h>
@@ -145,7 +146,7 @@ signals:
    void updatewincol(double);
    void readvti(string);
    void readtif(string);
-   void resample(vtkImageData*);
+   void resample(vtkImageData*, int);
    void readimseq(vtkStringArray*, int);
    void buildhist(vtkImageData*);
 
