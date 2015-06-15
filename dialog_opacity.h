@@ -18,7 +18,7 @@ public:
 	QAbstractItemModel* modelopa;
 	QAbstractItemModel* modelopa2;
 	QAbstractItemModel* modelopa3;
-    int rowcntopa;
+	int rowcntopa; 
 
 signals:
     void sendopa(int,bool);

@@ -187,7 +187,7 @@ VolumeViewer::VolumeViewer()
   connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(diatfn,SIGNAL(sendtfn(int)),this,SLOT(setvolcol(int)));
   
-  connect(diaopa,SIGNAL(sendopa(int,int)),this,SLOT(updateopacity(int,int)));
+  connect(diaopa,SIGNAL(sendopa(int,bool)),this,SLOT(updateopacity(int,bool)));
   
   }
 
@@ -461,6 +461,7 @@ void VolumeViewer::openvol(string inputFilename)
 							pix[0] = op[0].ToInt();
 							pix[1] = op[1].ToInt();
 							pix[2] = op[2].ToInt();
+							
 							int *p = (int*)matimg->GetScalarPointer(i, j, k);
 							p[0] = pix[0];
 							p[1] = pix[1];
@@ -831,7 +832,7 @@ void VolumeViewer::updateopacity(int rowcntopa, bool col)
 
 	double tfopa[2];
 	QModelIndex indexopa;
-	if (col = false)
+	if (!col)
 	{
 		vtkwid->volumeScalarOpacity->RemoveAllPoints();
 		for (int i = 0; i < rowcntopa; i++)
@@ -847,8 +848,8 @@ void VolumeViewer::updateopacity(int rowcntopa, bool col)
 	}
 
 
-
-	else if (col = true)
+		
+	else if (col)
 	{
 		vtkwid->volumeScalarOpacity1->RemoveAllPoints();
 		vtkwid->volumeScalarOpacity2->RemoveAllPoints();
@@ -886,8 +887,8 @@ void VolumeViewer::updateopacity(int rowcntopa, bool col)
 		}
 
 	}
-
-   vtkwid->GetRenderWindow()->Render();
+	    
+		vtkwid->GetRenderWindow()->Render();
 
 }
 

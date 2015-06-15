@@ -55,17 +55,19 @@ void dialog_opacity::on_SetOpa_clicked()
 	if (ui->ColChan->isChecked())
 	{
 		col = true;
+		modelopa = ui->opatable->model();
+		modelopa2 = ui->opatable_2->model();
+		modelopa3 = ui->opatable_3->model();
 	}
-	
+		
 	else if (!ui->ColChan->isChecked())
 	{
 		col = false;
+		modelopa = ui->opatable->model();
 	}
 	
 	rowcntopa = ui->opatable->rowCount();
-	modelopa = ui->opatable->model();
-	modelopa2 = ui->opatable_2->model();
-	modelopa3 = ui->opatable_3->model();
+
 	emit sendopa(rowcntopa,col);
 	plotopa();
 }

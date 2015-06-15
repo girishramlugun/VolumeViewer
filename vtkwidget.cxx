@@ -101,8 +101,7 @@ void vtkwidget::initialize(vtkImageData *input)
 	// The goal is to one color for flesh (between 500 and 1000)
 	// and another color for bone (1150 and over).
 
-	volumeColor->AddRGBPoint(0, 0, 0, 0);
-	volumeColor->AddRGBPoint(255, 1, 1,1);
+
 
 
 
@@ -110,18 +109,22 @@ void vtkwidget::initialize(vtkImageData *input)
 
 	GetInteractor()->SetInteractorStyle(style);
 
-	
+	int ncol = input->GetNumberOfScalarComponents();
 	//Set volumeProperty parameters
-	if (input->GetNumberOfScalarComponents() == 1)
+	if (ncol < 3 )
     {
+		volumeColor->AddRGBPoint(0, 0, 0, 0);
+		volumeColor->AddRGBPoint(255, 1, 1, 1);
+
 		volumeScalarOpacity->AddPoint(0, 0.00);
-		volumeScalarOpacity->AddPoint(500, 1.00);
+		volumeScalarOpacity->AddPoint(255, 1.00);
 
 		volumeProperty->SetColor(volumeColor);
 		volumeProperty->SetScalarOpacity(volumeScalarOpacity);
 	
     }
-      else
+	
+	else if (ncol= 3)
 
    {
 	vtkSmartPointer <vtkColorTransferFunction> c1 = vtkSmartPointer<vtkColorTransferFunction>::New();
@@ -362,7 +365,7 @@ void vtkwidget::resample(vtkImageData *imgdata)
 }
 	//double gpumem = mapper->GetMaxMemoryInBytes();
 	double sf =ceil(memsize / mapper->GetMaxMemoryInBytes());
-	
+	/*
 	if (sf>=1 && sf<2){
 
 	vtkSmartPointer <vtkImageResample> imgrs =vtkSmartPointer <vtkImageResample>::New();
@@ -409,10 +412,10 @@ void vtkwidget::resample(vtkImageData *imgdata)
 	//imgrs->SetInterpolationModeToNearestNeighbor();
 	//imgrs->SetAxisMagnificationFactor(0, sf);
 	//imgrs->SetAxisMagnificationFactor(1, sf);
-	//imgrs->SetAxisMagnificationFactor(2, sf);
+	//imgrs->SetAxisMagnificationFactor(2, sf);*/
 		buildhist(imgdata);
 		initialize(imgdata);
-	}
+	//}
 	
 
 
