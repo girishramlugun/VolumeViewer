@@ -402,61 +402,60 @@ void VolumeViewer::openvol(string inputFilename)
 						ui->label->setText(text);
 						string txtstring = text.toStdString();
 						const char *txtchar = txtstring.c_str();
-						matarr = matGetVariable(matf, txtchar);
+					//	matarr = matGetVariable(matf, txtchar);
 					}
 				}
 				mxFree(dir);
 
 
-				const mwSize * matsize = mxGetDimensions(matarr);
+				const mwSize * matsize = mxGetDimensions(matGetVariable(matf, "AtriaTissue"));
 
 
 
-				if (matarr == NULL) {
-					QMessageBox::critical(0, QObject::tr("Error"), "Could not copy to array");
-				}
+			//	if (matarr == NULL) {
+			//		QMessageBox::critical(0, QObject::tr("Error"), "Could not copy to array");
+			//	}
 				matvtkarr->CreateArray(vtkArray::SPARSE, VTK_SHORT);
-
-				matvtkarr = readermat->mxArrayTovtkArray(matarr);
+				
+				matvtkarr = readermat->mxArrayTovtkArray(matGetVariable(matf, "AtriaTissue"));
 
 
 				ui->label->setText(QString::number(matvtkarr->GetSize()));
 
 				matimg->SetDimensions(matsize[0], matsize[1], matsize[2]);
-				matimg->AllocateScalars(VTK_INT, 3);
+				matimg->AllocateScalars(VTK_INT, 1);
 
-				dataarr->SetNumberOfComponents(3);
+				dataarr->SetNumberOfComponents(1);
 				dataarr->SetNumberOfTuples(matimg->GetNumberOfPoints());
 
 
-
-				/*
-				for (vtkIdType i = 0; i < matimg->GetNumberOfPoints(); i++)
+				//QProgressDialog progress("Loading...", "Abort", 0, matimg->GetNumberOfPoints(), this);
+			//	progress.setWindowModality(Qt::WindowModal);
+				
+				for (vtkIdType i = 0; i != matvtkarr->GetNonNullSize(); i++)
 
 				{
-					int offset = 3 * i;
-					for (int h = 0; h < 2; h++)
-
-					{
-						vtkArrayCoordinates c;
-						matvtkarr->GetCoordinatesN(i, c);
-						vtkVariant p = matvtkarr->GetVariantValueN(offset + h);
-						double pix;
-						pix = p.ToDouble();
-						dataarr->SetComponent(i, h, 100);
 
 
-					}
+	
+					dataarr->SetVariantValue(i, matvtkarr->GetVariantValueN(i));
+					//	progress.setValue(i);
+
+					//	if (progress.wasCanceled())
+					//		break;
 
 
 				}
-				*/
+				//progress.setValue(matimg->GetNumberOfPoints());
+				
 				//ui->label->setText(QString::number(dataarr->GetComponent(300,3)));
+				/*
+				vtkIdType r = 0;
 				for (int i = 0; i < matsize[0]; i++)
 					for (int j = 0; j < matsize[0]; j++)
 						for (int k = 0; k < matsize[0]; k++)
 						{
-							vtkVariant *op = &(matvtkarr->GetVariantValue(k, j, i));
+							vtkVariant *op = &(dataarr->GetVariantValue(r));
 							int pix[3];
 							pix[0] = op[0].ToInt();
 							pix[1] = op[1].ToInt();
@@ -466,10 +465,12 @@ void VolumeViewer::openvol(string inputFilename)
 							p[0] = pix[0];
 							p[1] = pix[1];
 							p[2] = pix[2];
+							r++;
 						}
 
-			             
-				//matimg->GetPointData()->SetScalars(dataarr);
+			      */       
+				
+				matimg->GetPointData()->SetScalars(dataarr);
 				
 				vtkwid->resample(matimg);
 				//vtkwid->renderactor(matimg);
