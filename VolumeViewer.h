@@ -29,7 +29,7 @@
 
 #include <dialog_hessian.h>
 
-
+#include<dialog_gpu.h>
 
 
 
@@ -53,6 +53,7 @@ public:
   dialog_rotation *diarotat;
   dialog_color *diacol;
   dialog_hessian *diahessian;
+  Dialog_gpu *diagpu;
   vtkSmartPointer <vtkBoxWidget> box;
   vtkwidget *vtkwid;
   //itkthread *imgwid;
@@ -96,7 +97,7 @@ private slots:
   void on_actionR_to_B_triggered();
   void on_actionGreen_triggered();
   void on_actionB_to_R_triggered();
-
+  void on_actionOptions_triggered();
   void on_actionSave_Screenshot_triggered();
 
   void on_actionRotate_triggered();

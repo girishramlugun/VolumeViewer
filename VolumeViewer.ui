@@ -158,6 +158,7 @@
     <addaction name="actionRotate"/>
     <addaction name="actionAdd"/>
     <addaction name="actionCrop"/>
+    <addaction name="actionOptions"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -524,6 +525,11 @@
   <action name="actionCrop">
    <property name="text">
     <string>Crop</string>
+   </property>
+  </action>
+  <action name="actionOptions">
+   <property name="text">
+    <string>Options</string>
    </property>
   </action>
  </widget>

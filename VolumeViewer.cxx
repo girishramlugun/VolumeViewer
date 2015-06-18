@@ -94,6 +94,7 @@ vtkSmartPointer <vtkWindowToImageFilter> w2i = vtkSmartPointer <vtkWindowToImage
 
 
 
+
 class vtkBoxWidgetCallback : public vtkCommand
 {
 public:
@@ -183,6 +184,9 @@ VolumeViewer::VolumeViewer()
 	//Load Hessian filter dialog
 	diahessian = new dialog_hessian(this);
 
+	//gpu settings
+	diagpu = new Dialog_gpu(this);
+
   // Set up action signals and slots
   connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(diatfn,SIGNAL(sendtfn(int)),this,SLOT(setvolcol(int)));
@@ -257,7 +261,7 @@ void VolumeViewer::on_actionImage_triggered()
 void VolumeViewer::openimg(string inputimgname)
 {
 
-
+	
 }
 
 void VolumeViewer::on_actionImage_Sequence_triggered()
@@ -364,10 +368,12 @@ void VolumeViewer::openvol(string inputFilename)
 		}
 		else if (ext == QString("mat"))
 		{
-			
+
+
 			vtkSmartPointer<vtkMatlabMexAdapter> readermat = vtkSmartPointer<vtkMatlabMexAdapter>::New();
 			mxArray *matarr;
 			MATFile *matf;
+			
 			vtkArray *matvtkarr;
 			vtkSmartPointer<vtkUnsignedShortArray> dataarr = vtkSmartPointer<vtkUnsignedShortArray>::New();
 			vtkSmartPointer<vtkImageData> matimg = vtkSmartPointer<vtkImageData>::New();
@@ -402,22 +408,22 @@ void VolumeViewer::openvol(string inputFilename)
 						ui->label->setText(text);
 						string txtstring = text.toStdString();
 						const char *txtchar = txtstring.c_str();
-					//	matarr = matGetVariable(matf, txtchar);
+						matarr = matGetVariable(matf, txtchar);
 					}
 				}
 				mxFree(dir);
 
 
-				const mwSize * matsize = mxGetDimensions(matGetVariable(matf, "AtriaTissue"));
+				const mwSize * matsize = mxGetDimensions(matarr);
 
 
 
-			//	if (matarr == NULL) {
-			//		QMessageBox::critical(0, QObject::tr("Error"), "Could not copy to array");
-			//	}
+				if (matarr == NULL) {
+					QMessageBox::critical(0, QObject::tr("Error"), "Could not copy to array");
+		                        	}
 				matvtkarr->CreateArray(vtkArray::SPARSE, VTK_SHORT);
 				
-				matvtkarr = readermat->mxArrayTovtkArray(matGetVariable(matf, "AtriaTissue"));
+				matvtkarr = readermat->mxArrayTovtkArray(matarr);
 
 
 				ui->label->setText(QString::number(matvtkarr->GetSize()));
@@ -449,26 +455,23 @@ void VolumeViewer::openvol(string inputFilename)
 				//progress.setValue(matimg->GetNumberOfPoints());
 				
 				//ui->label->setText(QString::number(dataarr->GetComponent(300,3)));
+				
 				/*
 				vtkIdType r = 0;
 				for (int i = 0; i < matsize[0]; i++)
-					for (int j = 0; j < matsize[0]; j++)
-						for (int k = 0; k < matsize[0]; k++)
+					for (int j = 0; j < matsize[1]; j++)
+						for (int k = 0; k < matsize[2]; k++)
 						{
-							vtkVariant *op = &(dataarr->GetVariantValue(r));
-							int pix[3];
-							pix[0] = op[0].ToInt();
-							pix[1] = op[1].ToInt();
-							pix[2] = op[2].ToInt();
-							
-							int *p = (int*)matimg->GetScalarPointer(i, j, k);
-							p[0] = pix[0];
-							p[1] = pix[1];
-							p[2] = pix[2];
+							//vtkVariant op = matvtkarr->GetVariantValue(r);
+							int p = (int)matimg->GetScalarPointer(j,i,k);
+							p = (matvtkarr->GetVariantValue(r)).ToInt();
 							r++;
 						}
 
-			      */       
+			      */      
+
+				
+
 				
 				matimg->GetPointData()->SetScalars(dataarr);
 				
@@ -507,6 +510,11 @@ void VolumeViewer::on_actionExit_2_triggered()
 		vtkwid->deleteLater();
     }
     this->close();
+}
+
+void VolumeViewer::on_actionOptions_triggered()
+{
+	diagpu->show();
 }
 
 void VolumeViewer::on_actionBackground_triggered()
