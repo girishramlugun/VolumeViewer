@@ -46,13 +46,9 @@
 #include <qmath.h>
 #include <limits>
 #include <QtNumeric>
-#ifdef _WIN32
 #include <QtPrintSupport\QPrinter>
 #include <QtPrintSupport\QPrintEngine>
-#else
-#include<QPrinter>
-#include<QPrintEngine>
-#endif
+
 
 class QCPPainter;
 class QCustomPlot;
