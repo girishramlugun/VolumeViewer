@@ -367,7 +367,7 @@ void vtkwidget::resample(vtkImageData *imgdata)
 	//double gpumem = mapper->GetMaxMemoryInBytes();
 	double sf =ceil(memsize / mapper->GetMaxMemoryInBytes());
 
-	if (sf>=1 && sf<2){
+    if (sf>=1 && sf<8){
 
 	vtkSmartPointer <vtkImageResample> imgrs =vtkSmartPointer <vtkImageResample>::New();
 	imgrs->SetInputData(imgdata);
@@ -379,28 +379,15 @@ void vtkwidget::resample(vtkImageData *imgdata)
 	buildhist(imgrs->GetOutput());
 	initialize(imgrs->GetOutput());
 	}
-	else if (sf >= 2 && sf < 4)
+    else if (sf >= 8 && sf < 16)
 
 	{
 	vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
 	imgrs->SetInputData(imgdata);
 	imgrs->SetInterpolationModeToNearestNeighbor();
-	imgrs->SetAxisMagnificationFactor(0, 0.25);
-	imgrs->SetAxisMagnificationFactor(1, 0.25);
-	imgrs->SetAxisMagnificationFactor(2, 0.25);
-	imgrs->Update();
-	buildhist(imgrs->GetOutput());
-	initialize(imgrs->GetOutput());
-	}
-	else if (sf >= 4 && sf < 8)
-
-	{
-	vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
-	imgrs->SetInputData(imgdata);
-	imgrs->SetInterpolationModeToNearestNeighbor();
-	imgrs->SetAxisMagnificationFactor(0, 0.125);
-	imgrs->SetAxisMagnificationFactor(1, 0.125);
-	imgrs->SetAxisMagnificationFactor(2, 0.125);
+    imgrs->SetAxisMagnificationFactor(0, 0.25);
+    imgrs->SetAxisMagnificationFactor(1, 0.25);
+    imgrs->SetAxisMagnificationFactor(2, 0.25);
 	imgrs->Update();
 	buildhist(imgrs->GetOutput());
 	initialize(imgrs->GetOutput());
