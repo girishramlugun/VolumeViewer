@@ -31,7 +31,6 @@
 #include <vtkImageProperty.h>
 #include <vtkImageSlice.h>
 #include<vtkCamera.h>
-#include<vtkAVIWriter.h>
 #include<QTimer>
 #include <qprogressdialog.h>
 #include<vtkCallbackCommand.h>
@@ -89,7 +88,12 @@ bool wrmv=0;
 
 
 
+#ifdef _WIN32
+#include<vtkAVIWriter.h>
 vtkSmartPointer<vtkAVIWriter> movie = vtkSmartPointer <vtkAVIWriter>::New();
+#endif
+
+
 vtkSmartPointer <vtkWindowToImageFilter> w2i = vtkSmartPointer <vtkWindowToImageFilter>::New();
 
 
@@ -109,6 +113,8 @@ public:
 	  if (this->Mapper)
         {
         vtkPlanes *planes = vtkPlanes::New();
+		widget->OutlineCursorWiresOff();
+		widget->ScalingEnabledOff();
         widget-> GetPlanes(planes);
         this->Mapper->SetClippingPlanes(planes);
         planes->Delete();
@@ -696,8 +702,10 @@ void dialog_rotation::on_stoprot_clicked()
     rtimer->stop();
 
     if (wrmv==1){
-    movie->End();
-    movie->Delete();
+#ifdef _WIN32
+		movie->End();
+		movie->Delete();
+#endif
     w2i->Delete();
     wrmv=0;}
 
@@ -906,10 +914,12 @@ void VolumeViewer::rmovstat(int wr)
 
     if (wr==2){
 		w2i->SetInput(vtkwid->GetRenderWindow());
-    movie->SetFileName(diarotat->movname.c_str());
-    movie->SetInputConnection(w2i->GetOutputPort());
-    movie->SetRate(30);
-    movie->Start();
+#ifdef _WIN32
+		movie->SetFileName(diarotat->movname.c_str());
+		movie->SetInputConnection(w2i->GetOutputPort());
+		movie->SetRate(30);
+		movie->Start();
+#endif
     diarotat->rtimer->start();
     wrmv=1;
     }
@@ -926,7 +936,9 @@ void VolumeViewer::rot()
 {
  if (wrmv==1)
    {
-     movie->Write();
+#ifdef _WIN32
+	   movie->Write();
+#endif
      w2i->Modified();}
   vtkwid->volume->RotateWXYZ(diarotat->rotang,diarotat->rotmat[0],diarotat->rotmat[1],diarotat->rotmat[2]);
   vtkwid->GetRenderWindow()->Render();

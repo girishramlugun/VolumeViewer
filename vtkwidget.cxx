@@ -357,7 +357,7 @@ void vtkwidget::resample(vtkImageData *imgdata)
 {
 	
 	//Get the Graphics memory and find a scaling factor to match that, otherwise, render the imagedata without scaling
-	double memsize = imgdata->GetActualMemorySize();
+	vtkIdType memsize = imgdata->GetActualMemorySize();
 	vtkGPUInfo *gpi = vtkGPUInfo::New();
 	long vram = gpi->GetDedicatedVideoMemory();
 	if (vram = 134217728){
@@ -471,8 +471,7 @@ void vtkwidget::buildhist(vtkImageData* imgdata)
 	{
 
 		freq[j] = *output++;
-		
-		
+				
 	}
 	freq[0] = 0;
 	
