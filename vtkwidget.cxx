@@ -356,16 +356,17 @@ void vtkwidget::readtif(string inputFilename)
 void vtkwidget::resample(vtkImageData *imgdata)
 {
 	
+	
 	//Get the Graphics memory and find a scaling factor to match that, otherwise, render the imagedata without scaling
-	vtkIdType memsize = imgdata->GetActualMemorySize();
+	vtkIdType memsize = imgdata->GetActualMemorySize()*1024;
 	vtkGPUInfo *gpi = vtkGPUInfo::New();
-	long vram = gpi->GetDedicatedVideoMemory();
+	vtkIdType vram = gpi->GetDedicatedVideoMemory();
 	if (vram = 134217728){
 	mapper->SetMaxMemoryInBytes(805306368);
-}
+	}
 	//double gpumem = mapper->GetMaxMemoryInBytes();
 	double sf =ceil(memsize / mapper->GetMaxMemoryInBytes());
-	
+
 	if (sf>=1 && sf<2){
 
 	vtkSmartPointer <vtkImageResample> imgrs =vtkSmartPointer <vtkImageResample>::New();
@@ -381,44 +382,34 @@ void vtkwidget::resample(vtkImageData *imgdata)
 	else if (sf >= 2 && sf < 4)
 
 	{
-		vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
-		imgrs->SetInputData(imgdata);
-		imgrs->SetInterpolationModeToNearestNeighbor();
-		imgrs->SetAxisMagnificationFactor(0, 0.25);
-		imgrs->SetAxisMagnificationFactor(1, 0.25);
-		imgrs->SetAxisMagnificationFactor(2, 0.25);
-		imgrs->Update();
-		buildhist(imgrs->GetOutput());
-		initialize(imgrs->GetOutput());
+	vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
+	imgrs->SetInputData(imgdata);
+	imgrs->SetInterpolationModeToNearestNeighbor();
+	imgrs->SetAxisMagnificationFactor(0, 0.25);
+	imgrs->SetAxisMagnificationFactor(1, 0.25);
+	imgrs->SetAxisMagnificationFactor(2, 0.25);
+	imgrs->Update();
+	buildhist(imgrs->GetOutput());
+	initialize(imgrs->GetOutput());
 	}
 	else if (sf >= 4 && sf < 8)
 
 	{
-		vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
-		imgrs->SetInputData(imgdata);
-		imgrs->SetInterpolationModeToNearestNeighbor();
-		imgrs->SetAxisMagnificationFactor(0, 0.125);
-		imgrs->SetAxisMagnificationFactor(1, 0.125);
-		imgrs->SetAxisMagnificationFactor(2, 0.125);
-		imgrs->Update();
-		buildhist(imgrs->GetOutput());
-		initialize(imgrs->GetOutput());
+	vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
+	imgrs->SetInputData(imgdata);
+	imgrs->SetInterpolationModeToNearestNeighbor();
+	imgrs->SetAxisMagnificationFactor(0, 0.125);
+	imgrs->SetAxisMagnificationFactor(1, 0.125);
+	imgrs->SetAxisMagnificationFactor(2, 0.125);
+	imgrs->Update();
+	buildhist(imgrs->GetOutput());
+	initialize(imgrs->GetOutput());
 	}
 	else if (sf<1)
 	{
-	
-	//vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
-	//imgrs->SetInputData(imgdata);
-	//imgrs->SetInterpolationModeToNearestNeighbor();
-	//imgrs->SetAxisMagnificationFactor(0, sf);
-	//imgrs->SetAxisMagnificationFactor(1, sf);
-	//imgrs->SetAxisMagnificationFactor(2, sf);
-		buildhist(imgdata);
-		initialize(imgdata);
+	buildhist(imgdata);
+	initialize(imgdata);
 	}
-	
-
-
 
 }
 

@@ -48,9 +48,9 @@
 #include <vtkPointData.h>
 #include <vtkClipVolume.h>
 #include <vtkDataSetMapper.h>
-#include<vtkMatlabMexAdapter.h>
-#include<mat.h>
-#include <matrix.h>
+//#include<vtkMatlabMexAdapter.h>
+//#include<mat.h>
+//#include <matrix.h>
 #include<vtkDoubleArray.h>
 #include<vtkTypedArray.h>
 #include<vtkArrayIterator.h>
@@ -78,6 +78,7 @@
 #include<vtkArrowSource.h>
 #include <vtkGlyph3D.h>
 #include <vtkGlyph3DMapper.h>
+
 
 using namespace std;
 std::string inputFilename;
@@ -114,7 +115,6 @@ public:
         {
         vtkPlanes *planes = vtkPlanes::New();
 		widget->OutlineCursorWiresOff();
-		widget->ScalingEnabledOff();
         widget-> GetPlanes(planes);
         this->Mapper->SetClippingPlanes(planes);
         planes->Delete();
@@ -374,7 +374,7 @@ void VolumeViewer::openvol(string inputFilename)
 		}
 		else if (ext == QString("mat"))
 		{
-
+			/*
 
 			vtkSmartPointer<vtkMatlabMexAdapter> readermat = vtkSmartPointer<vtkMatlabMexAdapter>::New();
 			mxArray *matarr;
@@ -462,19 +462,7 @@ void VolumeViewer::openvol(string inputFilename)
 				
 				//ui->label->setText(QString::number(dataarr->GetComponent(300,3)));
 				
-				/*
-				vtkIdType r = 0;
-				for (int i = 0; i < matsize[0]; i++)
-					for (int j = 0; j < matsize[1]; j++)
-						for (int k = 0; k < matsize[2]; k++)
-						{
-							//vtkVariant op = matvtkarr->GetVariantValue(r);
-							int p = (int)matimg->GetScalarPointer(j,i,k);
-							p = (matvtkarr->GetVariantValue(r)).ToInt();
-							r++;
-						}
-
-			      */      
+     
 
 				
 
@@ -483,10 +471,10 @@ void VolumeViewer::openvol(string inputFilename)
 				
 				vtkwid->resample(matimg);
 				//vtkwid->renderactor(matimg);
-		
+				
 		}
 
-		
+		*/
 
 		
 		
