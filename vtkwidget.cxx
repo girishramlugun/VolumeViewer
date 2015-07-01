@@ -19,6 +19,8 @@
 #include<vtkGlyph3D.h>
 #include<vtkArrowSource.h>
 
+
+
 vtkwidget::vtkwidget(QWidget *parent) :
     QVTKWidget(parent)
 {
@@ -368,13 +370,13 @@ void vtkwidget::resample(vtkImageData *imgdata)
 	double sf =ceil(memsize / mapper->GetMaxMemoryInBytes());
 
     if (sf>=1 && sf<8){
-
+		sample_rate = 0.5;
 	vtkSmartPointer <vtkImageResample> imgrs =vtkSmartPointer <vtkImageResample>::New();
 	imgrs->SetInputData(imgdata);
 	imgrs->SetInterpolationModeToNearestNeighbor();
-	imgrs->SetAxisMagnificationFactor(0, 0.5);
-	imgrs->SetAxisMagnificationFactor(1, 0.5);
-	imgrs->SetAxisMagnificationFactor(2, 0.5);
+	imgrs->SetAxisMagnificationFactor(0, sample_rate);
+	imgrs->SetAxisMagnificationFactor(1, sample_rate);
+	imgrs->SetAxisMagnificationFactor(2, sample_rate);
 	imgrs->Update();
 	buildhist(imgrs->GetOutput());
 	initialize(imgrs->GetOutput());
@@ -382,18 +384,20 @@ void vtkwidget::resample(vtkImageData *imgdata)
     else if (sf >= 8 && sf < 16)
 
 	{
+		sample_rate = 0.25;
 	vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
 	imgrs->SetInputData(imgdata);
 	imgrs->SetInterpolationModeToNearestNeighbor();
-    imgrs->SetAxisMagnificationFactor(0, 0.25);
-    imgrs->SetAxisMagnificationFactor(1, 0.25);
-    imgrs->SetAxisMagnificationFactor(2, 0.25);
+	imgrs->SetAxisMagnificationFactor(0, sample_rate);
+	imgrs->SetAxisMagnificationFactor(1, sample_rate);
+	imgrs->SetAxisMagnificationFactor(2, sample_rate);
 	imgrs->Update();
 	buildhist(imgrs->GetOutput());
 	initialize(imgrs->GetOutput());
 	}
 	else if (sf<1)
 	{
+		sample_rate = 1;
 	buildhist(imgdata);
 	initialize(imgdata);
 	}

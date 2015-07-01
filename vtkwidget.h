@@ -132,6 +132,7 @@ public:
 
    vtkSmartPointer<vtkOrientationMarkerWidget> widget;
 
+   double sample_rate;
 
 signals:
 

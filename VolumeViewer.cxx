@@ -790,6 +790,7 @@ void VolumeViewer::on_actionCrop_triggered()
 	{
 		if (ui->actionClip->isChecked())
 		{
+			if (vtkwid->sample_rate = 1){
 			vtkIdType id = 0; double points[3];
 			vtkSmartPointer <vtkPolyData> Crop =  vtkSmartPointer <vtkPolyData>::New();
 			
@@ -811,11 +812,11 @@ void VolumeViewer::on_actionCrop_triggered()
 			}
 
 			extvoi->SetInputData(vtkwid->mapper->GetInput());
-			extvoi->SetSampleRate(1, 1, 1);
+			extvoi->SetSampleRate(1,1,1);
 			extvoi->SetVOI(coord[0][0], coord[0][1], coord[1][2], coord[1][3], coord[2][4], coord[2][5]);
 			ui->label->setText(QString::number(coord[0][0]) + " " + QString::number(coord[0][1]) + " " + QString::number(coord[1][2]) + " " + QString::number(coord[1][3]) + " " + QString::number(coord[2][4]) + " " + QString::number(coord[2][5]));
 			extvoi->Update();
-
+			
 			//vtkSmartPointer <vtkImageData> ext = vtkSmartPointer <vtkImageData>::New();
 			//ext->AllocateScalars(VTK_INT, extvoi->GetOutput()->GetNumberOfPoints());
 			//ext = extvoi->GetOutput();
@@ -823,12 +824,14 @@ void VolumeViewer::on_actionCrop_triggered()
 				tr("Save Volume"), "",
 				tr("TIFF File (*.tif)"));
 			string volname = fileNameSave.toStdString();
-
-			vtkSmartPointer <vtkTIFFWriter> twrite = vtkSmartPointer<vtkTIFFWriter>::New();
-			twrite->SetInputData(extvoi->GetOutput());
-			twrite->SetFileName(volname.c_str());
-			twrite->Update();
-			twrite->Write();
+			if (!volname.empty()){
+				vtkSmartPointer <vtkTIFFWriter> twrite = vtkSmartPointer<vtkTIFFWriter>::New();
+				twrite->SetInputData(extvoi->GetOutput());
+				twrite->SetFileName(volname.c_str());
+				twrite->Update();
+				twrite->Write();
+			}
+			}
 		}
 	
 	else {
