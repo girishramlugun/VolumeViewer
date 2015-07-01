@@ -344,12 +344,12 @@ void vtkwidget::readvti(string inputFilename)
 
 void vtkwidget::readtif(string inputFilename)
 {
-	vtkTIFFReader *rtiff = vtkTIFFReader::New();
-	rtiff->SetFileName(inputFilename.c_str());
-	rtiff->SetOrientationType(ORIENTATION_LEFTTOP);
-	rtiff->Update();
-	resample(rtiff->GetOutput());
-	rtiff->Delete();
+	//vtkTIFFReader *rtiff = vtkTIFFReader::New();
+	readertiff->SetFileName(inputFilename.c_str());
+	readertiff->SetOrientationType(ORIENTATION_LEFTTOP);
+	readertiff->Update();
+	resample(readertiff->GetOutput());
+	//rtiff->Delete();
 
 }
 

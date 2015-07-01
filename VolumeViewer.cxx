@@ -4,7 +4,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkPlanes.h>
 #include <vtkPlane.h>
-#include <vtkBoxWidget.h>
+#include <vtkBoxWidget2.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkXMLImageDataReader.h>
 #include <vtkDataSetMapper.h>
@@ -78,7 +78,8 @@
 #include<vtkArrowSource.h>
 #include <vtkGlyph3D.h>
 #include <vtkGlyph3DMapper.h>
-
+#include <vtkTIFFWriter.h>
+#include<vtkBoxRepresentation.h>
 
 using namespace std;
 std::string inputFilename;
@@ -109,13 +110,15 @@ public:
   virtual void Execute(vtkObject *caller, unsigned long, void*)
 
     {
-      vtkBoxWidget *widget = reinterpret_cast<vtkBoxWidget*>(caller);
+      vtkBoxWidget2 *widget = reinterpret_cast<vtkBoxWidget2*>(caller);
+
 
 	  if (this->Mapper)
         {
-        vtkPlanes *planes = vtkPlanes::New();
-		widget->OutlineCursorWiresOff();
-        widget-> GetPlanes(planes);
+			vtkPlanes *planes = vtkPlanes::New();
+			static_cast<vtkBoxRepresentation*>(widget->GetRepresentation())->GetPlanes(planes);
+		//widget->OutlineCursorWiresOff();
+        //widget-> GetPlanes(planes);
         this->Mapper->SetClippingPlanes(planes);
         planes->Delete();
         }
@@ -733,36 +736,41 @@ void VolumeViewer::on_actionClip_triggered()
 {
 
     //Check Clip button
-	vtkwid->leftRenderer->ResetCamera();
+	//vtkwid->leftRenderer->ResetCamera();
 if (vtkwid->isVisible())
 {
     if (ui->actionClip->isChecked())
 {
-		box = vtkSmartPointer<vtkBoxWidget>::New();
+		box = vtkSmartPointer<vtkBoxWidget2>::New();
 		vtkwid->leftRenderer->ResetCamera();
-        box->SetInputData(vtkwid->mapper->GetInput());
-    // Add a box widget for clipping
-        box->SetInteractor(vtkwid->GetInteractor());
-        box->SetDefaultRenderer(vtkwid->leftRenderer);
+
+		vtkSmartPointer <vtkBoxRepresentation> boxrep = vtkSmartPointer <vtkBoxRepresentation>::New();
+		boxrep->SetPlaceFactor(1.00);
+		boxrep->SetInsideOut(1);
+		boxrep->PlaceWidget(vtkwid->mapper->GetInput()->GetBounds());
+		boxrep->SetRenderer(vtkwid->leftRenderer);
+		box->SetRepresentation(boxrep);
 		
-		box->SetPlaceFactor(1.00);
-        box->InsideOutOn();
-        box->PlaceWidget();
-        vtkBoxWidgetCallback *callback = vtkBoxWidgetCallback::New();
+		//box->SetInputData(vtkwid->mapper->GetInput());
+       // Add a box widget for clipping
+        box->SetInteractor(vtkwid->GetInteractor());
+
+        vtkSmartPointer <vtkBoxWidgetCallback> callback = vtkSmartPointer <vtkBoxWidgetCallback>::New();
         callback->SetMapper(vtkwid->mapper);
         box->AddObserver(vtkCommand::InteractionEvent, callback);
-        box->EnabledOn();
-        vtkwid->leftRenderer->Render();
-        callback->Delete();}
+		box->On();
+		vtkwid->GetInteractor()->Render();
+			
+        }
     else{
         {
 			
 			//box->RemoveAllObservers();
-			box->EnabledOff();
+			box->Off();
 			//box->Delete();
 			vtkwid->leftRenderer->ResetCameraClippingRange();
 			vtkwid->leftRenderer->ResetCamera();
-			vtkwid->GetRenderWindow()->Render();
+			vtkwid->GetInteractor()->Render();
 		
 
         }
@@ -778,16 +786,21 @@ else {
 
 void VolumeViewer::on_actionCrop_triggered()
 {
-	
-	vtkIdType id=0; double points[3];
-		vtkPolyData *Crop = vtkPolyData::New();
-		box->GetPolyData(Crop);
-		
-		Crop->GetPoint(id, points);
-	
-	
-		vtkSmartPointer <vtkExtractVOI> extvoi = vtkSmartPointer <vtkExtractVOI>::New();
-		double coord[3][6];
+	if (vtkwid->isVisible())
+	{
+		if (ui->actionClip->isChecked())
+		{
+			vtkIdType id = 0; double points[3];
+			vtkSmartPointer <vtkPolyData> Crop =  vtkSmartPointer <vtkPolyData>::New();
+			
+			static_cast<vtkBoxRepresentation*>(box->GetRepresentation())->GetPolyData(Crop);
+			
+
+			Crop->GetPoint(id, points);
+
+
+			vtkSmartPointer <vtkExtractVOI> extvoi = vtkSmartPointer <vtkExtractVOI>::New();
+			double coord[3][6];
 			int j = 0;
 			for (vtkIdType i = 8; i < 14; i++)
 			{
@@ -797,17 +810,31 @@ void VolumeViewer::on_actionCrop_triggered()
 				j++;
 			}
 
-		//	extvoi->SetInputData(vtkwid->input);
-		//	extvoi->SetVOI(coord[0][0], coord[0][1], coord[1][2], coord[1][3], coord[2][4], coord[2][5]);
+			extvoi->SetInputData(vtkwid->mapper->GetInput());
+			extvoi->SetSampleRate(1, 1, 1);
+			extvoi->SetVOI(coord[0][0], coord[0][1], coord[1][2], coord[1][3], coord[2][4], coord[2][5]);
 			ui->label->setText(QString::number(coord[0][0]) + " " + QString::number(coord[0][1]) + " " + QString::number(coord[1][2]) + " " + QString::number(coord[1][3]) + " " + QString::number(coord[2][4]) + " " + QString::number(coord[2][5]));
-		//	extvoi->Update();
-			//vtkImageData *ext;
-			//ext = extvoi->GetOutput();
-		//	vtkSmartPointer <vtkXMLImageDataWriter> twrite = vtkSmartPointer<vtkXMLImageDataWriter>::New();
-		//	twrite->SetInputData(extvoi->GetOutput());
-		//	twrite->SetFileName("saved.vti");
-		//	twrite->Write();
+			extvoi->Update();
 
+			//vtkSmartPointer <vtkImageData> ext = vtkSmartPointer <vtkImageData>::New();
+			//ext->AllocateScalars(VTK_INT, extvoi->GetOutput()->GetNumberOfPoints());
+			//ext = extvoi->GetOutput();
+			QString fileNameSave = QFileDialog::getSaveFileName(this,
+				tr("Save Volume"), "",
+				tr("TIFF File (*.tif)"));
+			string volname = fileNameSave.toStdString();
+
+			vtkSmartPointer <vtkTIFFWriter> twrite = vtkSmartPointer<vtkTIFFWriter>::New();
+			twrite->SetInputData(extvoi->GetOutput());
+			twrite->SetFileName(volname.c_str());
+			twrite->Update();
+			twrite->Write();
+		}
+	
+	else {
+		QMessageBox::critical(0, QObject::tr("Error"), "You need to clip the volume first.");
+	}
+	}
 }
 
 void VolumeViewer::on_actionDimensions_triggered()
@@ -946,10 +973,10 @@ void VolumeViewer::on_actionSlice_triggered()
 
 	vtkSmartPointer <vtkImplicitPlaneWidget> planeWidget = vtkSmartPointer <vtkImplicitPlaneWidget>::New();
 	planeWidget->SetInteractor(vtkwid->GetInteractor());
-	planeWidget->SetInputData(vtkwid->input);
+	planeWidget->SetInputData(vtkwid->mapper->GetInput());
 	planeWidget->SetDefaultRenderer(vtkwid->leftRenderer);
 
-	planeWidget->SetPlaceFactor(1.01);
+	planeWidget->SetPlaceFactor(1.05);
 	planeWidget->PlaceWidget();
 	planeWidget->SetOrigin(vtkwid->volume->GetOrigin());
 	planeWidget->SetNormal(plane->GetNormal());
@@ -957,52 +984,11 @@ void VolumeViewer::on_actionSlice_triggered()
 
 	planeWidget->AddObserver(vtkCommand::InteractionEvent, myCallback);
 
-
-
-
 	planeWidget->EnabledOn();
 	
 	vtkwid->leftRenderer->Render();
 
-	/*
 
-	vtkRenderer * renderer = vtkRenderer::New();
-	vtkRenderWindow *renwin = vtkRenderWindow::New();
-	vtkRenderWindowInteractor *iren = vtkRenderWindowInteractor::New();
-
-	renwin->AddRenderer(renderer);
-	iren->SetRenderWindow(renwin);
-	renwin->SetSize(800, 800);
-
-	vtkImageResliceMapper *mapper = vtkImageResliceMapper::New();
-	     mapper->SetInputData(vtkwid->mapper->GetInput());
-	     mapper->SetSlicePlane(plane);
-		 mapper->SliceFacesCameraOn();
-		 //mapper->SetSliceAtFocalPoint(1);
-		 vtkImageSlice *slice = vtkImageSlice::New();
-
-		 slice->SetMapper(mapper);
-		 
-
-
-		 renderer->AddViewProp(slice);
-		 vtkInteractorStyleImage *style = vtkInteractorStyleImage::New();
-		 style->SetInteractionModeToImage3D();
-		 iren->SetInteractorStyle(style);
-
-
-
-
-	 
-		    
-			 
-			 renwin->SetInteractor(iren);
-			 renwin->Render();
-			  vtkCamera * cam1 = renderer->GetActiveCamera();
-			  cam1->ParallelProjectionOn();
-			 renwin->Render();
-			 iren->Start();
-			 */
 	
 }
 

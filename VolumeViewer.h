@@ -23,7 +23,7 @@
 
 #include <vtkwidget.h>
 
-#include <vtkBoxWidget.h>
+#include <vtkBoxWidget2.h>
 
 #include <itkthread.h>
 
@@ -54,7 +54,7 @@ public:
   dialog_color *diacol;
   dialog_hessian *diahessian;
   Dialog_gpu *diagpu;
-  vtkSmartPointer <vtkBoxWidget> box;
+  vtkSmartPointer <vtkBoxWidget2> box;
   vtkwidget *vtkwid;
   //itkthread *imgwid;
 
