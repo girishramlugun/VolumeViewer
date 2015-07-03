@@ -180,7 +180,7 @@ void vtkwidget::render()
 	mapper->SetBlendModeToComposite();
 	//mapper->SetInputConnection(reader->GetOutputPort());
 
-		//mapper->SetRequestedRenderModeToRayCast();
+        //mapper->SetRequestedRenderModeToRayCast();
 	//if (input->GetActualMemorySize() > 0.8*(mapper->GetMaxMemoryInBytes())/1024)
 	//{
 	//	mapper->SetRequestedRenderModeToRayCast();
@@ -385,6 +385,20 @@ void vtkwidget::resample(vtkImageData *imgdata)
 
 	{
 		sample_rate = 0.25;
+	vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
+	imgrs->SetInputData(imgdata);
+	imgrs->SetInterpolationModeToNearestNeighbor();
+	imgrs->SetAxisMagnificationFactor(0, sample_rate);
+	imgrs->SetAxisMagnificationFactor(1, sample_rate);
+	imgrs->SetAxisMagnificationFactor(2, sample_rate);
+	imgrs->Update();
+	buildhist(imgrs->GetOutput());
+	initialize(imgrs->GetOutput());
+	}
+    else if (sf >= 16 && sf < 24)
+
+	{
+		sample_rate = 0.125;
 	vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
 	imgrs->SetInputData(imgdata);
 	imgrs->SetInterpolationModeToNearestNeighbor();
