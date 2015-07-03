@@ -25,8 +25,6 @@
 
 #include <vtkBoxWidget2.h>
 
-#include <itkthread.h>
-
 #include <dialog_hessian.h>
 
 #include<dialog_gpu.h>
