@@ -29,7 +29,7 @@
 
 #include<dialog_gpu.h>
 
-
+#include<itkthread.h>
 
 using namespace std;
 
@@ -54,7 +54,7 @@ public:
   Dialog_gpu *diagpu;
   vtkSmartPointer <vtkBoxWidget2> box;
   vtkwidget *vtkwid;
-  //itkthread *imgwid;
+  itkthread *itkhess;
 
   void savevol(string);
   void openvol(string);
@@ -135,6 +135,8 @@ private slots:
   void on_actionInterlaced_triggered();
 
   void on_actionCrop_triggered();
+
+  void doHessian(double, double, double);
 
   
 private:

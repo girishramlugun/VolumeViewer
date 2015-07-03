@@ -201,6 +201,7 @@ VolumeViewer::VolumeViewer()
   connect(diatfn,SIGNAL(sendtfn(int)),this,SLOT(setvolcol(int)));
   
   connect(diaopa,SIGNAL(sendopa(int,bool)),this,SLOT(updateopacity(int,bool)));
+  connect(diahessian, SIGNAL(sendhessparams(double, double, double)), this, SLOT(doHessian(double, double, double)));
   
   }
 
@@ -338,12 +339,24 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 
 void VolumeViewer::on_actionHessian_triggered()
 {
+	itkhess = new itkthread();
+	
 	diahessian->show();
+}
+
+void VolumeViewer::doHessian(double sigma,double alpha1,double alpha2)
+{
+
+	itkhess->process(vtkwid->mapper->GetInput(), sigma, alpha1, alpha2);
+
+	
+	
+
 }
 
 void VolumeViewer::on_actionAdd_triggered()
 {
-
+	
 }
 
 void VolumeViewer::openvol(string inputFilename)
@@ -516,6 +529,7 @@ void VolumeViewer::on_actionOptions_triggered()
 
 void VolumeViewer::on_actionBackground_triggered()
 {
+	
 diabg->show();
 }
 

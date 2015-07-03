@@ -79,7 +79,7 @@ vtkwidget::vtkwidget(QWidget *parent) :
 void vtkwidget::initialize(vtkImageData *input)
 {
 
-	
+	leftRenderer->RemoveAllViewProps();
 
 	//Set default light parameters
 
