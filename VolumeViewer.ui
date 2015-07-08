@@ -202,6 +202,8 @@
       <string>Volume</string>
      </property>
      <addaction name="actionIsosurface"/>
+     <addaction name="actionHessian"/>
+     <addaction name="actionThreshold"/>
     </widget>
     <widget class="QMenu" name="menuImage_filter">
      <property name="enabled">
@@ -210,7 +212,6 @@
      <property name="title">
       <string>Image</string>
      </property>
-     <addaction name="actionHessian"/>
     </widget>
     <addaction name="menuVolume_filter"/>
     <addaction name="menuImage_filter"/>
@@ -530,6 +531,11 @@
   <action name="actionOptions">
    <property name="text">
     <string>Options</string>
+   </property>
+  </action>
+  <action name="actionThreshold">
+   <property name="text">
+    <string>Threshold</string>
    </property>
   </action>
  </widget>

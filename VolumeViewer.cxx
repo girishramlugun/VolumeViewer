@@ -193,6 +193,9 @@ VolumeViewer::VolumeViewer()
 	//Load Hessian filter dialog
 	diahessian = new dialog_hessian(this);
 
+	//Load threshold filter dialog
+	diathresh = new Dialog_threshold(this);
+
 	//gpu settings
 	diagpu = new Dialog_gpu(this);
 
@@ -202,6 +205,7 @@ VolumeViewer::VolumeViewer()
   
   connect(diaopa,SIGNAL(sendopa(int,bool)),this,SLOT(updateopacity(int,bool)));
   connect(diahessian, SIGNAL(sendhessparams(double, double, double)), this, SLOT(doHessian(double, double, double)));
+  connect(diathresh, SIGNAL(sendthreshold(double, double)), this, SLOT(setthresh(double, double)));
   
   }
 
@@ -1126,4 +1130,22 @@ void VolumeViewer::on_actionInterlaced_triggered()
 		vtkwid->GetRenderWindow()->SetStereoRender(0);
 		vtkwid->GetRenderWindow()->Render();
 	}
+}
+
+
+void VolumeViewer::on_actionThreshold_triggered()
+{
+	itkhess = new itkthread();
+	
+	diathresh->show();
+	
+}
+
+void VolumeViewer::setthresh(double lthreshold, double uthreshold)
+{
+	itkhess->threshold(vtkwid->mapper->GetInput(), lthreshold, uthreshold);
+	vtkwid->leftRenderer->RemoveAllObservers();
+	vtkwid->leftRenderer->ResetCamera();
+	vtkwid->initialize(itkhess->threshimg);
+	vtkwid->GetInteractor()->Render();
 }

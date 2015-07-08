@@ -29,6 +29,8 @@
 
 #include<dialog_gpu.h>
 
+#include<dialog_threshold.h>
+
 #include<itkthread.h>
 
 using namespace std;
@@ -52,6 +54,7 @@ public:
   dialog_color *diacol;
   dialog_hessian *diahessian;
   Dialog_gpu *diagpu;
+  Dialog_threshold *diathresh;
   vtkSmartPointer <vtkBoxWidget2> box;
   vtkwidget *vtkwid;
   itkthread *itkhess;
@@ -138,6 +141,9 @@ private slots:
 
   void doHessian(double, double, double);
 
+  void on_actionThreshold_triggered();
+
+  void setthresh(double , double );
   
 private:
 

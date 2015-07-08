@@ -10,6 +10,7 @@
 #include <itkThresholdImageFilter.h>
 #include <itkVTKImageToImageFilter.h>
 #include <itkImageToVTKImageFilter.h>
+#include<vtkSmartPointer.h>
 
 class itkthread
 {
@@ -17,9 +18,10 @@ public:
 	itkthread();
 	void process(vtkImageData *inputimage, double sigma, double alpha1, double alpha2);
 
-
+	void threshold(vtkImageData *inputimage, double lthreshold, double uthreshold);
  
-
+	vtkSmartPointer <vtkImageData> threshimg;
+	
 
 
 };
