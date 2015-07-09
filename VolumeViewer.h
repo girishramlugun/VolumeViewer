@@ -57,6 +57,7 @@ public:
   Dialog_threshold *diathresh;
   vtkSmartPointer <vtkBoxWidget2> box;
   vtkwidget *vtkwid;
+
   itkthread *itkhess;
 
   void savevol(string);

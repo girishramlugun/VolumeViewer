@@ -12,8 +12,11 @@
 #include <itkImageToVTKImageFilter.h>
 #include<vtkSmartPointer.h>
 
-class itkthread
+class itkthread : public QWidget
 {
+
+	Q_OBJECT
+
 public:
 	itkthread();
 	void process(vtkImageData *inputimage, double sigma, double alpha1, double alpha2);
@@ -22,6 +25,8 @@ public:
  
 	vtkSmartPointer <vtkImageData> threshimg;
 	
+signals:
+
 
 
 };

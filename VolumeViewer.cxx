@@ -1136,16 +1136,18 @@ void VolumeViewer::on_actionInterlaced_triggered()
 void VolumeViewer::on_actionThreshold_triggered()
 {
 	itkhess = new itkthread();
-	
+	//connect(itkhess, SIGNAL(sendimgdata(vtkImageData)), vtkwid, SLOT(resample(vtkImageData)));
+
 	diathresh->show();
 	
 }
 
 void VolumeViewer::setthresh(double lthreshold, double uthreshold)
 {
+	
 	itkhess->threshold(vtkwid->mapper->GetInput(), lthreshold, uthreshold);
-	vtkwid->leftRenderer->RemoveAllObservers();
-	vtkwid->leftRenderer->ResetCamera();
-	vtkwid->initialize(itkhess->threshimg);
-	vtkwid->GetInteractor()->Render();
+//	vtkwid->volume->RemoveAllObservers();
+//	vtkwid->resample(itkhess->threshimg);
+	
+	
 }

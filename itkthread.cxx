@@ -10,10 +10,10 @@
 #include <vtkSmartPointer.h>
 #include <itkVTKImageToImageFilter.h>
 #include <itkImageToVTKImageFilter.h>
+#include <vtkPointData.h>
+#include<QFileDialog>
 
-
-
-
+using namespace std;
 
 itkthread::itkthread()
 {
@@ -154,32 +154,36 @@ void itkthread::threshold(vtkImageData *inputimage, double lthreshold, double ut
 
 	typedef unsigned char              UnsignedCharPixelType;
 	typedef itk::Image<UnsignedCharPixelType, 3>  UnsignedCharImageType;
+	threshimg->AllocateScalars(VTK_UNSIGNED_CHAR, inputimage->GetNumberOfPoints());
 
 
-	/*
-	//write images to .tif file
-	typedef itk::ImageFileWriter< UnsignedCharImageType > WriterType;
-	WriterType::Pointer writer = WriterType::New();
-	writer->SetInput(thresholdFilter->GetOutput());
-	writer->SetFileName("Threshold.tif");
+	QString fileNameSave = QFileDialog::getSaveFileName(this,
+		tr("Save Volume"), "",
+		tr("TIFF File (*.tif)"));
+	string volname = fileNameSave.toStdString();
+	if (!volname.empty()){
+		//write images to .tif file
+		typedef itk::ImageFileWriter< UnsignedCharImageType > WriterType;
+		WriterType::Pointer writer = WriterType::New();
+		writer->SetInput(thresholdFilter->GetOutput());
+		writer->SetFileName(volname.c_str());
 
-	try
-	{
-		writer->Update();
+		try
+		{
+			writer->Update();
+		}
+		catch (itk::ExceptionObject & error)
+		{
+			std::cerr << "Error: " << error << std::endl;
+			return;
+		}
 	}
-	catch (itk::ExceptionObject & error)
-	{
-		std::cerr << "Error: " << error << std::endl;
-		return;
-	}
-	*/
 
-	typedef itk::Image<UnsignedCharPixelType, 3> ImageType;
-	typedef itk::ImageToVTKImageFilter<ImageType>       ConnectorType;
 
-	ConnectorType::Pointer connector = ConnectorType::New();
-	connector->SetInput(thresholdFilter->GetOutput());
-	connector->Update();
-	threshimg = connector->GetOutput();
+
+
+
+
+
 
 }
