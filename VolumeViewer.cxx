@@ -468,7 +468,7 @@ void VolumeViewer::openvol(string inputFilename)
 
 
 				//for (vtkIdType i = 0; i < matsize[1]; i++)
-				for (vtkIdType i = 0; i < 2; i++)
+				for (vtkIdType i = 0; i < 1; i++)
 
 				{
 
@@ -478,9 +478,7 @@ void VolumeViewer::openvol(string inputFilename)
 
 					ui->label->setText(QString::number(matvtkarr->GetNumberOfTuples()));
 					
-					vtkSmartPointer<vtkPolyLine> polyLine =
-						vtkSmartPointer<vtkPolyLine>::New();
-					polyLine->GetPointIds()->SetNumberOfIds(matvtkarr->GetNumberOfTuples());
+
 					
 					lines->InsertNextCell(matvtkarr->GetNumberOfTuples());
 
@@ -488,11 +486,10 @@ void VolumeViewer::openvol(string inputFilename)
 					{
 
 						points->InsertNextPoint(matvtkarr->GetTuple(j));
-						polyLine->GetPointIds()->SetId(j, j);
-					//	lines->InsertCellPoint(j);
+						lines->InsertCellPoint(j);
 
 					}
-					lines->InsertNextCell(polyLine);
+
 					
 					}
 				
