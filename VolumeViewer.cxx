@@ -466,9 +466,9 @@ void VolumeViewer::openvol(string inputFilename)
 				vtkSmartPointer <vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 				points->SetDataTypeToFloat();
 
-
-				//for (vtkIdType i = 0; i < matsize[1]; i++)
-				for (vtkIdType i = 0; i < 1; i++)
+				vtkIdType k = 0;
+				for (vtkIdType i = 0; i < matsize[1]; i++)
+				//for (vtkIdType i = 0; i < 10; i++)
 
 				{
 
@@ -481,13 +481,13 @@ void VolumeViewer::openvol(string inputFilename)
 
 					
 					lines->InsertNextCell(matvtkarr->GetNumberOfTuples());
-
+					
 					for (vtkIdType j = 0; j < matvtkarr->GetNumberOfTuples(); j++)
 					{
 
 						points->InsertNextPoint(matvtkarr->GetTuple(j));
-						lines->InsertCellPoint(j);
-
+						lines->InsertCellPoint(k);
+						k++;
 					}
 
 					
@@ -495,10 +495,9 @@ void VolumeViewer::openvol(string inputFilename)
 				
 					vtkSmartPointer <vtkPolyData> polyd = vtkSmartPointer<vtkPolyData>::New();
 					polyd->SetPoints(points);
-				
 					polyd->SetLines(lines);
 					vtkwid->renderpol(polyd);
-					
+					mxDestroyArray(matarr);
 				
 				//progress.setValue(matimg->GetNumberOfPoints());
 				

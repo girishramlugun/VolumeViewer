@@ -277,7 +277,8 @@ void vtkwidget::renderpol(vtkPolyData *pol)
 		vtkSmartPointer<vtkActor>::New();
 
 	poly_actor->SetMapper(poly_mapper);
-	poly_actor->GetProperty()->SetLineWidth(4);
+	poly_mapper->SetColorModeToDirectScalars();
+	poly_actor->GetProperty()->SetLineWidth(2);
 	leftRenderer->AddActor(poly_actor);
 	GetRenderWindow()->AddRenderer(leftRenderer);
 	GetInteractor()->Render();
