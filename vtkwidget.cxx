@@ -123,6 +123,7 @@ void vtkwidget::initialize(vtkImageData *input)
 
 		volumeProperty->SetColor(volumeColor);
 		volumeProperty->SetScalarOpacity(volumeScalarOpacity);
+		
 	
     }
 	
@@ -263,6 +264,24 @@ void vtkwidget::renderpoly()
 	GetInteractor()->Render();
 
 	
+}
+
+void vtkwidget::renderpol(vtkPolyData *pol)
+{
+	poly_mapper->SetInputData(pol);
+
+	//poly_mapper->SetColorModeToMapScalars();
+
+
+	vtkSmartPointer<vtkActor> poly_actor =
+		vtkSmartPointer<vtkActor>::New();
+
+	poly_actor->SetMapper(poly_mapper);
+	poly_actor->GetProperty()->SetLineWidth(4);
+	leftRenderer->AddActor(poly_actor);
+	GetRenderWindow()->AddRenderer(leftRenderer);
+	GetInteractor()->Render();
+	this->show();
 }
 
 void vtkwidget::renderactor(vtkImageData *img)

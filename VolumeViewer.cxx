@@ -48,9 +48,9 @@
 #include <vtkPointData.h>
 #include <vtkClipVolume.h>
 #include <vtkDataSetMapper.h>
-//#include<vtkMatlabMexAdapter.h>
-//#include<mat.h>
-//#include <matrix.h>
+#include<vtkMatlabMexAdapter.h>
+#include<mat.h>
+#include <matrix.h>
 #include<vtkDoubleArray.h>
 #include<vtkTypedArray.h>
 #include<vtkArrayIterator.h>
@@ -80,6 +80,11 @@
 #include <vtkGlyph3DMapper.h>
 #include <vtkTIFFWriter.h>
 #include<vtkBoxRepresentation.h>
+#include<vtkPoints.h>
+#include<vtkVariant.h>
+#include<vtkCellArray.h>
+#include<vtkVariantExtract.h>
+#include<vtkPolyLine.h>
 
 using namespace std;
 std::string inputFilename;
@@ -394,13 +399,13 @@ void VolumeViewer::openvol(string inputFilename)
 		}
 		else if (ext == QString("mat"))
 		{
-			/*
+			
 
 			vtkSmartPointer<vtkMatlabMexAdapter> readermat = vtkSmartPointer<vtkMatlabMexAdapter>::New();
 			mxArray *matarr;
 			MATFile *matf;
 			
-			vtkArray *matvtkarr;
+			
 			vtkSmartPointer<vtkUnsignedShortArray> dataarr = vtkSmartPointer<vtkUnsignedShortArray>::New();
 			vtkSmartPointer<vtkImageData> matimg = vtkSmartPointer<vtkImageData>::New();
 			
@@ -435,49 +440,69 @@ void VolumeViewer::openvol(string inputFilename)
 						string txtstring = text.toStdString();
 						const char *txtchar = txtstring.c_str();
 						matarr = matGetVariable(matf, txtchar);
+						
 					}
 				}
 				mxFree(dir);
 
 
 				const mwSize * matsize = mxGetDimensions(matarr);
-
+				ui->label->setText(QString::number(matsize[1]));
 
 
 				if (matarr == NULL) {
 					QMessageBox::critical(0, QObject::tr("Error"), "Could not copy to array");
 		                        	}
-				matvtkarr->CreateArray(vtkArray::SPARSE, VTK_SHORT);
+
+
+
 				
-				matvtkarr = readermat->mxArrayTovtkArray(matarr);
-
-
-				ui->label->setText(QString::number(matvtkarr->GetSize()));
-
-				matimg->SetDimensions(matsize[0], matsize[1], matsize[2]);
-				matimg->AllocateScalars(VTK_INT, 1);
-
-				dataarr->SetNumberOfComponents(1);
-				dataarr->SetNumberOfTuples(matimg->GetNumberOfPoints());
 
 
 				//QProgressDialog progress("Loading...", "Abort", 0, matimg->GetNumberOfPoints(), this);
 			//	progress.setWindowModality(Qt::WindowModal);
 				
-				for (vtkIdType i = 0; i != matvtkarr->GetNonNullSize(); i++)
+				vtkSmartPointer <vtkCellArray> lines = vtkSmartPointer <vtkCellArray> ::New();
+				vtkSmartPointer <vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+				points->SetDataTypeToFloat();
+
+
+				//for (vtkIdType i = 0; i < matsize[1]; i++)
+				for (vtkIdType i = 0; i < 2; i++)
 
 				{
 
+					mxArray *mline = mxGetCell(matarr, i);
 
-	
-					dataarr->SetVariantValue(i, matvtkarr->GetVariantValueN(i));
-					//	progress.setValue(i);
+					vtkDataArray *matvtkarr = readermat->mxArrayTovtkDataArray(mline);
 
-					//	if (progress.wasCanceled())
-					//		break;
+					ui->label->setText(QString::number(matvtkarr->GetNumberOfTuples()));
+					
+					vtkSmartPointer<vtkPolyLine> polyLine =
+						vtkSmartPointer<vtkPolyLine>::New();
+					polyLine->GetPointIds()->SetNumberOfIds(matvtkarr->GetNumberOfTuples());
+					
+					lines->InsertNextCell(matvtkarr->GetNumberOfTuples());
 
+					for (vtkIdType j = 0; j < matvtkarr->GetNumberOfTuples(); j++)
+					{
 
-				}
+						points->InsertNextPoint(matvtkarr->GetTuple(j));
+						polyLine->GetPointIds()->SetId(j, j);
+					//	lines->InsertCellPoint(j);
+
+					}
+					lines->InsertNextCell(polyLine);
+					
+					}
+				
+					vtkSmartPointer <vtkPolyData> polyd = vtkSmartPointer<vtkPolyData>::New();
+					polyd->SetPoints(points);
+				
+					polyd->SetLines(lines);
+					vtkwid->renderpol(polyd);
+					
+				
 				//progress.setValue(matimg->GetNumberOfPoints());
 				
 				//ui->label->setText(QString::number(dataarr->GetComponent(300,3)));
@@ -487,14 +512,14 @@ void VolumeViewer::openvol(string inputFilename)
 				
 
 				
-				matimg->GetPointData()->SetScalars(dataarr);
+				//matimg->GetPointData()->SetScalars(dataarr);
 				
-				vtkwid->resample(matimg);
+				//vtkwid->resample(matimg);
 				//vtkwid->renderactor(matimg);
 				
 		}
 
-		*/
+		
 
 		
 		

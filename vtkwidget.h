@@ -81,6 +81,8 @@ public:
     explicit vtkwidget(QWidget *parent = 0);
 
 	void renderactor(vtkImageData*);
+
+	void renderpol(vtkPolyData *);
     
 	vtkSmartPointer<vtkImageChangeInformation> volpropchange;
 
