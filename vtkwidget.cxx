@@ -19,7 +19,7 @@
 #include<vtkGlyph3D.h>
 #include<vtkArrowSource.h>
 
-
+#include <vtkCleanPolyData.h>
 
 vtkwidget::vtkwidget(QWidget *parent) :
     QVTKWidget(parent)
@@ -56,7 +56,7 @@ vtkwidget::vtkwidget(QWidget *parent) :
 
 	volumeGradientOpacity = vtkSmartPointer<vtkPiecewiseFunction>::New();
 
-	poly_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+	poly_mapper = vtkSmartPointer<vtkCompositePolyDataMapper2>::New();
 
 	actor = vtkSmartPointer<vtkImageActor>::New();
 
@@ -262,27 +262,39 @@ void vtkwidget::renderpoly()
 	leftRenderer->AddActor(poly_actor);
 	GetRenderWindow()->AddRenderer(leftRenderer);
 	GetInteractor()->Render();
-
+	
 	
 }
 
 void vtkwidget::renderpol(vtkPolyData *pol)
 {
-	poly_mapper->SetInputData(pol);
-
+	/*
 	//poly_mapper->SetColorModeToMapScalars();
+	vtkSmartPointer<vtkSmoothPolyDataFilter> smoothfilter = vtkSmartPointer<vtkSmoothPolyDataFilter>::New();
+	smoothfilter->SetInputData(pol);
+	smoothfilter->SetNumberOfIterations(5);
+	
+	smoothfilter->Update();
+	*/
 
+
+
+	poly_mapper->SetInputData(pol);
 
 	vtkSmartPointer<vtkActor> poly_actor =
 		vtkSmartPointer<vtkActor>::New();
-
+	poly_mapper->SetColorModeToMapScalars();
 	poly_actor->SetMapper(poly_mapper);
-	poly_mapper->SetColorModeToDirectScalars();
 	poly_actor->GetProperty()->SetLineWidth(2);
+	
+
+	poly_mapper->ImmediateModeRenderingOn();
 	leftRenderer->AddActor(poly_actor);
 	GetRenderWindow()->AddRenderer(leftRenderer);
 	GetInteractor()->Render();
 	this->show();
+	
+	
 }
 
 void vtkwidget::renderactor(vtkImageData *img)

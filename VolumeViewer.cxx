@@ -85,6 +85,12 @@
 #include<vtkCellArray.h>
 #include<vtkVariantExtract.h>
 #include<vtkPolyLine.h>
+#include <math.h> 
+#include<vtkCellData.h>
+#include <vtkXMLPolyDataWriter.h>
+#include<vtkXMLPolyDataReader.h>
+#include<vtkLine.h>
+
 
 using namespace std;
 std::string inputFilename;
@@ -253,7 +259,7 @@ void VolumeViewer::on_actionOpen_triggered()
       qDebug("Not empty");
     }
 
-    QString Filename = QFileDialog::getOpenFileName(this, tr("Open Volume"), "", tr("TIFF (*.tif);;VTK Files (*.vti);; MATLAB Files(*.mat)"));
+    QString Filename = QFileDialog::getOpenFileName(this, tr("Open Volume"), "", tr("TIFF (*.tif);;VTK Files (*.vti);; MATLAB Files(*.mat);; PolyData Files(*.vtp)"));
     if (Filename.isEmpty()==0){
     QFileInfo fi(Filename);
     ext = fi.suffix();
@@ -402,12 +408,12 @@ void VolumeViewer::openvol(string inputFilename)
 			
 
 			vtkSmartPointer<vtkMatlabMexAdapter> readermat = vtkSmartPointer<vtkMatlabMexAdapter>::New();
-			mxArray *matarr;
+			mxArray *matarr,*matcolarr;
 			MATFile *matf;
 			
 			
-			vtkSmartPointer<vtkUnsignedShortArray> dataarr = vtkSmartPointer<vtkUnsignedShortArray>::New();
-			vtkSmartPointer<vtkImageData> matimg = vtkSmartPointer<vtkImageData>::New();
+			//vtkSmartPointer<vtkUnsignedShortArray> dataarr = vtkSmartPointer<vtkUnsignedShortArray>::New();
+			//vtkSmartPointer<vtkImageData> matimg = vtkSmartPointer<vtkImageData>::New();
 			
 			matf = matOpen(inputFilename.c_str(), "r");
 			if (matf == NULL) {
@@ -425,7 +431,8 @@ void VolumeViewer::openvol(string inputFilename)
 					QMessageBox::critical(0, QObject::tr("Error"), "Error reading directory of file");
 
 				}
-				else {
+				
+				else {/*
 					QStringList arraystring;
 					for (i = 0; i < ndir; i++)
 					{
@@ -440,13 +447,19 @@ void VolumeViewer::openvol(string inputFilename)
 						string txtstring = text.toStdString();
 						const char *txtchar = txtstring.c_str();
 						matarr = matGetVariable(matf, txtchar);
+						}
+						*/
+						matarr = matGetVariable(matf, "fibres");
 						
-					}
+						matcolarr = matGetVariable(matf, "MeasureAngles");
+					
+					
 				}
-				mxFree(dir);
-
-
+			//	mxFree(dir);
+				
+				
 				const mwSize * matsize = mxGetDimensions(matarr);
+				
 				ui->label->setText(QString::number(matsize[1]));
 
 
@@ -464,19 +477,31 @@ void VolumeViewer::openvol(string inputFilename)
 				
 				vtkSmartPointer <vtkCellArray> lines = vtkSmartPointer <vtkCellArray> ::New();
 				vtkSmartPointer <vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-				points->SetDataTypeToFloat();
-
+				points->SetDataTypeToShort();
+				
 				vtkIdType k = 0;
+				vtkDataArray *colors; 
+				colors->CreateDataArray(VTK_SHORT);
+				//colors->SetNumberOfComponents(1);
+				colors = readermat->mxArrayTovtkDataArray(matcolarr);
+				colors->SetName("Colors");
+				colors->Squeeze();
+				
+				
+				
+				
 				for (vtkIdType i = 0; i < matsize[1]; i++)
 				//for (vtkIdType i = 0; i < 10; i++)
-
+				
 				{
-
-					mxArray *mline = mxGetCell(matarr, i);
-
-					vtkDataArray *matvtkarr = readermat->mxArrayTovtkDataArray(mline);
-
-					ui->label->setText(QString::number(matvtkarr->GetNumberOfTuples()));
+					
+				//	mxArray *mline = mxGetCell(matarr, i);
+					
+					vtkDataArray *matvtkarr = readermat->mxArrayTovtkDataArray(mxGetCell(matarr, i));
+					//matvtkarr->SetNumberOfComponents(1);
+					matvtkarr->Squeeze();
+					
+					
 					
 
 					
@@ -484,35 +509,36 @@ void VolumeViewer::openvol(string inputFilename)
 					
 					for (vtkIdType j = 0; j < matvtkarr->GetNumberOfTuples(); j++)
 					{
-
-						points->InsertNextPoint(matvtkarr->GetTuple(j));
+						float pt[3];
+						pt[0] = matvtkarr->GetComponent(j, 0);
+						pt[1] = matvtkarr->GetComponent(j, 1);
+						pt[2] = matvtkarr->GetComponent(j, 2);
+						points->InsertNextPoint(pt);
 						lines->InsertCellPoint(k);
 						k++;
 					}
-
+					
 					
 					}
 				
-					vtkSmartPointer <vtkPolyData> polyd = vtkSmartPointer<vtkPolyData>::New();
-					polyd->SetPoints(points);
+				lines->Squeeze();
+				points->Squeeze();
+				matClose(matf);
+				mxDestroyArray(matarr);
+				mxDestroyArray(matcolarr);
+				
+				vtkPolyData* polyd= vtkPolyData::New();
+				polyd->Allocate();
+				polyd->SetPoints(points);
 					polyd->SetLines(lines);
+					polyd->GetCellData()->SetScalars(colors);
+					polyd->Squeeze();
+				ui->label->setText(QString::number(points->GetDataType()) + " " + QString::number(points->GetActualMemorySize()) + " " + QString::number(lines->GetActualMemorySize())+ " " + QString::number(polyd->GetActualMemorySize()));
+
+			
 					vtkwid->renderpol(polyd);
-					mxDestroyArray(matarr);
-				
-				//progress.setValue(matimg->GetNumberOfPoints());
-				
-				//ui->label->setText(QString::number(dataarr->GetComponent(300,3)));
-				
-     
-
-				
-
-				
-				//matimg->GetPointData()->SetScalars(dataarr);
-				
-				//vtkwid->resample(matimg);
-				//vtkwid->renderactor(matimg);
-				
+					polyd->Delete();
+					
 		}
 
 		
@@ -521,9 +547,15 @@ void VolumeViewer::openvol(string inputFilename)
 		
 
 	}
-	
+	else if (ext == QString("vtp"))
+	{
+		vtkSmartPointer <vtkXMLPolyDataReader> poly_read = vtkSmartPointer <vtkXMLPolyDataReader>::New();
+		poly_read->SetFileName(inputFilename.c_str());
+		poly_read->Update();
+		vtkwid->renderpol(poly_read->GetOutput());
+	}
 	else
-		QMessageBox::critical(0, QObject::tr("Error"), "Cannot Render; wrong format!");
+		QMessageBox::critical(0, QObject::tr("Error"), "Cannot Render; Wrong format!");
 
 }
 
@@ -786,6 +818,7 @@ if (vtkwid->isVisible())
 		vtkSmartPointer <vtkBoxRepresentation> boxrep = vtkSmartPointer <vtkBoxRepresentation>::New();
 		boxrep->SetPlaceFactor(1.00);
 		boxrep->SetInsideOut(1);
+		
 		boxrep->PlaceWidget(vtkwid->mapper->GetInput()->GetBounds());
 		boxrep->SetRenderer(vtkwid->leftRenderer);
 		box->SetRepresentation(boxrep);
