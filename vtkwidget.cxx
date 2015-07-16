@@ -293,7 +293,7 @@ void vtkwidget::renderpol(vtkPolyData *pol)
 	//poly_actor->GetProperty()->SetLineWidth(4);
 	poly_actor->GetProperty()->EdgeVisibilityOff();
 	//poly_actor->SetScale(0.5);
-
+	
 	vtkSmartPointer<vtkTextProperty> textprop = vtkSmartPointer<vtkTextProperty>::New();
 	textprop->SetFontSize(14);
 	vtkSmartPointer<vtkTextProperty> textprop1 = vtkSmartPointer<vtkTextProperty>::New();
@@ -305,7 +305,6 @@ void vtkwidget::renderpol(vtkPolyData *pol)
 	scalarBar->SetTitle("Inclination angle");
 	scalarBar->SetNumberOfLabels(2);
 	scalarBar->SetLabelTextProperty(textprop);
-	scalarBar->SetDragable(1);
 	scalarBar->SetTitleTextProperty(textprop1);
 	//scalarBar->SetTitleRatio(0.5);
 
@@ -318,17 +317,17 @@ void vtkwidget::renderpol(vtkPolyData *pol)
 	// Create a lookup table to share between the mapper and the scalarbar
 	vtkSmartPointer<vtkLookupTable> hueLut =
 		vtkSmartPointer<vtkLookupTable>::New();
-	hueLut->SetTableRange(0, 90);
-	hueLut->SetHueRange(0, 1);
-	hueLut->SetSaturationRange(1, 1);
-	hueLut->SetValueRange(1, 1);
+	hueLut->SetTableRange(0, 255);
+	hueLut->SetTableValue(0, 1, 0, 0);
+	hueLut->SetTableValue(255, 0, 0, 1);
 	hueLut->Build();
 	
 	scalarBar->SetLookupTable(hueLut);
-
+	//poly_mapper->SetLookupTable(hueLut);
+	poly_mapper->SetColorModeToDirectScalars();
 	poly_mapper->ImmediateModeRenderingOn();
 	leftRenderer->AddActor(poly_actor);
-	leftRenderer->AddActor2D(scalarBar);
+	//leftRenderer->AddActor2D(scalarBar);
 	GetRenderWindow()->AddRenderer(leftRenderer);
 	GetInteractor()->Render();
 	this->show();

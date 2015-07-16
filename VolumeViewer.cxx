@@ -484,7 +484,7 @@ void VolumeViewer::openvol(string inputFilename)
 				
 				vtkIdType k = 0;
 				vtkDataArray *colors; 
-				colors->CreateDataArray(VTK_SHORT);
+				colors->CreateDataArray(VTK_TYPE_UINT8);
 				//colors->SetNumberOfComponents(1);
 				colors = readermat->mxArrayTovtkDataArray(matcolarr);
 				colors->SetName("Colors");
