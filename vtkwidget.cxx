@@ -18,9 +18,9 @@
 #include<vtkGlyph3DMapper.h>
 #include<vtkGlyph3D.h>
 #include<vtkArrowSource.h>
-
-#include <vtkCleanPolyData.h>
-
+#include<vtkScalarBarActor.h>
+#include <vtkSmoothPolyDataFilter.h>
+#include <vtkTextProperty.h>
 vtkwidget::vtkwidget(QWidget *parent) :
     QVTKWidget(parent)
 {
@@ -56,7 +56,7 @@ vtkwidget::vtkwidget(QWidget *parent) :
 
 	volumeGradientOpacity = vtkSmartPointer<vtkPiecewiseFunction>::New();
 
-	poly_mapper = vtkSmartPointer<vtkCompositePolyDataMapper2>::New();
+	poly_mapper = vtkSmartPointer<vtkOpenGLPolyDataMapper>::New();
 
 	actor = vtkSmartPointer<vtkImageActor>::New();
 
@@ -272,24 +272,63 @@ void vtkwidget::renderpol(vtkPolyData *pol)
 	//poly_mapper->SetColorModeToMapScalars();
 	vtkSmartPointer<vtkSmoothPolyDataFilter> smoothfilter = vtkSmartPointer<vtkSmoothPolyDataFilter>::New();
 	smoothfilter->SetInputData(pol);
-	smoothfilter->SetNumberOfIterations(5);
-	
+	smoothfilter->SetNumberOfIterations(40);
+	smoothfilter->SetEdgeAngle(30);
 	smoothfilter->Update();
+	
+	vtkSmartPointer<vtkTubeFilter> tubeFilter =
+		vtkSmartPointer<vtkTubeFilter>::New();
+	tubeFilter->SetInputData(pol);
+	tubeFilter->SetRadius(.5); //default is .5
+	tubeFilter->SetNumberOfSides(10);
+	tubeFilter->Update();
 	*/
-
-
-
+	
 	poly_mapper->SetInputData(pol);
-
+	//poly_mapper->ReleaseDataFlagOn();
 	vtkSmartPointer<vtkActor> poly_actor =
 		vtkSmartPointer<vtkActor>::New();
 	poly_mapper->SetColorModeToMapScalars();
 	poly_actor->SetMapper(poly_mapper);
-	poly_actor->GetProperty()->SetLineWidth(2);
+	//poly_actor->GetProperty()->SetLineWidth(4);
+	poly_actor->GetProperty()->EdgeVisibilityOff();
+	//poly_actor->SetScale(0.5);
+
+	vtkSmartPointer<vtkTextProperty> textprop = vtkSmartPointer<vtkTextProperty>::New();
+	textprop->SetFontSize(14);
+	vtkSmartPointer<vtkTextProperty> textprop1 = vtkSmartPointer<vtkTextProperty>::New();
+	textprop1->SetFontSize(20);
+	textprop1->SetBold(1);
+	vtkSmartPointer<vtkScalarBarActor> scalarBar =
+		vtkSmartPointer<vtkScalarBarActor>::New();
+
+	scalarBar->SetTitle("Inclination angle");
+	scalarBar->SetNumberOfLabels(2);
+	scalarBar->SetLabelTextProperty(textprop);
+	scalarBar->SetDragable(1);
+	scalarBar->SetTitleTextProperty(textprop1);
+	//scalarBar->SetTitleRatio(0.5);
+
+	scalarBar->SetDisplayPosition(0,0);
+	scalarBar->SetHeight(0.25);
+	scalarBar->SetWidth(0.0625);
+	//scalarBar->SetBarRatio(0.125);
+	//scalarBar->SetOrientationToHorizontal();
+
+	// Create a lookup table to share between the mapper and the scalarbar
+	vtkSmartPointer<vtkLookupTable> hueLut =
+		vtkSmartPointer<vtkLookupTable>::New();
+	hueLut->SetTableRange(0, 90);
+	hueLut->SetHueRange(0, 1);
+	hueLut->SetSaturationRange(1, 1);
+	hueLut->SetValueRange(1, 1);
+	hueLut->Build();
 	
+	scalarBar->SetLookupTable(hueLut);
 
 	poly_mapper->ImmediateModeRenderingOn();
 	leftRenderer->AddActor(poly_actor);
+	leftRenderer->AddActor2D(scalarBar);
 	GetRenderWindow()->AddRenderer(leftRenderer);
 	GetInteractor()->Render();
 	this->show();

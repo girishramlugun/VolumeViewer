@@ -90,7 +90,8 @@
 #include <vtkXMLPolyDataWriter.h>
 #include<vtkXMLPolyDataReader.h>
 #include<vtkLine.h>
-
+#include<vtkParametricSpline.h>
+#include<vtkParametricFunctionSource.h>
 
 using namespace std;
 std::string inputFilename;
@@ -378,6 +379,7 @@ void VolumeViewer::openvol(string inputFilename)
 {
 	if (!inputFilename.empty())
 	{
+		
 		//Create new render window and connect signals to slots
 		vtkwid = new vtkwidget;
 		ui->actionClip->setChecked(false);
@@ -390,6 +392,7 @@ void VolumeViewer::openvol(string inputFilename)
 		connect(diacol, SIGNAL(volcol(double)), vtkwid, SLOT(updatevolcol(double)));
 		connect(diacol, SIGNAL(wincol(double)), vtkwid, SLOT(updatewincol(double)));
 		connect(vtkwid, SIGNAL(sendhist(QVector<double>)), diatfn, SLOT(plothist(QVector<double>)));
+		
 		if (ext == QString("vti"))
 		{
 			vtkwid->readvti(inputFilename);
@@ -491,7 +494,7 @@ void VolumeViewer::openvol(string inputFilename)
 				
 				
 				for (vtkIdType i = 0; i < matsize[1]; i++)
-				//for (vtkIdType i = 0; i < 10; i++)
+			//	for (vtkIdType i = 0; i < 2; i++)
 				
 				{
 					
@@ -501,13 +504,16 @@ void VolumeViewer::openvol(string inputFilename)
 					//matvtkarr->SetNumberOfComponents(1);
 					matvtkarr->Squeeze();
 					
+					if (matvtkarr->GetNumberOfTuples() % 2 == 0)
+					{
+						matvtkarr->RemoveLastTuple();
+					}
+					//ui->label->setText(QString::number(L));
 					
+					if (matvtkarr->GetNumberOfTuples()>10){
+					lines->InsertNextCell(ceil(matvtkarr->GetNumberOfTuples()/10));
 					
-
-					
-					lines->InsertNextCell(matvtkarr->GetNumberOfTuples());
-					
-					for (vtkIdType j = 0; j < matvtkarr->GetNumberOfTuples(); j++)
+					for (vtkIdType j = 0; j < matvtkarr->GetNumberOfTuples()-10; j += 10)
 					{
 						float pt[3];
 						pt[0] = matvtkarr->GetComponent(j, 0);
@@ -520,13 +526,14 @@ void VolumeViewer::openvol(string inputFilename)
 					
 					
 					}
-				
+				}
+					
 				lines->Squeeze();
 				points->Squeeze();
 				matClose(matf);
 				mxDestroyArray(matarr);
 				mxDestroyArray(matcolarr);
-				
+								
 				vtkPolyData* polyd= vtkPolyData::New();
 				polyd->Allocate();
 				polyd->SetPoints(points);
