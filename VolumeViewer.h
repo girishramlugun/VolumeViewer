@@ -31,6 +31,8 @@
 
 #include<dialog_threshold.h>
 
+#include <dialog_fibre.h>
+
 #include<itkthread.h>
 
 using namespace std;
@@ -55,6 +57,7 @@ public:
   dialog_hessian *diahessian;
   Dialog_gpu *diagpu;
   Dialog_threshold *diathresh;
+  Dialog_Fibre *diafibre;
   vtkSmartPointer <vtkBoxWidget2> box;
   vtkwidget *vtkwid;
 
@@ -145,6 +148,10 @@ private slots:
   void on_actionThreshold_triggered();
 
   void setthresh(double , double );
+
+  void generatefibres(string,int,int);
+
+  void setfibres(int, int);
   
 private:
 

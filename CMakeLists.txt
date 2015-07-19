@@ -27,8 +27,8 @@ else()
   set(Glue ItkVtkGlue)
 endif()
 
-#find_package(Matlab REQUIRED)
-#include_directories(${Matlab_INCLUDES})
+find_package(Matlab REQUIRED)
+include_directories(${Matlab_INCLUDES})
 
 
 

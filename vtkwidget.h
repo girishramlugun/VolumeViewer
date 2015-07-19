@@ -3,7 +3,7 @@
 
 #include <QVTKWidget.h>
 #include<QtCore>
-#include<vtkOpenGLPolyDataMapper.h>
+#include<vtkPolyDataMapper.h>
 //#include <vtkQtTableView.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
@@ -116,7 +116,7 @@ public:
 
    vtkSmartPointer<vtkCallbackCommand> progressCallback;
 
-   vtkSmartPointer<vtkOpenGLPolyDataMapper> poly_mapper;
+   vtkSmartPointer<vtkPolyDataMapper> poly_mapper;
 
    vtkSmartPointer<vtkGPUVolumeRayCastMapper> rcmapper;
 

@@ -56,7 +56,7 @@ vtkwidget::vtkwidget(QWidget *parent) :
 
 	volumeGradientOpacity = vtkSmartPointer<vtkPiecewiseFunction>::New();
 
-	poly_mapper = vtkSmartPointer<vtkOpenGLPolyDataMapper>::New();
+	poly_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 
 	actor = vtkSmartPointer<vtkImageActor>::New();
 
@@ -294,40 +294,35 @@ void vtkwidget::renderpol(vtkPolyData *pol)
 	poly_actor->GetProperty()->EdgeVisibilityOff();
 	//poly_actor->SetScale(0.5);
 	
-	vtkSmartPointer<vtkTextProperty> textprop = vtkSmartPointer<vtkTextProperty>::New();
-	textprop->SetFontSize(14);
-	vtkSmartPointer<vtkTextProperty> textprop1 = vtkSmartPointer<vtkTextProperty>::New();
-	textprop1->SetFontSize(20);
-	textprop1->SetBold(1);
+
 	vtkSmartPointer<vtkScalarBarActor> scalarBar =
 		vtkSmartPointer<vtkScalarBarActor>::New();
 
 	scalarBar->SetTitle("Inclination angle");
 	scalarBar->SetNumberOfLabels(2);
-	scalarBar->SetLabelTextProperty(textprop);
-	scalarBar->SetTitleTextProperty(textprop1);
 	//scalarBar->SetTitleRatio(0.5);
-
 	scalarBar->SetDisplayPosition(0,0);
-	scalarBar->SetHeight(0.25);
-	scalarBar->SetWidth(0.0625);
+	scalarBar->SetHeight(0.0625);
+	scalarBar->SetWidth(0.4);
 	//scalarBar->SetBarRatio(0.125);
-	//scalarBar->SetOrientationToHorizontal();
+	scalarBar->SetOrientationToHorizontal();
 
 	// Create a lookup table to share between the mapper and the scalarbar
 	vtkSmartPointer<vtkLookupTable> hueLut =
 		vtkSmartPointer<vtkLookupTable>::New();
-	hueLut->SetTableRange(0, 255);
-	hueLut->SetTableValue(0, 1, 0, 0);
-	hueLut->SetTableValue(255, 0, 0, 1);
+	hueLut->SetTableRange(0, 90);
+	hueLut->SetHueRange(0.708333,0);
+	hueLut->SetSaturationRange(1, 1);
+	hueLut->SetValueRange(1, 1);
 	hueLut->Build();
 	
 	scalarBar->SetLookupTable(hueLut);
 	//poly_mapper->SetLookupTable(hueLut);
-	poly_mapper->SetColorModeToDirectScalars();
+	poly_mapper->SetColorModeToMapScalars();
+	poly_mapper->SetScalarRange(0, 255);
 	poly_mapper->ImmediateModeRenderingOn();
 	leftRenderer->AddActor(poly_actor);
-	//leftRenderer->AddActor2D(scalarBar);
+	leftRenderer->AddActor2D(scalarBar);
 	GetRenderWindow()->AddRenderer(leftRenderer);
 	GetInteractor()->Render();
 	this->show();
