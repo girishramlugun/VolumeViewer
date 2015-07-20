@@ -112,7 +112,7 @@ vtkSmartPointer <vtkWindowToImageFilter> w2i = vtkSmartPointer <vtkWindowToImage
 
 
 
-
+//create callback for clipping 
 class vtkBoxWidgetCallback : public vtkCommand
 {
 public:
@@ -145,10 +145,9 @@ protected:
 	{this->Mapper = 0;}
 
   vtkSmartVolumeMapper *Mapper;
-  
+ };
 
 
-};
 
 class vtkIPWCallback : public vtkCommand
 {
@@ -1229,6 +1228,5 @@ void VolumeViewer::setfibres(int fiblen, int skip)
 {
 
 	generatefibres(inputFilename, fiblen, skip);
-
 
 }

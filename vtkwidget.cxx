@@ -21,6 +21,8 @@
 #include<vtkScalarBarActor.h>
 #include <vtkSmoothPolyDataFilter.h>
 #include <vtkTextProperty.h>
+#include<vtkImageAppend.h>
+
 vtkwidget::vtkwidget(QWidget *parent) :
     QVTKWidget(parent)
 {
@@ -493,9 +495,73 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 	int dims[3]; 
 	readimg->GetOutput()->GetDimensions(dims);
 	dims[2] = N;
-	
-	int cols = readimg->GetOutput()->GetNumberOfScalarComponents();
-	
+	double size = dims[0] * dims[1] * dims[2] / (1024*1024);
+	double sf = size / 1;
+	vtkSmartPointer<vtkImageAppend> appendmag = vtkSmartPointer<vtkImageAppend>::New();
+	//int mf = 2;
+	appendmag->SetAppendAxis(2);
+	//if (sf > 1 )
+	//{
+	int m=0;
+		for (int i = 0; i < N/4-1;i++)
+		{
+
+		
+	//	vtkSmartPointer<vtkTIFFReader>readimg1 = vtkSmartPointer<vtkTIFFReader>::New();
+		
+		
+			vtkSmartPointer<vtkImageAppend> append = vtkSmartPointer<vtkImageAppend>::New();
+		
+		for (int sc = 0; sc < 4; sc++)
+		{
+			vtkSmartPointer<vtkTIFFReader>readimg0 = vtkSmartPointer<vtkTIFFReader>::New();
+		readimg0->SetFileName(filenames->GetValue(4*i+sc));
+		//readimg1->SetFileName(filenames->GetValue(i+1));
+
+		readimg0->Update();
+		//readimg1->Update();
+
+		append->AddInputData(readimg0->GetOutput());
+		//append->AddInputData(readimg1->GetOutput());
+		append->SetAppendAxis(2);
+		append->Update();
+		
+		
+        }
+
+		m++;
+
+
+		vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
+		imgrs->SetInputData(append->GetOutput());
+		//imgrs->SetInterpolationModeToNearestNeighbor();
+		imgrs->SetAxisMagnificationFactor(0, 0.25);
+		imgrs->SetAxisMagnificationFactor(1, 0.25);
+		imgrs->SetAxisMagnificationFactor(2, 0.25);
+		imgrs->Update();
+		
+
+		
+		appendmag->AddInputData(imgrs->GetOutput());
+		
+		
+		
+
+	}
+		
+		
+		
+
+		appendmag->Update();
+
+	//	vtkImageData *imser = vtkImageData::New();
+	//	imser->AllocateScalars(VTK_INT, 1);
+	//	imser->SetDimensions(dims[0]/2,dims[1]/2,N/2);
+	//	imser->GetPointData()->SetScalars(appendmag->GetOutput()->GetPointData()->GetScalars());
+		initialize(appendmag->GetOutput());
+		//appendmag->Delete();
+	//int cols = readimg->GetOutput()->GetNumberOfScalarComponents();
+	/*
 	vtkTIFFReader *imgseq = vtkTIFFReader::New();
 	imgseq->SetFileNames(filenames);
 	imgseq->Update();
@@ -512,7 +578,7 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 	imgseq->Delete();
 
 	imse->Delete();
-	
+	*/
 }
 
 void vtkwidget::buildhist(vtkImageData* imgdata)
