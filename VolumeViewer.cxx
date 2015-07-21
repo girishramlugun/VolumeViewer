@@ -305,7 +305,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 
 		// set filter to only search for bmp files
 		QStringList filters;
-		filters << "*.tiff" << "*.tif" << "*.bmp";
+		filters << "*.tiff" << "*.tif";
 		dir.setNameFilters(filters);
 
 		// Create list of all *.dcm filenames
