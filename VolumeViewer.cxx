@@ -1165,6 +1165,8 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 		colors->SetName("Colors");
 		colors->Squeeze();
 
+		QProgressDialog progress("Loading...", "Abort", 0, matsize[1], this);
+		progress.setWindowModality(Qt::WindowModal);
 
 
 
@@ -1172,7 +1174,9 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 			//	for (vtkIdType i = 0; i < 2; i++)
 
 		{
-
+			progress.setValue(i);
+			if (progress.wasCanceled())
+				return;
 			//	mxArray *mline = mxGetCell(matarr, i);
 
 			vtkDataArray *matvtkarr = readermat->mxArrayTovtkDataArray(mxGetCell(matarr, i));
@@ -1202,7 +1206,7 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 
 			}
 		}
-
+		progress.setValue(matsize[1]);
 		lines->Squeeze();
 		points->Squeeze();
 		matClose(matf);

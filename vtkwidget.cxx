@@ -508,11 +508,15 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 	
 		int m = 0;
 		int num = ceil(N / mf) - 1;
-		
+		QProgressDialog progress("Loading files...", "Abort", 0, num, this);
+		progress.setWindowModality(Qt::WindowModal);
+
 		for (int i = 0; i < num; i++)
 		{
 
-
+			progress.setValue(i);
+			if (progress.wasCanceled())
+				return;
 			//	vtkSmartPointer<vtkTIFFReader>readimg1 = vtkSmartPointer<vtkTIFFReader>::New();
 
 
@@ -555,11 +559,11 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 
 		}
 
-
+		progress.setValue(num);
 
 
 		appendmag->Update();
-
+		buildhist(appendmag->GetOutput());
 		//	vtkImageData *imser = vtkImageData::New();
 		//	imser->AllocateScalars(VTK_INT, 1);
 		//	imser->SetDimensions(dims[0]/2,dims[1]/2,N/2);
