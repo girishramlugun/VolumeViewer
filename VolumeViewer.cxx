@@ -1091,10 +1091,13 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 	//vtkSmartPointer<vtkImageData> matimg = vtkSmartPointer<vtkImageData>::New();
 
 	matf = matOpen(inputFilename.c_str(), "r");
-	if (matf == NULL) {
+	if (matf == NULL)	
+	{
 		QMessageBox::critical(0, QObject::tr("Error"), "Error Loading File");
 	}
-	else{
+	
+	
+	else {
 
 
 		const char **dir;
@@ -1102,37 +1105,17 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 		int	  ndir;
 		int i;
 		dir = (const char **)matGetDir(matf, &ndir);
-		if (dir == NULL) {
-			QMessageBox::critical(0, QObject::tr("Error"), "Error reading directory of file");
+		if (dir == NULL) 
+						{
+							QMessageBox::critical(0, QObject::tr("Error"), "Error reading directory of file");
 
-		}
+						}
 
-		else {/*
-			  QStringList arraystring;
-			  for (i = 0; i < ndir; i++)
-			  {
-			  arraystring.append(QString(dir[i]));
-			  }
-
-			  bool ok;
-			  QString text = QInputDialog::getItem(this, tr("Load Matlab array"),
-			  tr("Select array to load:"), arraystring, 0, false, &ok);
-			  if (ok && !text.isEmpty()){
-			  ui->label->setText(text);
-			  string txtstring = text.toStdString();
-			  const char *txtchar = txtstring.c_str();
-			  matarr = matGetVariable(matf, txtchar);
-			  }
-			  */
-
-
-			matarr = matGetVariable(matf, "fibres");
-
-			matcolarr = matGetVariable(matf, "MeasureAngles");
-
-
-		}
-		//	mxFree(dir);
+			else {
+					matarr = matGetVariable(matf, "fibres");
+					matcolarr = matGetVariable(matf, "MeasureAngles");
+			     }
+		
 
 
 
@@ -1141,9 +1124,10 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 		ui->label->setText(QString::number(matsize[1]));
 
 
-		if (matarr == NULL) {
-			QMessageBox::critical(0, QObject::tr("Error"), "Could not copy to array");
-		}
+		if (matarr == NULL) 
+							{
+								QMessageBox::critical(0, QObject::tr("Error"), "Could not copy to array");
+							}
 
 
 
@@ -1161,14 +1145,16 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 		vtkDataArray *colors;
 		colors->CreateDataArray(VTK_TYPE_INT8);
 		//colors->SetNumberOfComponents(1);
+		//ui->label->setText(QString::number(readermat->GetMTime()));
 		colors = readermat->mxArrayTovtkDataArray(matcolarr);
+		
 		colors->SetName("Colors");
 		colors->Squeeze();
 
 		QProgressDialog progress("Loading...", "Abort", 0, matsize[1], this);
 		progress.setWindowModality(Qt::WindowModal);
 
-
+		vtkDataArray *matvtkarr;
 
 		for (vtkIdType i = 0; i < matsize[1]; i++)
 			//	for (vtkIdType i = 0; i < 2; i++)
@@ -1176,10 +1162,17 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 		{
 			progress.setValue(i);
 			if (progress.wasCanceled())
+			{
+				
+				matClose(matf);
+				mxDestroyArray(matarr);
+				mxDestroyArray(matcolarr);
+
 				return;
+			}
 			//	mxArray *mline = mxGetCell(matarr, i);
 
-			vtkDataArray *matvtkarr = readermat->mxArrayTovtkDataArray(mxGetCell(matarr, i));
+			matvtkarr = readermat->mxArrayTovtkDataArray(mxGetCell(matarr, i));
 			//matvtkarr->SetNumberOfComponents(1);
 			matvtkarr->Squeeze();
 
@@ -1189,31 +1182,33 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 			}
 			//ui->label->setText(QString::number(L));
 
-			if (matvtkarr->GetNumberOfTuples()>fiblen){
-				lines->InsertNextCell(ceil(matvtkarr->GetNumberOfTuples() / skip));
+			if (matvtkarr->GetNumberOfTuples()>fiblen)
+						{
+						lines->InsertNextCell(ceil(matvtkarr->GetNumberOfTuples() / skip));
 
-				for (vtkIdType j = 0; j < matvtkarr->GetNumberOfTuples() - skip; j += skip)
-				{
-					float pt[3];
-					pt[0] = matvtkarr->GetComponent(j, 0);
-					pt[1] = matvtkarr->GetComponent(j, 1);
-					pt[2] = matvtkarr->GetComponent(j, 2);
-					points->InsertNextPoint(pt);
-					lines->InsertCellPoint(k);
-					k++;
-				}
+					for (vtkIdType j = 0; j < matvtkarr->GetNumberOfTuples() - skip; j += skip)
+							{
+							float pt[3];
+							pt[0] = matvtkarr->GetComponent(j, 0);
+							pt[1] = matvtkarr->GetComponent(j, 1);
+							pt[2] = matvtkarr->GetComponent(j, 2);
+							points->InsertNextPoint(pt);
+							lines->InsertCellPoint(k);
+							k++;
+							}
+	
 
-
-			}
+						}
 		}
+
 		progress.setValue(matsize[1]);
 		lines->Squeeze();
 		points->Squeeze();
 		matClose(matf);
 		mxDestroyArray(matarr);
 		mxDestroyArray(matcolarr);
-
-		vtkPolyData* polyd = vtkPolyData::New();
+		
+		vtkSmartPointer <vtkPolyData> polyd = vtkSmartPointer <vtkPolyData>::New();
 		polyd->Allocate();
 		polyd->SetPoints(points);
 		polyd->SetLines(lines);
@@ -1223,8 +1218,7 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 
 
 		vtkwid->renderpol(polyd);
-		polyd->Delete();
-
+		
 	}
 }
 

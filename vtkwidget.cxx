@@ -171,8 +171,9 @@ void vtkwidget::initialize(vtkImageData *input)
 	//volumeProperty->ShadeOff();
 	LightKit->AddLightsToRenderer(leftRenderer);
 	mapper->SetInputData(input);
+	
 
-
+	input->RemoveAllObservers();
 
 	render();
 
@@ -196,13 +197,13 @@ void vtkwidget::render()
 	
 	//mapper->SetMaxMemoryFraction(0.5);
 	volume->SetMapper(mapper);
+	mapper->ReleaseDataFlagOn();
 	volume->SetProperty(volumeProperty);
 	
 	// Add Volume to renderer
 	//leftRenderer->SetUseDepthPeeling(1);
 	//leftRenderer->SetMaximumNumberOfPeels(100);
 	leftRenderer->AddVolume(volume);
-	
 	volume->SetOrigin(volume->GetCenter());
 	//this->qvtkWidgetLeft->GetRenderWindow()->AddRenderer(leftRenderer);
 	//   vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
@@ -271,56 +272,32 @@ void vtkwidget::renderpoly()
 
 void vtkwidget::renderpol(vtkPolyData *pol)
 {
-	/*
-	//poly_mapper->SetColorModeToMapScalars();
-	vtkSmartPointer<vtkSmoothPolyDataFilter> smoothfilter = vtkSmartPointer<vtkSmoothPolyDataFilter>::New();
-	smoothfilter->SetInputData(pol);
-	smoothfilter->SetNumberOfIterations(40);
-	smoothfilter->SetEdgeAngle(30);
-	smoothfilter->Update();
-	
-	vtkSmartPointer<vtkTubeFilter> tubeFilter =
-		vtkSmartPointer<vtkTubeFilter>::New();
-	tubeFilter->SetInputData(pol);
-	tubeFilter->SetRadius(.5); //default is .5
-	tubeFilter->SetNumberOfSides(10);
-	tubeFilter->Update();
-	*/
-	
 	poly_mapper->SetInputData(pol);
-	//poly_mapper->ReleaseDataFlagOn();
-	vtkSmartPointer<vtkActor> poly_actor =
-		vtkSmartPointer<vtkActor>::New();
+	vtkSmartPointer<vtkActor> poly_actor = vtkSmartPointer<vtkActor>::New();
 	poly_mapper->SetColorModeToMapScalars();
 	poly_actor->SetMapper(poly_mapper);
-	//poly_actor->GetProperty()->SetLineWidth(4);
 	poly_actor->GetProperty()->EdgeVisibilityOff();
-	//poly_actor->SetScale(0.5);
-	
 
-	vtkSmartPointer<vtkScalarBarActor> scalarBar =
-		vtkSmartPointer<vtkScalarBarActor>::New();
+
+
+	vtkSmartPointer<vtkScalarBarActor> scalarBar = vtkSmartPointer<vtkScalarBarActor>::New();
 
 	scalarBar->SetTitle("Inclination angle");
 	scalarBar->SetNumberOfLabels(2);
-	//scalarBar->SetTitleRatio(0.5);
-	scalarBar->SetDisplayPosition(0,0);
+	scalarBar->SetDisplayPosition(0, 0);
 	scalarBar->SetHeight(0.0625);
 	scalarBar->SetWidth(0.4);
-	//scalarBar->SetBarRatio(0.125);
 	scalarBar->SetOrientationToHorizontal();
 
-	// Create a lookup table to share between the mapper and the scalarbar
-	vtkSmartPointer<vtkLookupTable> hueLut =
-		vtkSmartPointer<vtkLookupTable>::New();
+
+	vtkSmartPointer<vtkLookupTable> hueLut = vtkSmartPointer<vtkLookupTable>::New();
 	hueLut->SetTableRange(0, 90);
-	hueLut->SetHueRange(0.708333,0);
+	hueLut->SetHueRange(0.708333, 0);
 	hueLut->SetSaturationRange(1, 1);
 	hueLut->SetValueRange(1, 1);
 	hueLut->Build();
-	
+
 	scalarBar->SetLookupTable(hueLut);
-	//poly_mapper->SetLookupTable(hueLut);
 	poly_mapper->SetColorModeToMapScalars();
 	poly_mapper->SetScalarRange(0, 255);
 	poly_mapper->ImmediateModeRenderingOn();
@@ -493,17 +470,21 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 	readimg->SetFileName(filenames->GetValue(0));
 
 	readimg->Update();
+	int cols = readimg->GetOutput()->GetNumberOfScalarComponents();
 	int dims[3]; 
 	readimg->GetOutput()->GetDimensions(dims);
 	dims[2] = N;
-	double size = dims[0] * dims[1] * dims[2] / (1024*1024);
+	double size = (double(dims[0]) * double(dims[1]) * double(dims[2])) / (1024*1024*1024);
 	double sf = size / 0.75;
-	vtkImageAppend* appendmag = vtkImageAppend::New();
-	int mf; double f;
+	cout << sf;
+	vtkSmartPointer<vtkImageAppend> appendmag = vtkSmartPointer<vtkImageAppend>::New();
 
+	
+	int mf; double f;
+	
 	appendmag->SetAppendAxis(2);
 	if (sf >= 1 && sf < 8){ mf = 2; f = 0.5; }
-	else if (sf >= 8 && sf, 64){ mf = 4; f = 0.25; }
+	else if (sf >= 8 && sf< 64){ mf = 4; f = 0.25; }
 	else if (sf < 1){ mf = 1; f = 1; }
 	
 		int m = 0;
@@ -511,29 +492,30 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 		QProgressDialog progress("Loading files...", "Abort", 0, num, this);
 		progress.setWindowModality(Qt::WindowModal);
 
+		
+		//imgrs->ReleaseDataFlagOn();
 		for (int i = 0; i < num; i++)
 		{
 
 			progress.setValue(i);
 			if (progress.wasCanceled())
+			{
 				return;
+				this->deleteLater();
+			}
 			//	vtkSmartPointer<vtkTIFFReader>readimg1 = vtkSmartPointer<vtkTIFFReader>::New();
 
-
+			
 			vtkSmartPointer<vtkImageAppend> append = vtkSmartPointer<vtkImageAppend>::New();
+			vtkSmartPointer<vtkTIFFReader>readimg0 = vtkSmartPointer<vtkTIFFReader>::New();
+			append->SetAppendAxis(2);
 
 			for (int sc = 0; sc < mf; sc++)
 			{
-				vtkSmartPointer<vtkTIFFReader>readimg0 = vtkSmartPointer<vtkTIFFReader>::New();
+				
 				readimg0->SetFileName(filenames->GetValue(mf*i + sc));
-				//readimg1->SetFileName(filenames->GetValue(i+1));
-
 				readimg0->Update();
-				//readimg1->Update();
-
-				append->AddInputData(readimg0->GetOutput());
-				//append->AddInputData(readimg1->GetOutput());
-				append->SetAppendAxis(2);
+				append->AddInputConnection(readimg0->GetOutputPort());
 				append->Update();
 
 
@@ -541,20 +523,19 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 
 			m++;
 
-
 			vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
-			imgrs->SetInputData(append->GetOutput());
-			//imgrs->SetInterpolationModeToNearestNeighbor();
 			imgrs->SetAxisMagnificationFactor(0, f);
 			imgrs->SetAxisMagnificationFactor(1, f);
 			imgrs->SetAxisMagnificationFactor(2, f);
+			
+			imgrs->SetInputConnection(append->GetOutputPort());
 			imgrs->Update();
-
-
+			
+			
 
 			appendmag->AddInputData(imgrs->GetOutput());
 
-
+			
 
 
 		}
@@ -563,14 +544,20 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 
 
 		appendmag->Update();
-		buildhist(appendmag->GetOutput());
-		//	vtkImageData *imser = vtkImageData::New();
-		//	imser->AllocateScalars(VTK_INT, 1);
-		//	imser->SetDimensions(dims[0]/2,dims[1]/2,N/2);
-		//	imser->GetPointData()->SetScalars(appendmag->GetOutput()->GetPointData()->GetScalars());
-		initialize(appendmag->GetOutput());
-		appendmag->Delete();
-		//int cols = readimg->GetOutput()->GetNumberOfScalarComponents();
+		
+		//buildhist(appendmag->GetOutput());
+	//	vtkSmartPointer <vtkImageData>  imser = vtkSmartPointer <vtkImageData> ::New();
+		//	imser->AllocateScalars(VTK_INT, cols);
+		//	imser->SetDimensions(appendmag->GetOutput()->GetDimensions());
+			//imser->SetDimensions(dims[0]/2,dims[1]/2,N/2);
+			//imser->GetPointData()->SetScalars(appendmag->GetOutput()->GetPointData()->GetScalars());
+		//	imser = appendmag->GetOutput();
+		//initialize(appendmag->GetOutput());
+			initialize(appendmag->GetOutput());
+
+
+		//appendmag->Delete();
+		//
 		/*
 		vtkTIFFReader *imgseq = vtkTIFFReader::New();
 		imgseq->SetFileNames(filenames);
