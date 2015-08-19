@@ -8,6 +8,11 @@
 #include<QModelIndex>
 #include<QFileDialog>
 #include<QTableWidgetItem>
+#include <cstdio>
+#include <cstdlib>
+
+
+
 
 
 
@@ -20,6 +25,7 @@ dialog_tfn::dialog_tfn(QWidget *parent) :
 {
     ui->setupUi(this);
     // give the axes some labels:
+	rubberBand = 0;
     ui->Plot->xAxis->setLabel("Intensity");
     ui->Plot->yAxis->setLabel("Value");
     // set axes ranges, so we see all data:
@@ -40,6 +46,14 @@ dialog_tfn::dialog_tfn(QWidget *parent) :
 	ui->Plot->yAxis->setBasePen(QPen(Qt::white, 1));
 	ui->Plot->yAxis->grid()->setVisible(false);
 
+	
+	
+	
+
+	connect(ui->Plot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress(QMouseEvent*)));
+	connect(ui->Plot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseMove(QMouseEvent*)));
+	connect(ui->Plot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mouseRelease(QMouseEvent*)));
+	
 }
 
 dialog_tfn::~dialog_tfn()
@@ -127,9 +141,9 @@ void dialog_tfn::plot()
 	}
 	
 
-	QCPGraph *pointsR = new QCPGraph(ui->Plot->xAxis, ui->Plot->yAxis2);
-	QCPGraph *pointsG = new QCPGraph(ui->Plot->xAxis, ui->Plot->yAxis2);
-	QCPGraph *pointsB = new QCPGraph(ui->Plot->xAxis, ui->Plot->yAxis2);
+	pointsR = new QCPGraph(ui->Plot->xAxis, ui->Plot->yAxis2);
+	pointsG = new QCPGraph(ui->Plot->xAxis, ui->Plot->yAxis2);
+	pointsB = new QCPGraph(ui->Plot->xAxis, ui->Plot->yAxis2);
 
 	pointsR->setData(In, R);
 	pointsR->setLineStyle(QCPGraph::lsLine);
@@ -202,4 +216,26 @@ void dialog_tfn::plothist(QVector<double> freq)
 	
 	ui->Plot->rescaleAxes();
 	ui->Plot->replot();
+}
+
+void dialog_tfn::mousePress(QMouseEvent* mevent)
+{
+	if (mevent->button() == Qt::RightButton){
+		
+		int x = ui->Plot->xAxis->pixelToCoord(mevent->pos().x());
+		double y = ui->Plot->yAxis->pixelToCoord(mevent->pos().y());
+		pointsR->addData(x,y);
+		
+		ui->Plot->replot();
+	}
+}
+
+void dialog_tfn::mouseMove(QMouseEvent *mevent)
+{
+
+}
+
+void dialog_tfn::mouseRelease(QMouseEvent *mevent)
+{
+
 }

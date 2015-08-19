@@ -93,6 +93,7 @@
 #include<vtkParametricSpline.h>
 #include<vtkParametricFunctionSource.h>
 
+
 using namespace std;
 std::string inputFilename;
 QString ext;
@@ -949,13 +950,19 @@ void VolumeViewer::on_actionGPU_Texture_triggered()
 
 void VolumeViewer::on_actionRay_Cast_triggered()
 {
-vtkwid->mapper->SetRequestedRenderMode(vtkSmartVolumeMapper::RayCastRenderMode);
+	//vtkwid->mapper->SetRequestedRenderMode(vtkSmartVolumeMapper::RayCastRenderMode);
+	vtkwid->mapper->SetRequestedRenderModeToRayCast();
+	vtkwid->mapper->SetInterpolationModeToLinear();
+	vtkwid->mapper->SetInteractiveAdjustSampleDistances(0);
+	vtkwid->mapper->SetInteractiveUpdateRate(4);
+	vtkwid->mapper->SetAutoAdjustSampleDistances(0);
+	vtkwid->mapper->SetSampleDistance(2.0);
 vtkwid->GetRenderWindow()->Render();
 }
 
 void VolumeViewer::on_actionCPU_Texture_triggered()
 {
-   vtkwid-> mapper->SetRequestedRenderMode(vtkSmartVolumeMapper::TextureRenderMode);
+   vtkwid-> mapper->SetRequestedRenderMode(vtkSmartVolumeMapper::RayCastAndTextureRenderMode);
   vtkwid->GetRenderWindow()->Render();
 }
 

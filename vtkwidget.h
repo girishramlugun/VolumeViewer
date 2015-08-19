@@ -63,6 +63,7 @@
 #include<vtkProgressObserver.h>
 #include<QVector>
 #include<vtkGlyph3DMapper.h>
+#include <vtkMPIController.h> 
 using namespace std;
 
 class vtkwidget : public QVTKWidget
@@ -152,6 +153,7 @@ signals:
    void resample(vtkImageData*);
    void readimseq(vtkStringArray*, int);
    void buildhist(vtkImageData*);
+
 
 };
 

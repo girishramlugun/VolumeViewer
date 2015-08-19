@@ -27,8 +27,8 @@ else()
   set(Glue ItkVtkGlue)
 endif()
 
-find_package(Matlab REQUIRED)
-include_directories(${Matlab_INCLUDES})
+#find_package(Matlab REQUIRED)
+#include_directories(${Matlab_INCLUDES})
 
 
 
@@ -62,7 +62,7 @@ file(GLOB CXX_FILES *.cxx)
   add_executable(VolumeViewer WIN32 MACOSX_BUNDLE ${CXX_FILES} ${UISrcs} ${MOCSrcs} ${VolumeViewer_RESOURCES_RCC})
 
 
-    target_link_libraries(VolumeViewer ${QT_QTMAIN_LIBRARY} ${VTK_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5PrintSupport_LIBRARIES} ${Matlab_LIBRARIES} ${ITK_LIBRARIES} ${Glue})
+    target_link_libraries(VolumeViewer ${QT_QTMAIN_LIBRARY} ${VTK_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5PrintSupport_LIBRARIES} ${ITK_LIBRARIES} ${Glue})
 
 
 IF(WIN32) # Check if we are on Windows

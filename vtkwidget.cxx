@@ -23,6 +23,8 @@
 #include <vtkTextProperty.h>
 #include<vtkImageAppend.h>
 #include<vtkBMPReader.h>
+#include<mpi.h>
+#include<vtkAbstractImageInterpolator.h>
 
 vtkwidget::vtkwidget(QWidget *parent) :
     QVTKWidget(parent)
@@ -190,10 +192,10 @@ void vtkwidget::render()
 	//{
 	//	mapper->SetRequestedRenderModeToRayCast();
 	//}
-	
+	mapper->SetMaxMemoryFraction(0.75);
 
 	leftRenderer->ResetCamera();
-	//rcmapper->SetInteractiveUpdateRate(2);
+	//mapper->SetInteractiveUpdateRate(2);
 	
 	//mapper->SetMaxMemoryFraction(0.5);
 	volume->SetMapper(mapper);
@@ -466,6 +468,7 @@ void vtkwidget::resample(vtkImageData *imgdata)
 void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 {
 
+
 	vtkSmartPointer<vtkTIFFReader>readimg = vtkSmartPointer<vtkTIFFReader>::New();
 	readimg->SetFileName(filenames->GetValue(0));
 
@@ -474,7 +477,7 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 	int dims[3]; 
 	readimg->GetOutput()->GetDimensions(dims);
 	dims[2] = N;
-	double size = (double(dims[0]) * double(dims[1]) * double(dims[2])) / (1024*1024*1024);
+	double size = (double(dims[0]) * double(dims[1]) * double(dims[2])* double(cols)) / (1024*1024*1024);
 	double sf = size / 0.75;
 	cout << sf;
 	vtkSmartPointer<vtkImageAppend> appendmag = vtkSmartPointer<vtkImageAppend>::New();
@@ -493,7 +496,14 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 		progress.setWindowModality(Qt::WindowModal);
 
 		
+
+		//imgrs->Update();
 		//imgrs->ReleaseDataFlagOn();
+
+
+
+		
+
 		for (int i = 0; i < num; i++)
 		{
 
@@ -505,14 +515,13 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 			}
 			//	vtkSmartPointer<vtkTIFFReader>readimg1 = vtkSmartPointer<vtkTIFFReader>::New();
 
-			
-			vtkSmartPointer<vtkImageAppend> append = vtkSmartPointer<vtkImageAppend>::New();
 			vtkSmartPointer<vtkTIFFReader>readimg0 = vtkSmartPointer<vtkTIFFReader>::New();
+			vtkSmartPointer<vtkImageAppend> append = vtkSmartPointer<vtkImageAppend>::New();
 			append->SetAppendAxis(2);
-
+						
 			for (int sc = 0; sc < mf; sc++)
 			{
-				
+
 				readimg0->SetFileName(filenames->GetValue(mf*i + sc));
 				readimg0->Update();
 				append->AddInputConnection(readimg0->GetOutputPort());
@@ -524,15 +533,15 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 			m++;
 
 			vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
+			imgrs->SetInterpolationModeToCubic();
 			imgrs->SetAxisMagnificationFactor(0, f);
 			imgrs->SetAxisMagnificationFactor(1, f);
 			imgrs->SetAxisMagnificationFactor(2, f);
-			
 			imgrs->SetInputConnection(append->GetOutputPort());
 			imgrs->Update();
 			
 			
-
+			
 			appendmag->AddInputData(imgrs->GetOutput());
 
 			
@@ -604,3 +613,4 @@ void vtkwidget::buildhist(vtkImageData* imgdata)
 	
 	emit sendhist(freq);
 }
+
