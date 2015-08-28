@@ -331,7 +331,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 				
 			}
 			int N = list.size();
-			//Read first image to extract dimensions
+			//Read first image to extract dimensions 
 
 
 			//Create new render window and connect signals to slots

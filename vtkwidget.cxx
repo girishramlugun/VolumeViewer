@@ -346,7 +346,7 @@ void vtkwidget::setbg(double bg_r, double bg_g, double bg_b)
 
 void vtkwidget::setdims(double dim_x,  double dim_y, double dim_z)
 {
-	volpropchange->SetInputData(input);
+	volpropchange->SetInputData(mapper->GetInput());
     volpropchange->SetOutputSpacing(dim_x, dim_y, dim_z);
 	volpropchange->Update();
 	mapper->SetInputData(volpropchange->GetOutput());
