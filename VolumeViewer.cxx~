@@ -1169,8 +1169,8 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 			{
 				
 				matClose(matf);
-				mxDestroyArray(matarr);
-				mxDestroyArray(matcolarr);
+				//mxDestroyArray(matarr);
+				//mxDestroyArray(matcolarr);
 
 				return;
 			}
@@ -1209,8 +1209,8 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 		lines->Squeeze();
 		points->Squeeze();
 		matClose(matf);
-		mxDestroyArray(matarr);
-		mxDestroyArray(matcolarr);
+		//mxDestroyArray(matarr);
+		//mxDestroyArray(matcolarr);
 		
 		vtkSmartPointer <vtkPolyData> polyd = vtkSmartPointer <vtkPolyData>::New();
 		polyd->Allocate();

@@ -63,7 +63,7 @@
 #include<vtkProgressObserver.h>
 #include<QVector>
 #include<vtkGlyph3DMapper.h>
-#include <vtkMPIController.h> 
+
 using namespace std;
 
 class vtkwidget : public QVTKWidget

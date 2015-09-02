@@ -23,6 +23,7 @@
 #include <vtkTextProperty.h>
 #include<vtkImageAppend.h>
 #include<vtkBMPReader.h>
+#include<mpi.h>
 #include<vtkAbstractImageInterpolator.h>
 
 vtkwidget::vtkwidget(QWidget *parent) :
