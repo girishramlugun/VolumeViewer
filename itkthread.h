@@ -11,6 +11,7 @@
 #include <itkVTKImageToImageFilter.h>
 #include <itkImageToVTKImageFilter.h>
 #include<vtkSmartPointer.h>
+using namespace std;
 
 class itkthread : public QWidget
 {
@@ -24,6 +25,8 @@ public:
 	void threshold(vtkImageData *inputimage, double lthreshold, double uthreshold);
  
 	vtkSmartPointer <vtkImageData> threshimg;
+
+	void display(char * imagefilename);
 	
 signals:
 

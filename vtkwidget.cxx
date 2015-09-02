@@ -185,6 +185,7 @@ void vtkwidget::render()
 {
 	
 	mapper->SetBlendModeToComposite();
+	volumeProperty->SetInterpolationType(VTK_CUBIC_INTERPOLATION);
 	//mapper->SetInputConnection(reader->GetOutputPort());
 
         //mapper->SetRequestedRenderModeToRayCast();

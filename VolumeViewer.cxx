@@ -279,7 +279,7 @@ void VolumeViewer::on_actionOpen_triggered()
 
 void VolumeViewer::on_actionImage_triggered()
 {
-	QString Filename = QFileDialog::getOpenFileName(this, tr("Open Image"), "", tr("TIFF (*.tif);;PNG Files (*.png)"));
+	QString Filename = QFileDialog::getOpenFileName(this, tr("Open Image"), "", tr("TIFF (*.tif);;PNG Files (*.png);;BMP Files (*.bmp)"));
 	if (Filename.isEmpty() == 0){
 		string inputimgname = Filename.toStdString();
 		openimg(inputimgname);
@@ -288,7 +288,9 @@ void VolumeViewer::on_actionImage_triggered()
 
 void VolumeViewer::openimg(string inputimgname)
 {
-
+	itkhess = new itkthread();
+	char* imdp = strcpy((char*)malloc(inputimgname.length() + 1), inputimgname.c_str());
+	itkhess->display(imdp);
 	
 }
 

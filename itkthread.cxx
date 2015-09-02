@@ -12,6 +12,8 @@
 #include <itkImageToVTKImageFilter.h>
 #include <vtkPointData.h>
 #include<QFileDialog>
+#include <itkImage.h>
+#include <QuickView.h>
 
 using namespace std;
 
@@ -133,13 +135,6 @@ void itkthread::threshold(vtkImageData *inputimage, double lthreshold, double ut
 	vtkImageToImageFilter->SetInput(inputimage);
 	vtkImageToImageFilter->Update();
 
-	/*
-	typedef itk::ImageFileReader< InputImageType >  ReaderType;
-	ReaderType::Pointer reader = ReaderType::New();
-	reader->SetFileName("LAABlock.tif");
-	*/
-
-
 	//First threshold the volume
 	
 	typedef itk::ThresholdImageFilter <InputImageType>
@@ -179,11 +174,20 @@ void itkthread::threshold(vtkImageData *inputimage, double lthreshold, double ut
 		}
 	}
 
+}
 
+void itkthread::display(char * imagefilename)
+{
+	typedef itk::Image<signed short, 2>  ImageType;
 
+	ImageType::Pointer image;
+	typedef itk::ImageFileReader<ImageType> ReaderType;
+	ReaderType::Pointer reader = ReaderType::New();
+	reader->SetFileName(imagefilename);
+	image = reader->GetOutput();
 
-
-
-
-
+	QuickView viewer;
+	viewer.AddImage(image.GetPointer());
+	viewer.Visualize();
+	
 }
