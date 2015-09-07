@@ -10,14 +10,15 @@ find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
 
 
- find_package(Qt5Widgets REQUIRED)
- include_directories(${Qt5Widgets_INCLUDES})
+ find_package(Qt5 COMPONENTS Widgets PrintSupport  REQUIRED)
+include_directories(${Qt5Widgets_INCLUDE_DIRS} ${Qt5PrintSupport_INCLUDE_DIRS})
 
-include_directories(/opt/MATLAB/R2013a/extern/include)
+IF(UNIX)
+include_directories(/usr/local/matlab/extern/include)
+endif
 
-
-find_package(Qt5PrintSupport REQUIRED)
- include_directories(${Qt5PrintSupport_INCLUDES})
+# find_package(Qt5PrintSupport REQUIRED)
+# include_directories(${Qt5PrintSupport_INCLUDES})
 
 find_package(ITK REQUIRED)
 include(${ITK_USE_FILE})
