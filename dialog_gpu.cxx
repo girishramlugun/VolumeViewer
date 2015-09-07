@@ -10,13 +10,15 @@ Dialog_gpu::Dialog_gpu(QWidget *parent) :
     ui(new Ui::Dialog_gpu)
 {
     ui->setupUi(this);
-    string line;
+	string line; int vramval;
     ifstream vram ("vram.info");
     if (vram.is_open())
     {
       while ( getline (vram,line) )
       {
-
+		  vramval = atoi(line.c_str());
+		  ui->vram_val->setCurrentIndex((vramval/1024)-1);
+		  emit gpinf(vramval);
 
       }
       vram.close();

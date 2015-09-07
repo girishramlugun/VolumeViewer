@@ -25,6 +25,10 @@
 #include<vtkBMPReader.h>
 #include<vtkAbstractImageInterpolator.h>
 
+
+
+
+
 vtkwidget::vtkwidget(QWidget *parent) :
     QVTKWidget(parent)
 {
@@ -344,6 +348,12 @@ void vtkwidget::setbg(double bg_r, double bg_g, double bg_b)
 	GetRenderWindow()->Render();
 }
 
+void vtkwidget::setvram(int vramVal)
+{
+	vtkIdType vram = 0.75* vramVal * 1024 * 1024;
+	mapper->SetMaxMemoryInBytes(vram);
+}
+
 void vtkwidget::setdims(double dim_x,  double dim_y, double dim_z)
 {
 	volpropchange->SetInputData(mapper->GetInput());
@@ -408,12 +418,6 @@ void vtkwidget::resample(vtkImageData *imgdata)
 	
 	//Get the Graphics memory and find a scaling factor to match that, otherwise, render the imagedata without scaling
 	vtkIdType memsize = imgdata->GetActualMemorySize()*1024;
-	vtkGPUInfo *gpi = vtkGPUInfo::New();
-	vtkIdType vram = gpi->GetDedicatedVideoMemory();
-	if (vram = 134217728){
-	mapper->SetMaxMemoryInBytes(805306368);
-	}
-	//double gpumem = mapper->GetMaxMemoryInBytes();
 	double sf =ceil(memsize / mapper->GetMaxMemoryInBytes());
 
     if (sf>=1 && sf<8){

@@ -103,6 +103,7 @@ bool wrmv=0;
 
 
 
+
 #ifdef _WIN32
 #include<vtkAVIWriter.h>
 vtkSmartPointer<vtkAVIWriter> movie = vtkSmartPointer <vtkAVIWriter>::New();
@@ -348,6 +349,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			connect(diacol, SIGNAL(volcol(double)), vtkwid, SLOT(updatevolcol(double)));
 			connect(diacol, SIGNAL(wincol(double)), vtkwid, SLOT(updatewincol(double)));
 			connect(vtkwid, SIGNAL(sendhist(QVector<double>)), diatfn, SLOT(plothist(QVector<double>)));
+			connect(diagpu, SIGNAL(gpinf(int)), vtkwid, SLOT(setvram(int)));
 			vtkwid->readimseq(filenames, N);
 			//ui->label->setText(QString::number(vtkwid->readimseq->dims[0]) + " " + QString::number(vtkwid->readimseq->dims[1]) + " " + QString::number(vtkwid->readimseq->dims[2]));
 
@@ -406,7 +408,7 @@ void VolumeViewer::openvol(string inputFilename)
         else if (ext == QString("tif"))
 		{
 			vtkwid->readtif(inputFilename);
-			ui->label->setText(QString::number(vtkwid->mapper->GetMaxMemoryInBytes()));
+			
 
 			
 		}
