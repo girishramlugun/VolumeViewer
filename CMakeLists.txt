@@ -19,15 +19,16 @@ include_directories(${Qt5Widgets_INCLUDE_DIRS} ${Qt5PrintSupport_INCLUDE_DIRS})
 
 IF(UNIX)
 include_directories(/usr/local/matlab/extern/include)
-endif
-=======
+endif()
+
+
 
  find_package(Qt5Widgets REQUIRED)
  include_directories(${Qt5Widgets_INCLUDES})
 
 #set(MATLAB_LIB_DIR /opt/MATLAB/R2013a/bin/glnxa64)
 #set(MATLAB_INCLUDE_DIR /opt/MATLAB/R2013a/extern/include)
->>>>>>> 9927244912dfd41826414f1d359601b5bab4d9f9
+
 
 # find_package(Qt5PrintSupport REQUIRED)
 # include_directories(${Qt5PrintSupport_INCLUDES})
