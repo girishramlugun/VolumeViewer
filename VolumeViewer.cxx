@@ -98,7 +98,7 @@ using namespace std;
 std::string inputFilename;
 QString ext;
 bool wrmv=0;
-
+int VRAM;
 //template <typename Iterator > void setval(Iterator begin, Iterator end) {  }
 
 
@@ -214,6 +214,23 @@ VolumeViewer::VolumeViewer()
 
 	diafibre = new Dialog_Fibre(this);
 
+
+    connect(this, SIGNAL(gpinf(int)), this, SLOT(getgpuinfo(int)));
+    connect(this, SIGNAL(gpinf(int)), diagpu, SLOT(setvram(int)));
+    string line; int vramval;
+    ifstream vram ("vram.info");
+    if (vram.is_open())
+    {
+      while ( getline (vram,line) )
+      {
+          vramval = atoi(line.c_str());
+         // ui->vram_val->setCurrentIndex((vramval/1024)-1);
+          emit gpinf(vramval);
+
+      }
+      vram.close();
+    }
+
   // Set up action signals and slots
   connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(slotExit()));
   connect(diatfn,SIGNAL(sendtfn(int)),this,SLOT(setvolcol(int)));
@@ -222,6 +239,7 @@ VolumeViewer::VolumeViewer()
   connect(diahessian, SIGNAL(sendhessparams(double, double, double)), this, SLOT(doHessian(double, double, double)));
   connect(diathresh, SIGNAL(sendthreshold(double, double)), this, SLOT(setthresh(double, double)));
   connect(diafibre, SIGNAL(sendfibreparams(int, int)), this, SLOT(setfibres(int, int)));
+
   }
 
 void VolumeViewer::slotExit() 
@@ -349,7 +367,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			connect(diacol, SIGNAL(volcol(double)), vtkwid, SLOT(updatevolcol(double)));
 			connect(diacol, SIGNAL(wincol(double)), vtkwid, SLOT(updatewincol(double)));
 			connect(vtkwid, SIGNAL(sendhist(QVector<double>)), diatfn, SLOT(plothist(QVector<double>)));
-			connect(diagpu, SIGNAL(gpinf(int)), vtkwid, SLOT(setvram(int)));
+            vtkwid->setvram(ui->label->text().toInt());
 			vtkwid->readimseq(filenames, N);
 			//ui->label->setText(QString::number(vtkwid->readimseq->dims[0]) + " " + QString::number(vtkwid->readimseq->dims[1]) + " " + QString::number(vtkwid->readimseq->dims[2]));
 
@@ -396,11 +414,15 @@ void VolumeViewer::openvol(string inputFilename)
 		connect(dialight, SIGNAL(sendlights(double, double, double, double, double, double, double, double, double, double, double, double, double, double)), vtkwid,
 			SLOT(updatelights(double, double, double, double, double, double, double, double, double, double, double, double, double, double)));
 		connect(diacol, SIGNAL(volcol(double)), vtkwid, SLOT(updatevolcol(double)));
+
 		connect(diacol, SIGNAL(wincol(double)), vtkwid, SLOT(updatewincol(double)));
 		connect(vtkwid, SIGNAL(sendhist(QVector<double>)), diatfn, SLOT(plothist(QVector<double>)));
-		
+        vtkwid->setvram(ui->label->text().toInt());
+
+
 		if (ext == QString("vti"))
 		{
+
 			vtkwid->readvti(inputFilename);
 			
 		}
@@ -414,7 +436,7 @@ void VolumeViewer::openvol(string inputFilename)
 		}
 		else if (ext == QString("mat"))
 		{
-			//generatefibres(inputFilename, 10, 10);
+
 			diafibre->show();
 					
 		}
@@ -440,7 +462,7 @@ void VolumeViewer::openvol(string inputFilename)
 	else
 	{
 		return;
-		//	QMessageBox::critical(0, QObject::tr("Error"), "No File Loaded");
+        //	QMessageBox::critical(0, QObject::tr("Error"), "No File Loaded");
 	}
 
 
@@ -693,6 +715,7 @@ if (vtkwid->isVisible())
 		box = vtkSmartPointer<vtkBoxWidget2>::New();
 		vtkwid->leftRenderer->ResetCamera();
 
+
 		vtkSmartPointer <vtkBoxRepresentation> boxrep = vtkSmartPointer <vtkBoxRepresentation>::New();
 		boxrep->SetPlaceFactor(1.00);
 		boxrep->SetInsideOut(1);
@@ -720,7 +743,7 @@ if (vtkwid->isVisible())
 			//box->Delete();
 			vtkwid->leftRenderer->ResetCameraClippingRange();
 			vtkwid->leftRenderer->ResetCamera();
-			vtkwid->GetInteractor()->Render();
+            vtkwid->GetInteractor()->Render();
 		
 
         }
@@ -751,7 +774,9 @@ void VolumeViewer::on_actionCrop_triggered()
 
 
 			vtkSmartPointer <vtkExtractVOI> extvoi = vtkSmartPointer <vtkExtractVOI>::New();
-			double coord[3][6];
+
+
+            double coord[3][6];
 			int j = 0;
 			for (vtkIdType i = 8; i < 14; i++)
 			{
@@ -762,7 +787,7 @@ void VolumeViewer::on_actionCrop_triggered()
 			}
 
 			extvoi->SetInputData(vtkwid->mapper->GetInput());
-			extvoi->SetSampleRate(1,1,1);
+            extvoi->SetSampleRate(vtkwid->sample_rate,vtkwid->sample_rate,vtkwid->sample_rate);
 			extvoi->SetVOI(coord[0][0], coord[0][1], coord[1][2], coord[1][3], coord[2][4], coord[2][5]);
 			ui->label->setText(QString::number(coord[0][0]) + " " + QString::number(coord[0][1]) + " " + QString::number(coord[1][2]) + " " + QString::number(coord[1][3]) + " " + QString::number(coord[2][4]) + " " + QString::number(coord[2][5]));
 			extvoi->Update();
@@ -770,6 +795,7 @@ void VolumeViewer::on_actionCrop_triggered()
 			//vtkSmartPointer <vtkImageData> ext = vtkSmartPointer <vtkImageData>::New();
 			//ext->AllocateScalars(VTK_INT, extvoi->GetOutput()->GetNumberOfPoints());
 			//ext = extvoi->GetOutput();
+            /*
 			QString fileNameSave = QFileDialog::getSaveFileName(this,
 				tr("Save Volume"), "",
 				tr("TIFF File (*.tif)"));
@@ -779,8 +805,8 @@ void VolumeViewer::on_actionCrop_triggered()
 				twrite->SetInputData(extvoi->GetOutput());
 				twrite->SetFileName(volname.c_str());
 				twrite->Update();
-				twrite->Write();
-			}
+                twrite->Write();
+            }*/
 			}
 		}
 	
@@ -1233,4 +1259,10 @@ void VolumeViewer::setfibres(int fiblen, int skip)
 
 	generatefibres(inputFilename, fiblen, skip);
 
+}
+
+void VolumeViewer::getgpuinfo(int vram)
+{
+  //  VRAM=vram;
+    ui->label->setNum(vram);
 }

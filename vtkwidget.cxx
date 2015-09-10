@@ -26,7 +26,7 @@
 #include<vtkAbstractImageInterpolator.h>
 
 
-
+vtkIdType vram;
 
 
 vtkwidget::vtkwidget(QWidget *parent) :
@@ -196,7 +196,7 @@ void vtkwidget::render()
 	//{
 	//	mapper->SetRequestedRenderModeToRayCast();
 	//}
-	mapper->SetMaxMemoryFraction(0.75);
+
 
 	leftRenderer->ResetCamera();
 	//mapper->SetInteractiveUpdateRate(2);
@@ -350,8 +350,9 @@ void vtkwidget::setbg(double bg_r, double bg_g, double bg_b)
 
 void vtkwidget::setvram(int vramVal)
 {
-	vtkIdType vram = 0.75* vramVal * 1024 * 1024;
-	mapper->SetMaxMemoryInBytes(vram);
+    vram = 0.75* vramVal * 1024 * 1024;
+    mapper->SetMaxMemoryInBytes(vram);
+
 }
 
 void vtkwidget::setdims(double dim_x,  double dim_y, double dim_z)
@@ -414,10 +415,11 @@ void vtkwidget::readtif(string inputFilename)
 
 void vtkwidget::resample(vtkImageData *imgdata)
 {
-	
-	
+
+   // mapper->SetMaxMemoryInBytes(vram);
 	//Get the Graphics memory and find a scaling factor to match that, otherwise, render the imagedata without scaling
 	vtkIdType memsize = imgdata->GetActualMemorySize()*1024;
+   // cout<<mapper->GetMaxMemoryInBytes();
 	double sf =ceil(memsize / mapper->GetMaxMemoryInBytes());
 
     if (sf>=1 && sf<8){

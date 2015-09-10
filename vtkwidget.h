@@ -153,7 +153,7 @@ signals:
    void resample(vtkImageData*);
    void readimseq(vtkStringArray*, int);
    void buildhist(vtkImageData*);
-   void setvram(int );
+   void setvram(int);
 
 
 };

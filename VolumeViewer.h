@@ -69,7 +69,8 @@ public:
 
 signals:
  
- 
+ void vramsize(int);
+ void gpinf(int);
 
 public slots:
 
@@ -78,7 +79,7 @@ public slots:
   void setvolcol(int);
   void updateopacity(int,bool);
   void rmovstat(int);
-  
+  void getgpuinfo(int vram);
 
 
 

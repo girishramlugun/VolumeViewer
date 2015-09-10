@@ -19,10 +19,15 @@ private slots:
     void on_buttonBox_accepted();
 
 signals:
-	void gpinf(int);
+
 
 private:
     Ui::Dialog_gpu *ui;
+
+public slots:
+    void setvram(int vramval);
+
+
 };
 
 #endif // DIALOG_GPU_H

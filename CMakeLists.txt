@@ -6,8 +6,8 @@ endif()
 
 PROJECT(VolumeViewer)
 
-#set(VTK_DIR /opt/VTK/Build)
-#set(ITK_DIR /opt/ITK/Build)
+set(VTK_DIR /hpc/gram526/VTK/Build)
+set(ITK_DIR /hpc/gram526/ITK/Build)
 
 find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
@@ -22,16 +22,8 @@ include_directories(/usr/local/matlab/extern/include)
 endif()
 
 
-
- find_package(Qt5Widgets REQUIRED)
- include_directories(${Qt5Widgets_INCLUDES})
-
-#set(MATLAB_LIB_DIR /opt/MATLAB/R2013a/bin/glnxa64)
-#set(MATLAB_INCLUDE_DIR /opt/MATLAB/R2013a/extern/include)
-
-
-# find_package(Qt5PrintSupport REQUIRED)
-# include_directories(${Qt5PrintSupport_INCLUDES})
+set(MATLAB_LIB_DIR /usr/local/matlab/bin/glnxa64)
+set(MATLAB_INCLUDE_DIR /usr/local/matlab/extern/include)
 
 find_package(ITK REQUIRED)
 include(${ITK_USE_FILE})
