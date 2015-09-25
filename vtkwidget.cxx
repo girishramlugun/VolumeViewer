@@ -27,7 +27,7 @@
 
 
 vtkIdType vram;
-
+double imgmax;
 
 vtkwidget::vtkwidget(QWidget *parent) :
     QVTKWidget(parent)
@@ -124,10 +124,10 @@ void vtkwidget::initialize(vtkImageData *input)
 	if (ncol < 3 )
     {
 		volumeColor->AddRGBPoint(0, 0, 0, 0);
-		volumeColor->AddRGBPoint(255, 1, 1, 1);
+        volumeColor->AddRGBPoint(imgmax, 1, 1, 1);
 
 		volumeScalarOpacity->AddPoint(0, 0.00);
-		volumeScalarOpacity->AddPoint(255, 1.00);
+        volumeScalarOpacity->AddPoint(imgmax, 1.00);
 
 		volumeProperty->SetColor(volumeColor);
 		volumeProperty->SetScalarOpacity(volumeScalarOpacity);
@@ -140,15 +140,15 @@ void vtkwidget::initialize(vtkImageData *input)
    {
 	vtkSmartPointer <vtkColorTransferFunction> c1 = vtkSmartPointer<vtkColorTransferFunction>::New();
 	c1->AddRGBPoint(0, 0, 0, 0);
-	c1->AddRGBPoint(255, 1, 0, 0);
+    c1->AddRGBPoint(imgmax, 1, 0, 0);
 	vtkSmartPointer <vtkColorTransferFunction> c2 = vtkSmartPointer<vtkColorTransferFunction>::New();
 
 	c2->AddRGBPoint(0, 0, 0, 0);
-	c2->AddRGBPoint(255, 0, 1, 0);
+    c2->AddRGBPoint(imgmax, 0, 1, 0);
 	vtkSmartPointer <vtkColorTransferFunction> c3 = vtkSmartPointer<vtkColorTransferFunction>::New();
 
 	c3->AddRGBPoint(0, 0, 0, 0);
-	c3->AddRGBPoint(255, 0, 0, 1);
+    c3->AddRGBPoint(imgmax, 0, 0, 1);
 
 
 	volumeProperty->SetColor(0,c1);
@@ -157,11 +157,11 @@ void vtkwidget::initialize(vtkImageData *input)
 
 
 	volumeScalarOpacity1->AddPoint(0, 0.00);
-	volumeScalarOpacity1->AddPoint(255, 1.00);
+    volumeScalarOpacity1->AddPoint(imgmax, 1.00);
 	volumeScalarOpacity2->AddPoint(0, 0.00);
-	volumeScalarOpacity2->AddPoint(255, 1.00);
+    volumeScalarOpacity2->AddPoint(imgmax, 1.00);
 	volumeScalarOpacity3->AddPoint(0, 0.00);
-	volumeScalarOpacity3->AddPoint(255, 1.00);
+    volumeScalarOpacity3->AddPoint(imgmax, 1.00);
 	volumeProperty->SetScalarOpacity(0,volumeScalarOpacity1);
 	volumeProperty->SetScalarOpacity(1,volumeScalarOpacity2);
 	volumeProperty->SetScalarOpacity(2,volumeScalarOpacity3);
@@ -395,8 +395,10 @@ void vtkwidget::updatewincol(double wcol)
 void vtkwidget::readvti(string inputFilename)
 {
 	vtkXMLImageDataReader *rvti = vtkXMLImageDataReader::New();
+
 	rvti->SetFileName(inputFilename.c_str());
 	rvti->Update();
+       imgmax=rvti->GetOutput()->GetScalarTypeMax();
 	resample(rvti->GetOutput());
 	rvti->Delete();
 	
@@ -406,8 +408,10 @@ void vtkwidget::readtif(string inputFilename)
 {
 	//vtkTIFFReader *rtiff = vtkTIFFReader::New();
 	readertiff->SetFileName(inputFilename.c_str());
-	readertiff->SetOrientationType(ORIENTATION_LEFTTOP);
+    //readertiff->SetOrientationType(ORIENTATION_LEFTTOP);
 	readertiff->Update();
+
+    imgmax=readertiff->GetOutput()->GetScalarTypeMax();
 	resample(readertiff->GetOutput());
 	//rtiff->Delete();
 
@@ -479,6 +483,7 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 	readimg->SetFileName(filenames->GetValue(0));
 
 	readimg->Update();
+    imgmax=readimg->GetOutput()->GetScalarTypeMax();
 	int cols = readimg->GetOutput()->GetNumberOfScalarComponents();
 	int dims[3]; 
 	readimg->GetOutput()->GetDimensions(dims);
@@ -601,15 +606,15 @@ void vtkwidget::buildhist(vtkImageData* imgdata)
 	vtkSmartPointer<vtkImageAccumulate> histogram =
 		vtkSmartPointer<vtkImageAccumulate>::New();
 	histogram->SetInputData(imgdata);
-	histogram->SetComponentExtent(0, 255, 0, 0, 0, 0);
+    histogram->SetComponentExtent(0, imgmax, 0, 0, 0, 0);
 	histogram->SetComponentOrigin(0, 0, 0);
 	histogram->SetComponentSpacing(1, 0, 0);
 	histogram->IgnoreZeroOn();
 	histogram->Update();
-	QVector<double> freq(256);
+    QVector<double> freq(imgmax+1);
 	int* output = static_cast<int*>(histogram->GetOutput()->GetScalarPointer());
 	
-	for (int j = 0; j < 256; ++j)
+    for (int j = 0; j < imgmax+1; ++j)
 	{
 
 		freq[j] = *output++;
