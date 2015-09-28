@@ -107,6 +107,9 @@ int VRAM;
 #ifdef _WIN32
 #include<vtkAVIWriter.h>
 vtkSmartPointer<vtkAVIWriter> movie = vtkSmartPointer <vtkAVIWriter>::New();
+#else
+#include<vtkFFMPEGWriter.h>
+vtkSmartPointer<vtkFFMPEGWriter> movie = vtkSmartPointer<vtkFFMPEGWriter>::New();
 #endif
 
 
@@ -664,10 +667,10 @@ void dialog_rotation::on_stoprot_clicked()
     rtimer->stop();
 
     if (wrmv==1){
-#ifdef _WIN32
+//#ifdef _WIN32
 		movie->End();
 		movie->Delete();
-#endif
+//#endif
     w2i->Delete();
     wrmv=0;}
 
@@ -908,12 +911,12 @@ void VolumeViewer::rmovstat(int wr)
 
     if (wr==2){
 		w2i->SetInput(vtkwid->GetRenderWindow());
-#ifdef _WIN32
+//#ifdef _WIN32
 		movie->SetFileName(diarotat->movname.c_str());
 		movie->SetInputConnection(w2i->GetOutputPort());
 		movie->SetRate(30);
 		movie->Start();
-#endif
+//#endif
     diarotat->rtimer->start();
     wrmv=1;
     }
@@ -930,9 +933,9 @@ void VolumeViewer::rot()
 {
  if (wrmv==1)
    {
-#ifdef _WIN32
+//#ifdef _WIN32
 	   movie->Write();
-#endif
+//#endif
      w2i->Modified();}
   vtkwid->volume->RotateWXYZ(diarotat->rotang,diarotat->rotmat[0],diarotat->rotmat[1],diarotat->rotmat[2]);
   vtkwid->GetRenderWindow()->Render();
