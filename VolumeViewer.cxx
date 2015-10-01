@@ -92,6 +92,7 @@
 #include<vtkLine.h>
 #include<vtkParametricSpline.h>
 #include<vtkParametricFunctionSource.h>
+#include<QDesktopServices>
 
 
 using namespace std;
@@ -178,11 +179,9 @@ public:
 VolumeViewer::VolumeViewer() 
 {
 	this->ui = new Ui_VolumeViewer;
+
     this->ui->setupUi(this);
 
-
-	
- 
     //Load custom transfer function dialog
     diatfn = new dialog_tfn(this);
 
@@ -266,6 +265,8 @@ void VolumeViewer::on_clear_clicked()
         vtkwid->GetInteractor()->TerminateApp();
          vtkwid->close();
 		 vtkwid->deleteLater();
+         ui->actionAxes->setChecked(0);
+         ui->actionClip->setChecked(0);
     }
 
     else
@@ -391,9 +392,6 @@ void VolumeViewer::doHessian(double sigma,double alpha1,double alpha2)
 {
 
 	itkhess->process(vtkwid->mapper->GetInput(), sigma, alpha1, alpha2);
-
-	
-	
 
 }
 
@@ -795,10 +793,10 @@ void VolumeViewer::on_actionCrop_triggered()
 			ui->label->setText(QString::number(coord[0][0]) + " " + QString::number(coord[0][1]) + " " + QString::number(coord[1][2]) + " " + QString::number(coord[1][3]) + " " + QString::number(coord[2][4]) + " " + QString::number(coord[2][5]));
 			extvoi->Update();
 			
-			//vtkSmartPointer <vtkImageData> ext = vtkSmartPointer <vtkImageData>::New();
-			//ext->AllocateScalars(VTK_INT, extvoi->GetOutput()->GetNumberOfPoints());
-			//ext = extvoi->GetOutput();
-            /*
+            vtkSmartPointer <vtkImageData> ext = vtkSmartPointer <vtkImageData>::New();
+            ext->AllocateScalars(VTK_INT, extvoi->GetOutput()->GetNumberOfPoints());
+            ext = extvoi->GetOutput();
+
 			QString fileNameSave = QFileDialog::getSaveFileName(this,
 				tr("Save Volume"), "",
 				tr("TIFF File (*.tif)"));
@@ -806,10 +804,14 @@ void VolumeViewer::on_actionCrop_triggered()
 			if (!volname.empty()){
 				vtkSmartPointer <vtkTIFFWriter> twrite = vtkSmartPointer<vtkTIFFWriter>::New();
 				twrite->SetInputData(extvoi->GetOutput());
+
 				twrite->SetFileName(volname.c_str());
 				twrite->Update();
+
+
                 twrite->Write();
-            }*/
+
+            }
 			}
 		}
 	
@@ -939,6 +941,7 @@ void VolumeViewer::rot()
      w2i->Modified();}
   vtkwid->volume->RotateWXYZ(diarotat->rotang,diarotat->rotmat[0],diarotat->rotmat[1],diarotat->rotmat[2]);
   vtkwid->GetRenderWindow()->Render();
+
 }
 
 void VolumeViewer::on_actionSlice_triggered()
@@ -1268,4 +1271,11 @@ void VolumeViewer::getgpuinfo(int vram)
 {
   //  VRAM=vram;
     ui->label->setNum(vram);
+}
+
+
+void VolumeViewer::on_actionHelp_Topics_triggered()
+{
+
+  QDesktopServices::openUrl(QUrl("http://sites.google.com/a/aucklanduni.ac.nz/volumeviewer", QUrl::TolerantMode));
 }

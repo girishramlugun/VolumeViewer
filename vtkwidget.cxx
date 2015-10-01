@@ -409,10 +409,12 @@ void vtkwidget::readtif(string inputFilename)
 	//vtkTIFFReader *rtiff = vtkTIFFReader::New();
 	readertiff->SetFileName(inputFilename.c_str());
     //readertiff->SetOrientationType(ORIENTATION_LEFTTOP);
+
 	readertiff->Update();
 
     imgmax=readertiff->GetOutput()->GetScalarTypeMax();
 	resample(readertiff->GetOutput());
+
 	//rtiff->Delete();
 
 }

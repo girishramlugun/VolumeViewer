@@ -31,46 +31,42 @@ void itkthread::process(vtkImageData *inputimage, double sigma, double alpha1, d
 	typedef float               OutputPixelType;
 	typedef itk::Image< InputPixelType, Dimension >   InputImageType;
 	typedef itk::Image< OutputPixelType, Dimension >  OutputImageType;
-
+    typedef itk::Image<float, Dimension>  FloatImageType;
 	
 	typedef itk::VTKImageToImageFilter<InputImageType> VTKImageToImageType;
 	VTKImageToImageType::Pointer vtkImageToImageFilter = VTKImageToImageType::New();
 	vtkImageToImageFilter->SetInput(inputimage);
 	vtkImageToImageFilter->Update();
-	
-	/*
-	typedef itk::ImageFileReader< InputImageType >  ReaderType;
-	ReaderType::Pointer reader = ReaderType::New();
-	reader->SetFileName("LAABlock.tif");
-	*/
-	
 
-	//First threshold the volume
-	double lowerThreshold = 20;
-	typedef itk::ThresholdImageFilter <InputImageType>
+
+
+    //Threshold the volume
+    double lowerThreshold = 40;
+    typedef itk::ThresholdImageFilter <InputImageType>
 		ThresholdImageFilterType;
 	ThresholdImageFilterType::Pointer thresholdFilter
 		= ThresholdImageFilterType::New();
-	thresholdFilter->SetInput(vtkImageToImageFilter->GetOutput());
-	thresholdFilter->ThresholdBelow(lowerThreshold);
+    thresholdFilter->SetInput(vtkImageToImageFilter->GetOutput());
+    thresholdFilter->ThresholdBelow(lowerThreshold);
 	thresholdFilter->SetOutsideValue(0);
 
 	//Compute Hessian
-	typedef itk::HessianRecursiveGaussianImageFilter< InputImageType >
+    typedef itk::HessianRecursiveGaussianImageFilter< InputImageType >
 		HessianFilterType;
 	HessianFilterType::Pointer hessianFilter = HessianFilterType::New();
 	hessianFilter->SetInput(thresholdFilter->GetOutput());
 	if (sigma)
 	{
-		hessianFilter->SetSigma(sigma);
+        hessianFilter->SetSigma(sigma);
 	}
 
 
 	//Apply vesselness filter
-	typedef itk::Hessian3DToVesselnessMeasureImageFilter< OutputPixelType >
+    typedef itk::Hessian3DToVesselnessMeasureImageFilter< OutputPixelType >
 		VesselnessMeasureFilterType;
 	VesselnessMeasureFilterType::Pointer vesselnessFilter = VesselnessMeasureFilterType::New();
 	vesselnessFilter->SetInput(hessianFilter->GetOutput());
+
 	if (alpha1)
 	{
 		vesselnessFilter->SetAlpha1(alpha1);
@@ -84,7 +80,7 @@ void itkthread::process(vtkImageData *inputimage, double sigma, double alpha1, d
 	typedef itk::Image<UnsignedCharPixelType, 3>  UnsignedCharImageType;
 
 	//Rescale intensity of the output of vesselness filter to uchar (0-255)
-	typedef itk::RescaleIntensityImageFilter< OutputImageType, OutputImageType >
+    typedef itk::RescaleIntensityImageFilter< OutputImageType, OutputImageType >
 		RescaleType;
 	RescaleType::Pointer rescale = RescaleType::New();
 	rescale->SetInput(vesselnessFilter->GetOutput());

@@ -153,6 +153,8 @@ private slots:
   void generatefibres(string,int,int);
 
   void setfibres(int, int);
+
+  void on_actionHelp_Topics_triggered();
   
 private:
 
