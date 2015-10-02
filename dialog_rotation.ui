@@ -56,7 +56,7 @@
      <item>
       <widget class="QDoubleSpinBox" name="angle">
        <property name="decimals">
-        <number>0</number>
+        <number>1</number>
        </property>
        <property name="singleStep">
         <double>1.000000000000000</double>

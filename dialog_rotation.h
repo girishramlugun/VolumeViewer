@@ -27,7 +27,7 @@ public:
     string movname;
     double rotmat[3];
 QTimer* rtimer;
-int rotang;
+double rotang;
 int wrmov;
 void updateparams();
 
