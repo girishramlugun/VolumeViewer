@@ -35,6 +35,8 @@
 
 #include<itkthread.h>
 
+#include <cutter.h>
+
 using namespace std;
 
 class Ui_VolumeViewer;
@@ -62,6 +64,7 @@ public:
   vtkwidget *vtkwid;
 
   itkthread *itkhess;
+  cutter *cutterthread;
 
   void savevol(string);
   void openvol(string);

@@ -189,7 +189,6 @@ void vtkwidget::render()
 {
 	
 	mapper->SetBlendModeToComposite();
-    mapper->SetSampleDistance(1);
 	volumeProperty->SetInterpolationType(VTK_CUBIC_INTERPOLATION);
 	//mapper->SetInputConnection(reader->GetOutputPort());
 
@@ -494,16 +493,16 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 	dims[2] = N;
 	double size = (double(dims[0]) * double(dims[1]) * double(dims[2])* double(cols)) / (1024*1024*1024);
 	double sf = size / 0.75;
-	cout << sf;
+	//cout << sf;
 	vtkSmartPointer<vtkImageAppend> appendmag = vtkSmartPointer<vtkImageAppend>::New();
 
 	
-	int mf; double f;
+	int mf; 
 	
 	appendmag->SetAppendAxis(2);
-	if (sf >= 1 && sf < 8){ mf = 2; f = 0.5; }
-	else if (sf >= 8 && sf< 64){ mf = 4; f = 0.25; }
-	else if (sf < 1){ mf = 1; f = 1; }
+	if (sf >= 1 && sf < 8){ mf = 2; sample_rate = 0.5; }
+	else if (sf >= 8 && sf< 64){ mf = 4; sample_rate = 0.25; }
+	else if (sf < 1){ mf = 1; sample_rate = 1; }
 	
 		int m = 0;
 		int num = ceil(N / mf) - 1;
@@ -531,7 +530,7 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 			//	vtkSmartPointer<vtkTIFFReader>readimg1 = vtkSmartPointer<vtkTIFFReader>::New();
 
 			vtkSmartPointer<vtkTIFFReader>readimg0 = vtkSmartPointer<vtkTIFFReader>::New();
-            readimg0->SetOrientationType(ORIENTATION_BOTRIGHT);
+      
 			vtkSmartPointer<vtkImageAppend> append = vtkSmartPointer<vtkImageAppend>::New();
 			append->SetAppendAxis(2);
 						
@@ -550,9 +549,9 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 
 			vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
 			imgrs->SetInterpolationModeToCubic();
-			imgrs->SetAxisMagnificationFactor(0, f);
-			imgrs->SetAxisMagnificationFactor(1, f);
-			imgrs->SetAxisMagnificationFactor(2, f);
+			imgrs->SetAxisMagnificationFactor(0, sample_rate);
+			imgrs->SetAxisMagnificationFactor(1, sample_rate);
+			imgrs->SetAxisMagnificationFactor(2, sample_rate);
 			imgrs->SetInputConnection(append->GetOutputPort());
 			imgrs->Update();
 			
@@ -566,45 +565,9 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 		}
 
 		progress.setValue(num);
-
-
 		appendmag->Update();
-		
-		//buildhist(appendmag->GetOutput());
-	//	vtkSmartPointer <vtkImageData>  imser = vtkSmartPointer <vtkImageData> ::New();
-		//	imser->AllocateScalars(VTK_INT, cols);
-		//	imser->SetDimensions(appendmag->GetOutput()->GetDimensions());
-			//imser->SetDimensions(dims[0]/2,dims[1]/2,N/2);
-			//imser->GetPointData()->SetScalars(appendmag->GetOutput()->GetPointData()->GetScalars());
-		//	imser = appendmag->GetOutput();
-		//initialize(appendmag->GetOutput());
-            buildhist(appendmag->GetOutput());
-			initialize(appendmag->GetOutput());
-
-
-		//appendmag->Delete();
-		//
-		/*
-		vtkTIFFReader *imgseq = vtkTIFFReader::New();
-		imgseq->SetFileNames(filenames);
-		imgseq->Update();
-
-
-		vtkImageData *imse = vtkImageData::New();
-		imse->AllocateScalars(VTK_INT, cols);
-		imse->SetDimensions(dims);
-		imse->GetPointData()->SetScalars(imgseq->GetOutput()->GetPointData()->GetScalars());
-
-		resample(imse);
-		//renderactor(imse);
-
-		imgseq->Delete();
-
-		imse->Delete();
-
-
-		*/
-	
+        buildhist(appendmag->GetOutput());
+    	initialize(appendmag->GetOutput());
 }
 
 void vtkwidget::buildhist(vtkImageData* imgdata)

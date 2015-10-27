@@ -776,7 +776,8 @@ void VolumeViewer::on_actionCrop_triggered()
 
 			vtkSmartPointer <vtkExtractVOI> extvoi = vtkSmartPointer <vtkExtractVOI>::New();
 
-            double yb = vtkwid->volume->GetMaxYBound();
+			double yb = vtkwid->volume->GetMaxYBound() / vtkwid->sample_rate;
+			 
             double coord[3][6];
 			int j = 0;
 			for (vtkIdType i = 8; i < 14; i++)

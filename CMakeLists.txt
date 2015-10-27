@@ -7,8 +7,8 @@ endif()
 PROJECT(VolumeViewer)
 
 
-set(VTK_DIR /hpc/gram526/VTK/Build)
-set(ITK_DIR /hpc/gram526/ITK/Build)
+#set(VTK_DIR /hpc/gram526/VTK/Build)
+#set(ITK_DIR /hpc/gram526/ITK/Build)
 
 
 find_package(VTK REQUIRED)
