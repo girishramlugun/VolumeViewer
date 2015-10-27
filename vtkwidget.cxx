@@ -189,6 +189,7 @@ void vtkwidget::render()
 {
 	
 	mapper->SetBlendModeToComposite();
+    mapper->SetSampleDistance(1);
 	volumeProperty->SetInterpolationType(VTK_CUBIC_INTERPOLATION);
 	//mapper->SetInputConnection(reader->GetOutputPort());
 
@@ -433,7 +434,7 @@ void vtkwidget::resample(vtkImageData *imgdata)
 		sample_rate = 0.5;
 	vtkSmartPointer <vtkImageResample> imgrs =vtkSmartPointer <vtkImageResample>::New();
 	imgrs->SetInputData(imgdata);
-	imgrs->SetInterpolationModeToNearestNeighbor();
+    imgrs->SetInterpolationModeToCubic();
 	imgrs->SetAxisMagnificationFactor(0, sample_rate);
 	imgrs->SetAxisMagnificationFactor(1, sample_rate);
 	imgrs->SetAxisMagnificationFactor(2, sample_rate);
@@ -447,7 +448,7 @@ void vtkwidget::resample(vtkImageData *imgdata)
 		sample_rate = 0.25;
 	vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
 	imgrs->SetInputData(imgdata);
-	imgrs->SetInterpolationModeToNearestNeighbor();
+    imgrs->SetInterpolationModeToCubic();
 	imgrs->SetAxisMagnificationFactor(0, sample_rate);
 	imgrs->SetAxisMagnificationFactor(1, sample_rate);
 	imgrs->SetAxisMagnificationFactor(2, sample_rate);
@@ -461,7 +462,7 @@ void vtkwidget::resample(vtkImageData *imgdata)
 		sample_rate = 0.125;
 	vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
 	imgrs->SetInputData(imgdata);
-	imgrs->SetInterpolationModeToNearestNeighbor();
+    imgrs->SetInterpolationModeToCubic();
 	imgrs->SetAxisMagnificationFactor(0, sample_rate);
 	imgrs->SetAxisMagnificationFactor(1, sample_rate);
 	imgrs->SetAxisMagnificationFactor(2, sample_rate);
@@ -530,6 +531,7 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 			//	vtkSmartPointer<vtkTIFFReader>readimg1 = vtkSmartPointer<vtkTIFFReader>::New();
 
 			vtkSmartPointer<vtkTIFFReader>readimg0 = vtkSmartPointer<vtkTIFFReader>::New();
+            readimg0->SetOrientationType(ORIENTATION_BOTRIGHT);
 			vtkSmartPointer<vtkImageAppend> append = vtkSmartPointer<vtkImageAppend>::New();
 			append->SetAppendAxis(2);
 						
@@ -576,6 +578,7 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 			//imser->GetPointData()->SetScalars(appendmag->GetOutput()->GetPointData()->GetScalars());
 		//	imser = appendmag->GetOutput();
 		//initialize(appendmag->GetOutput());
+            buildhist(appendmag->GetOutput());
 			initialize(appendmag->GetOutput());
 
 
