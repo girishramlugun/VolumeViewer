@@ -914,7 +914,7 @@ void VolumeViewer::rmovstat(int wr)
     if (wr==2){
 		w2i->SetInput(vtkwid->GetRenderWindow());
 //#ifdef _WIN32
-        movie->SetCompression(0);
+       // movie->SetCompression(0);
         movie->SetFileName(diarotat->movname.c_str());
 		movie->SetInputConnection(w2i->GetOutputPort());
 		movie->SetRate(30);
@@ -1151,8 +1151,8 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 						}
 
 			else {
-                    matarr = matGetVariable(matf, "fibres1");
-                    matcolarr = matGetVariable(matf, "MeasureAngles1");
+                    matarr = matGetVariable(matf, "fibres");
+                    matcolarr = matGetVariable(matf, "MeasureAngles");
 			     }
 		
 

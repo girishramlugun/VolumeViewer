@@ -41,7 +41,7 @@ void itkthread::process(vtkImageData *inputimage, double sigma, double alpha1, d
 
 
     //Threshold the volume
-    double lowerThreshold = 40;
+    double lowerThreshold = 0;
     typedef itk::ThresholdImageFilter <InputImageType>
 		ThresholdImageFilterType;
 	ThresholdImageFilterType::Pointer thresholdFilter

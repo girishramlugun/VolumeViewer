@@ -90,12 +90,13 @@ void vtkwidget::initialize(vtkImageData *input)
 	leftRenderer->RemoveAllViewProps();
 
 	//Set default light parameters
-
+	leftRenderer->SetAutomaticLightCreation(1);
+	/*
 	LightKit->SetKeyLightWarmth(0.6); LightKit->SetKeyLightIntensity(0.75); LightKit->SetKeyLightElevation(50); LightKit->SetKeyLightAzimuth(10);
 	LightKit->SetFillLightWarmth(0.40); LightKit->SetKeyToFillRatio(3); LightKit->SetFillLightElevation(-75); LightKit->SetFillLightAzimuth(-10);
 	LightKit->SetBackLightWarmth(0.5); LightKit->SetKeyToBackRatio(3.5); LightKit->SetBackLightElevation(0); LightKit->SetBackLightAzimuth(110);
 	LightKit->SetHeadLightWarmth(0.5); LightKit->SetKeyToHeadRatio(3);
-
+	*/
 
 	//Add Volume Gradient Opacity
 	//vtkwid->volumeGradientOpacity->AddPoint(0,0);
@@ -196,7 +197,7 @@ void vtkwidget::render()
 	//{
 	//	mapper->SetRequestedRenderModeToRayCast();
 	//}
-
+	
 
 	leftRenderer->ResetCamera();
 	//mapper->SetInteractiveUpdateRate(2);
