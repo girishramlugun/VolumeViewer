@@ -13,7 +13,8 @@
 class Cutter
 {
 public:
-	Cutter(char ** argv);
+	Cutter();
+	void Run(int,int,int,int,int,int,int,int);
 };
 
 #endif // CUTTER_H

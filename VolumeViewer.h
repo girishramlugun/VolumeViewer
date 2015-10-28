@@ -64,11 +64,13 @@ public:
   vtkwidget *vtkwid;
 
   itkthread *itkhess;
-  cutter *cutterthread;
+  Cutter *cutterthread;
 
   void savevol(string);
   void openvol(string);
   void openimg(string);
+
+  int N;
 
 signals:
  

@@ -355,7 +355,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 
 				
 			}
-			int N = list.size();
+			 N = list.size();
 			//Read first image to extract dimensions 
 
 
@@ -777,6 +777,8 @@ void VolumeViewer::on_actionCrop_triggered()
 			vtkSmartPointer <vtkExtractVOI> extvoi = vtkSmartPointer <vtkExtractVOI>::New();
 
 			double yb = vtkwid->volume->GetMaxYBound() / vtkwid->sample_rate;
+
+			
 			 
             double coord[3][6];
 			int j = 0;
@@ -789,6 +791,9 @@ void VolumeViewer::on_actionCrop_triggered()
 			}
             ui->label->setText(QString::number(coord[0][0]) + " " + QString::number(coord[0][1]) + " " + QString::number(yb-coord[1][3]) + " " + QString::number(yb-coord[1][2]) + " " + QString::number(coord[2][4]) + " " + QString::number(coord[2][5]));
 
+
+			cutterthread = new Cutter();
+			cutterthread->Run(0, N-1, int(coord[0][0]), int(coord[0][1]), int(yb - coord[1][3]), int(yb - coord[1][2]), int(coord[2][4]), int(coord[2][5]));
 /*
 			extvoi->SetInputData(vtkwid->mapper->GetInput());
             extvoi->SetSampleRate(vtkwid->sample_rate,vtkwid->sample_rate,vtkwid->sample_rate);

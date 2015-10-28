@@ -1,14 +1,14 @@
 #include "cutter.h"
 
-Cutter::Cutter(char ** argv)
+Cutter::Cutter()
 {
-	// Verify the number of parameters in the command line
-	if (argc < 4)
-	{
-		std::cerr << "Usage: " << std::endl;
-		std::cerr << argv[0] << "first last  outputRGBImageFile " << std::endl;
-		return EXIT_FAILURE;
-	}
+
+}
+
+
+void Cutter::Run(int zlb, int zub, int x, int x1, int y, int y1, int z, int z1)
+{
+
 	// Software Guide : BeginLatex
 	//
 	// The \doxygen{RGBPixel} class is templated over the type used to
@@ -34,13 +34,13 @@ Cutter::Cutter(char ** argv)
 	// Software Guide : EndLatex
 	// Software Guide : BeginCodeSnippet
 	typedef itk::ImageSeriesReader< ImageType >  SeriesReaderType;
-	typedef itk::ImageFileWriter<   ImageType >  WriterType;
+	//typedef itk::ImageFileWriter<   ImageType >  WriterType;
 	SeriesReaderType::Pointer seriesReader = SeriesReaderType::New();
-	WriterType::Pointer       writer = WriterType::New();
+	//WriterType::Pointer       writer = WriterType::New();
 	// Software Guide : EndCodeSnippet
-	const unsigned int first = atoi(argv[1]);
-	const unsigned int last = atoi(argv[2]);
-	const char * outputFilename = argv[3];
+	const unsigned int first = zlb;
+	const unsigned int last = zub;
+	//const char * outputFilename = argv[3];
 	// Software Guide : BeginLatex
 	//
 	// We use a NumericSeriesFileNames class in order to generate the filenames of
@@ -54,7 +54,7 @@ Cutter::Cutter(char ** argv)
 	nameGenerator->SetStartIndex(first);
 	nameGenerator->SetEndIndex(last);
 	nameGenerator->SetIncrementIndex(1);
-	nameGenerator->SetSeriesFormat("/hpc/gram526/PMA3_2_RAA_NRT/PMA3_2_RAA_NR%04d.tif");
+	nameGenerator->SetSeriesFormat("P:\\Google Drive\\Data\\MIcroCT\\PMA3_2_ETH_LAA\\PMA3_2_ETH_LAA_RecT\\PMA3_2_ETH_LAA_Rec%04d.tif");
 	// Software Guide : EndCodeSnippet
 	//  Software Guide : BeginLatex
 	//
@@ -79,14 +79,19 @@ Cutter::Cutter(char ** argv)
 	//Filter
 
 	itk::Index<3> processIndex;
-	processIndex[0] = 1166;
-	processIndex[1] = 1336;
-	processIndex[2] = 167;
+	processIndex[0] = x;
+	processIndex[1] = y;
+	processIndex[2] = z;
+
+	int maxbound[3];
+	maxbound[0] = x1;
+	maxbound[1] = y1;
+	maxbound[2] = z1;
 
 	itk::Size<3> processSize;
-	processSize[0] = 1766;
-	processSize[1] = 1296;
-	processSize[2] = 2412;
+	processSize[0] = maxbound[0] - processIndex[0];
+	processSize[1] = maxbound[1] - processIndex[1];
+	processSize[2] = maxbound[2] - processIndex[2];
 
 
 	itk::ImageRegion<3> cropregion(processIndex, processSize);
@@ -106,15 +111,15 @@ Cutter::Cutter(char ** argv)
 	//  \code{Update()} method in the volumetric writer. This, of course, is done
 	//  from inside a try/catch block.
 
-	try
-	{
+	//try
+	//{
 		//writer->Update();
-	}
-	catch (itk::ExceptionObject & excp)
-	{
+	//}
+	//catch (itk::ExceptionObject & excp)
+	//{
 		//std::cerr << "Error reading the series " << std::endl;
 		//std::cerr << excp << std::endl;
-	}
+	//}
 
 	// We now proceed to save the same volumetric dataset as a set of slices. This
 	// is done only to illustrate the process for saving a volume as a series of 2D
@@ -136,7 +141,7 @@ Cutter::Cutter(char ** argv)
 	nameGenerator->SetStartIndex(0);
 	nameGenerator->SetEndIndex(processSize[2] - 1);
 	nameGenerator->SetIncrementIndex(1);
-	nameGenerator->SetSeriesFormat("/hpc/gram526/Segmented/PMA3_2_NRT/PMA32ETHRAANRTSeg%04d.tif");
+	nameGenerator->SetSeriesFormat("P:\\Segmented\\PMA3_2_ETH_LAA_RecT\\PMA32ETHRAANRTSeg%04d.tif");
 	seriesWriter->SetFileNames(nameGenerator->GetFileNames());
 
 	// Finally we trigger the execution of the series writer from inside a
@@ -152,7 +157,7 @@ Cutter::Cutter(char ** argv)
 		std::cerr << excp << std::endl;
 	}
 
-	
 
 }
+
 
