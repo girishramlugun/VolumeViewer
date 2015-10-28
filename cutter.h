@@ -8,13 +8,14 @@
 #include <itkNumericSeriesFileNames.h>
 #include <itkTIFFImageIO.h>
 #include <itkExtractImageFilter.h>
+#include<string>
 
 
 class Cutter
 {
 public:
 	Cutter();
-	void Run(int,int,int,int,int,int,int,int);
+	void Run(std::string,int,int,int,int,int,int,int,int);
 };
 
 #endif // CUTTER_H

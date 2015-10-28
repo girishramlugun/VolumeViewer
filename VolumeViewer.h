@@ -160,6 +160,8 @@ private slots:
   void setfibres(int, int);
 
   void on_actionHelp_Topics_triggered();
+
+  void getfileprefix(QString);
   
 private:
 

@@ -29,6 +29,7 @@
 vtkIdType vram;
 double imgmax;
 
+
 vtkwidget::vtkwidget(QWidget *parent) :
     QVTKWidget(parent)
 {
@@ -488,7 +489,7 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 	readimg->Update();
     imgmax=readimg->GetOutput()->GetScalarTypeMax();
 	int cols = readimg->GetOutput()->GetNumberOfScalarComponents();
-	int dims[3]; 
+	
 	readimg->GetOutput()->GetDimensions(dims);
 	dims[2] = N;
 	double size = (double(dims[0]) * double(dims[1]) * double(dims[2])* double(cols)) / (1024*1024*1024);

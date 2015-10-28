@@ -1,4 +1,9 @@
 #include "cutter.h"
+#include<string>
+#include <QFileDialog>
+#include<qstring.h>
+
+
 
 Cutter::Cutter()
 {
@@ -6,7 +11,7 @@ Cutter::Cutter()
 }
 
 
-void Cutter::Run(int zlb, int zub, int x, int x1, int y, int y1, int z, int z1)
+void Cutter::Run(std::string fullprefix, int zlb, int zub, int x, int x1, int y, int y1, int z, int z1)
 {
 
 	// Software Guide : BeginLatex
@@ -54,7 +59,8 @@ void Cutter::Run(int zlb, int zub, int x, int x1, int y, int y1, int z, int z1)
 	nameGenerator->SetStartIndex(first);
 	nameGenerator->SetEndIndex(last);
 	nameGenerator->SetIncrementIndex(1);
-	nameGenerator->SetSeriesFormat("P:\\Google Drive\\Data\\MIcroCT\\PMA3_2_ETH_LAA\\PMA3_2_ETH_LAA_RecT\\PMA3_2_ETH_LAA_Rec%04d.tif");
+	
+	nameGenerator->SetSeriesFormat(fullprefix);
 	// Software Guide : EndCodeSnippet
 	//  Software Guide : BeginLatex
 	//
@@ -68,7 +74,7 @@ void Cutter::Run(int zlb, int zub, int x, int x1, int y, int y1, int z, int z1)
 	//  The filenames of the input slices are taken from the names generator and
 	//  passed to the series reader.
 	//
-
+	
 	seriesReader->SetFileNames(nameGenerator->GetFileNames());
 
 
@@ -141,7 +147,7 @@ void Cutter::Run(int zlb, int zub, int x, int x1, int y, int y1, int z, int z1)
 	nameGenerator->SetStartIndex(0);
 	nameGenerator->SetEndIndex(processSize[2] - 1);
 	nameGenerator->SetIncrementIndex(1);
-	nameGenerator->SetSeriesFormat("P:\\Segmented\\PMA3_2_ETH_LAA_RecT\\PMA32ETHRAANRTSeg%04d.tif");
+	nameGenerator->SetSeriesFormat("P:\\Segmented\\Rabbit\\RabbitSeg%04d.tif");
 	seriesWriter->SetFileNames(nameGenerator->GetFileNames());
 
 	// Finally we trigger the execution of the series writer from inside a

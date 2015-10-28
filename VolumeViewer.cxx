@@ -100,6 +100,7 @@ std::string inputFilename;
 QString ext;
 bool wrmv=0;
 int VRAM;
+std::string fullprefix;
 //template <typename Iterator > void setval(Iterator begin, Iterator end) {  }
 
 
@@ -323,6 +324,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 
 	QString Dir_Str = QFileDialog::getExistingDirectory(this, tr("Set Directory"), "");
 
+	
 
 	if (!Dir_Str.isEmpty()){
 
@@ -338,6 +340,13 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 		QStringList list = dir.entryList();
 		vtkSmartPointer<vtkStringArray> filenames = vtkSmartPointer<vtkStringArray>::New();
 		filenames->SetNumberOfValues(list.size());
+
+
+		QString ffile = Dir_Str + "/" + list.at(0);
+		getfileprefix(ffile);
+
+		//ui->label->setText(QString::fromStdString(str1));
+
 		if (list.size() == 0) { QMessageBox::critical(0, QObject::tr("Error"), "No Files Found"); }
 		else
 		{
@@ -776,7 +785,7 @@ void VolumeViewer::on_actionCrop_triggered()
 
 			vtkSmartPointer <vtkExtractVOI> extvoi = vtkSmartPointer <vtkExtractVOI>::New();
 
-			double yb = vtkwid->volume->GetMaxYBound() / vtkwid->sample_rate;
+			double yb = (vtkwid->dims[1]-1);
 
 			
 			 
@@ -793,7 +802,9 @@ void VolumeViewer::on_actionCrop_triggered()
 
 
 			cutterthread = new Cutter();
-			cutterthread->Run(0, N-1, int(coord[0][0]), int(coord[0][1]), int(yb - coord[1][3]), int(yb - coord[1][2]), int(coord[2][4]), int(coord[2][5]));
+			cutterthread->Run(fullprefix,0, N-1, int(coord[0][0]), int(coord[0][1]), int(yb - coord[1][3]), int(yb - coord[1][2]), int(coord[2][4]), int(coord[2][5]));
+
+			
 /*
 			extvoi->SetInputData(vtkwid->mapper->GetInput());
             extvoi->SetSampleRate(vtkwid->sample_rate,vtkwid->sample_rate,vtkwid->sample_rate);
@@ -1288,4 +1299,27 @@ void VolumeViewer::on_actionHelp_Topics_triggered()
 {
 
   QDesktopServices::openUrl(QUrl("http://sites.google.com/a/aucklanduni.ac.nz/volumeviewer", QUrl::TolerantMode));
+}
+
+
+void VolumeViewer::getfileprefix(QString ffile)
+{
+	QStringList PrefixList = ffile.split(".");
+	
+	PrefixList[0].replace("/", "\\\\");
+
+	string PrefixNum = PrefixList[0].toStdString();
+	//ui->label->setText(PrefixNum);
+	string num = "", FilePrefix = "";
+	int res = 0;
+	for (int i = 0; i < PrefixNum.length(); i++)
+	{
+		if (isdigit(PrefixNum[i]))
+			num += PrefixNum[i];
+		else
+			FilePrefix += PrefixNum[i];
+	}
+	string fullprefix =FilePrefix+"%0"+std::to_string(num.length())+"d.tif";
+	ui->label->setText(QString::fromStdString(fullprefix));
+	
 }
