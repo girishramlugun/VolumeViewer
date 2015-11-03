@@ -60,7 +60,7 @@ void Cutter::Run(std::string fullprefix, int zlb, int zub, int x, int x1, int y,
 	nameGenerator->SetEndIndex(last);
 	nameGenerator->SetIncrementIndex(1);
 	
-	nameGenerator->SetSeriesFormat(fullprefix);
+	nameGenerator->SetSeriesFormat(fullprefix.c_str());
 	// Software Guide : EndCodeSnippet
 	//  Software Guide : BeginLatex
 	//
@@ -144,10 +144,14 @@ void Cutter::Run(std::string fullprefix, int zlb, int zub, int x, int x1, int y,
 	// format of the filename generator. Then, we pass the list of output
 	// filenames to the series writer.
 
+	QString Dir_Str = QFileDialog::getExistingDirectory(this, tr("Set Directory"), "");
+
+
 	nameGenerator->SetStartIndex(0);
 	nameGenerator->SetEndIndex(processSize[2] - 1);
 	nameGenerator->SetIncrementIndex(1);
-	nameGenerator->SetSeriesFormat("P:\\Segmented\\Rabbit\\RabbitSeg%04d.tif");
+
+	nameGenerator->SetSeriesFormat(Dir_Str.toStdString()+"\\Cropped%04d.tif");
 	seriesWriter->SetFileNames(nameGenerator->GetFileNames());
 
 	// Finally we trigger the execution of the series writer from inside a

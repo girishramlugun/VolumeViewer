@@ -1306,20 +1306,40 @@ void VolumeViewer::getfileprefix(QString ffile)
 {
 	QStringList PrefixList = ffile.split(".");
 	
+	QStringList list2 = PrefixList[0].split("/");
+	int list2length = list2.length()-1;
+	string filename = list2[list2length].toStdString();
+
 	PrefixList[0].replace("/", "\\\\");
 
 	string PrefixNum = PrefixList[0].toStdString();
 	//ui->label->setText(PrefixNum);
 	string num = "", FilePrefix = "";
 	int res = 0;
-	for (int i = 0; i < PrefixNum.length(); i++)
+	for (int i = filename.length()-1; i >= 0; i--)
 	{
-		if (isdigit(PrefixNum[i]))
-			num += PrefixNum[i];
+		if (isdigit(filename[i]))
+			num += filename[i];
+		
 		else
-			FilePrefix += PrefixNum[i];
+			//FilePrefix += PrefixNum[i];
+			break;
 	}
-	string fullprefix =FilePrefix+"%0"+std::to_string(num.length())+"d.tif";
+
+	for (int i = 0; i < filename.length() - num.length(); i++)
+	{
+		FilePrefix += filename[i];
+	}
+
+	string prefiX;
+	for (int i = 0; i < list2.length() - 1; i++)
+	{
+		prefiX += list2[i].toStdString()+"\\\\";
+	}
+
+	//string fullprefix =FilePrefix+"%0"+std::to_string(num.length())+"d.tif";
+	fullprefix = prefiX + FilePrefix + "%0" + std::to_string(num.length()) + "d.tif";
 	ui->label->setText(QString::fromStdString(fullprefix));
-	
+	//ui->label->setText(QString::fromStdString(num));
+	printf(fullprefix.c_str());
 }
