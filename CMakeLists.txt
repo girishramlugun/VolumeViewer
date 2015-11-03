@@ -6,10 +6,10 @@ endif()
 
 PROJECT(VolumeViewer)
 
-
-#set(VTK_DIR /hpc/gram526/VTK/Build)
-#set(ITK_DIR /hpc/gram526/ITK/Build)
-
+IF(UNIX)
+set(VTK_DIR /hpc/gram526/VTK/Build)
+set(ITK_DIR /hpc/gram526/ITK/Build)
+endif()
 
 find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
