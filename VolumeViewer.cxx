@@ -103,7 +103,13 @@ int VRAM;
 std::string fullprefix;
 //template <typename Iterator > void setval(Iterator begin, Iterator end) {  }
 
-
+template <typename T>
+string ToString(T val)
+{
+    stringstream stream;
+    stream << val;
+    return stream.str();
+}
 
 
 #ifdef _WIN32
@@ -1313,7 +1319,7 @@ void VolumeViewer::getfileprefix(QString ffile)
 	}
 
 	//string fullprefix =FilePrefix+"%0"+std::to_string(num.length())+"d.tif";
-	fullprefix = prefiX + FilePrefix + "%0" + std::to_string(num.length()) + "d.tif";
+    fullprefix = prefiX + FilePrefix + "%0" + ToString(num.length()) + "d.tif";
 	ui->label->setText(QString::fromStdString(fullprefix));
 	//ui->label->setText(QString::fromStdString(num));
 	printf(fullprefix.c_str());
