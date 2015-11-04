@@ -137,7 +137,9 @@ public:
 			vtkPlanes *planes = vtkPlanes::New();
 			static_cast<vtkBoxRepresentation*>(widget->GetRepresentation())->GetPlanes(planes);
 		//widget->OutlineCursorWiresOff();
-        //widget-> GetPlanes(planes);
+        //widget->GetPlanes(planes);
+		
+			
         this->Mapper->SetClippingPlanes(planes);
         planes->Delete();
         }
@@ -733,7 +735,7 @@ if (vtkwid->isVisible())
 		boxrep->PlaceWidget(vtkwid->mapper->GetInput()->GetBounds());
 		boxrep->SetRenderer(vtkwid->leftRenderer);
 		box->SetRepresentation(boxrep);
-		
+		box->SetTranslationEnabled(1);
 		//box->SetInputData(vtkwid->mapper->GetInput());
        // Add a box widget for clipping
         box->SetInteractor(vtkwid->GetInteractor());
@@ -773,13 +775,13 @@ void VolumeViewer::on_actionCrop_triggered()
 	{
 		if (ui->actionClip->isChecked())
 		{
-			if (vtkwid->sample_rate = 1){
+			//if (vtkwid->sample_rate = 1){
 			vtkIdType id = 0; double points[3];
 			vtkSmartPointer <vtkPolyData> Crop =  vtkSmartPointer <vtkPolyData>::New();
 			
 			static_cast<vtkBoxRepresentation*>(box->GetRepresentation())->GetPolyData(Crop);
 			
-
+			
 			Crop->GetPoint(id, points);
 
 
@@ -804,41 +806,14 @@ void VolumeViewer::on_actionCrop_triggered()
 			cutterthread = new Cutter();
 			cutterthread->Run(fullprefix,0, N-1, int(coord[0][0]), int(coord[0][1]), int(yb - coord[1][3]), int(yb - coord[1][2]), int(coord[2][4]), int(coord[2][5]));
 
-			
-/*
-			extvoi->SetInputData(vtkwid->mapper->GetInput());
-            extvoi->SetSampleRate(vtkwid->sample_rate,vtkwid->sample_rate,vtkwid->sample_rate);
-			extvoi->SetVOI(coord[0][0], coord[0][1], coord[1][2], coord[1][3], coord[2][4], coord[2][5]);
 
-			extvoi->Update();
-			
-            vtkSmartPointer <vtkImageData> ext = vtkSmartPointer <vtkImageData>::New();
-            ext->AllocateScalars(VTK_INT, extvoi->GetOutput()->GetNumberOfPoints());
-            ext = extvoi->GetOutput();
-
-			QString fileNameSave = QFileDialog::getSaveFileName(this,
-				tr("Save Volume"), "",
-				tr("TIFF File (*.tif)"));
-			string volname = fileNameSave.toStdString();
-			if (!volname.empty()){
-				vtkSmartPointer <vtkTIFFWriter> twrite = vtkSmartPointer<vtkTIFFWriter>::New();
-				twrite->SetInputData(extvoi->GetOutput());
-
-				twrite->SetFileName(volname.c_str());
-				twrite->Update();
-
-
-                twrite->Write();
-
-
-            }*/
 			}
 		}
 	
 	else {
 		QMessageBox::critical(0, QObject::tr("Error"), "You need to clip the volume first.");
 	}
-	}
+	//}
 }
 
 void VolumeViewer::on_actionDimensions_triggered()
