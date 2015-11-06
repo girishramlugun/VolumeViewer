@@ -23,38 +23,108 @@ itkthread::itkthread()
 }
 
 
-void itkthread::process(vtkImageData *inputimage, double sigma, double alpha1, double alpha2)
+void itkthread::process(std::string fullprefix,int zlb, int zub, double sigma, double alpha1, double alpha2)
 {
-	const   unsigned int        Dimension = 3;
-	typedef unsigned char              InputPixelType;
+    typedef unsigned char PixelType;
+    const unsigned int Dimension = 3;
+    typedef itk::Image< PixelType, Dimension >    ImageType;
+    // Software Guide : EndCodeSnippet
+    // Software Guide : BeginLatex
+    //
+    // The image type is used as a template parameter to instantiate
+    // the series reader and the volumetric writer.
+    //
+    // \index{itk::ImageSeriesReader!RGB Image}
+    // \index{itk::ImageFileWriter!RGB Image}
+    //
+    // Software Guide : EndLatex
+    // Software Guide : BeginCodeSnippet
+    typedef itk::ImageSeriesReader< ImageType >  SeriesReaderType;
+    //typedef itk::ImageFileWriter<   ImageType >  WriterType;
+    SeriesReaderType::Pointer seriesReader = SeriesReaderType::New();
+    //WriterType::Pointer       writer = WriterType::New();
+    // Software Guide : EndCodeSnippet
+    const unsigned int first = zlb;
+    const unsigned int last = zub-1;
+    std::cout<<last;
+    //const char * outputFilename = argv[3];
+    // Software Guide : BeginLatex
+    //
+    // We use a NumericSeriesFileNames class in order to generate the filenames of
+    // the slices to be read. Later on in this example we will reuse this object in
+    // order to generate the filenames of the slices to be written.
+    //
+    // Software Guide : EndLatex
+    // Software Guide : BeginCodeSnippet
+    typedef itk::NumericSeriesFileNames    NameGeneratorType;
+    NameGeneratorType::Pointer nameGenerator = NameGeneratorType::New();
+    nameGenerator->SetStartIndex(first);
+    nameGenerator->SetEndIndex(last);
+    nameGenerator->SetIncrementIndex(1);
+
+    nameGenerator->SetSeriesFormat(fullprefix.c_str());
+    // Software Guide : EndCodeSnippet
+    //  Software Guide : BeginLatex
+    //
+    //  The ImageIO object that actually performs the read process
+    //  is now connected to the ImageSeriesReader.
+    //
+
+    seriesReader->SetImageIO(itk::TIFFImageIO::New());
+
+
+    //  The filenames of the input slices are taken from the names generator and
+    //  passed to the series reader.
+    //
+
+    seriesReader->SetFileNames(nameGenerator->GetFileNames());
+
+
+
+
+
+
+    //	const   unsigned int        Dimension = 3;
+        typedef unsigned char              InputPixelType;
+
+        typedef float                OutputPixelType;
+        typedef itk::Image< InputPixelType, Dimension >   InputImageType;
+        typedef itk::Image< OutputPixelType, Dimension >  OutputImageType;
+    //    typedef itk::Image<float , Dimension>  OutputPixelType;
+
+
+    //Convert output to float
+    typedef itk::CastImageFilter<  InputImageType ,OutputImageType> CastFilterType1;
+    CastFilterType1::Pointer castFilter1 = CastFilterType1::New();
+    castFilter1->SetInput(seriesReader->GetOutput());
+
+
+
 	
-	typedef float               OutputPixelType;
-	typedef itk::Image< InputPixelType, Dimension >   InputImageType;
-	typedef itk::Image< OutputPixelType, Dimension >  OutputImageType;
-    typedef itk::Image<float, Dimension>  FloatImageType;
-	
-	typedef itk::VTKImageToImageFilter<InputImageType> VTKImageToImageType;
-	VTKImageToImageType::Pointer vtkImageToImageFilter = VTKImageToImageType::New();
-	vtkImageToImageFilter->SetInput(inputimage);
-	vtkImageToImageFilter->Update();
 
-
-
+    //Rescale intensity of the output of vesselness filter to uchar (0-255)
+    typedef itk::RescaleIntensityImageFilter< OutputImageType, OutputImageType >
+        RescaleType1;
+    RescaleType1::Pointer rescale1 = RescaleType1::New();
+    rescale1->SetInput(castFilter1->GetOutput());
+    rescale1->SetOutputMinimum(0);
+    rescale1->SetOutputMaximum(itk::NumericTraits< OutputPixelType >::max());
+/*
     //Threshold the volume
     double lowerThreshold = 0;
-    typedef itk::ThresholdImageFilter <InputImageType>
+    typedef itk::ThresholdImageFilter <ImageType>
 		ThresholdImageFilterType;
 	ThresholdImageFilterType::Pointer thresholdFilter
 		= ThresholdImageFilterType::New();
-    thresholdFilter->SetInput(vtkImageToImageFilter->GetOutput());
+    thresholdFilter->SetInput(seriesReader->GetOutput());
     thresholdFilter->ThresholdBelow(lowerThreshold);
 	thresholdFilter->SetOutsideValue(0);
-
+*/
 	//Compute Hessian
-    typedef itk::HessianRecursiveGaussianImageFilter< InputImageType >
+    typedef itk::HessianRecursiveGaussianImageFilter< OutputImageType >
 		HessianFilterType;
 	HessianFilterType::Pointer hessianFilter = HessianFilterType::New();
-	hessianFilter->SetInput(thresholdFilter->GetOutput());
+    hessianFilter->SetInput(rescale1->GetOutput());
 	if (sigma)
 	{
         hessianFilter->SetSigma(sigma);
@@ -91,23 +161,40 @@ void itkthread::process(vtkImageData *inputimage, double sigma, double alpha1, d
 	typedef itk::CastImageFilter< OutputImageType, UnsignedCharImageType > CastFilterType;
 	CastFilterType::Pointer castFilter = CastFilterType::New();
 	castFilter->SetInput(rescale->GetOutput());
-	
-	//write images to .tif file
-	typedef itk::ImageFileWriter< UnsignedCharImageType > WriterType;
-	WriterType::Pointer writer = WriterType::New();
-	writer->SetInput(castFilter->GetOutput());
-	writer->SetFileName("Seg.tif");
 
-	try
-	{
-		writer->Update();
-	}
-	catch (itk::ExceptionObject & error)
-	{
-		std::cerr << "Error: " << error << std::endl;
-		return ;
-	}
-	
+    typedef itk::Image< PixelType, 2 >     Image2DType;
+    typedef itk::ImageSeriesWriter< ImageType, Image2DType > SeriesWriterType;
+    SeriesWriterType::Pointer seriesWriter = SeriesWriterType::New();
+    seriesWriter->SetInput(castFilter->GetOutput());
+
+    // We now reuse the filename generator in order to produce the list of
+    // filenames for the output series. In this case we just need to modify the
+    // format of the filename generator. Then, we pass the list of output
+    // filenames to the series writer.
+
+    QString Dir_Str = QFileDialog::getExistingDirectory(this, tr("Set Directory"), "");
+
+
+    nameGenerator->SetStartIndex(0);
+    nameGenerator->SetEndIndex(last);
+    nameGenerator->SetIncrementIndex(1);
+
+    nameGenerator->SetSeriesFormat(Dir_Str.toStdString()+"//Tracks%04d.tif");
+    seriesWriter->SetFileNames(nameGenerator->GetFileNames());
+
+    // Finally we trigger the execution of the series writer from inside a
+    // try/catch block.
+
+    try
+    {
+        seriesWriter->Update();
+    }
+    catch (itk::ExceptionObject & excp)
+    {
+        std::cerr << "Error reading the series " << std::endl;
+        std::cerr << excp << std::endl;
+    }
+
 
 	
 	

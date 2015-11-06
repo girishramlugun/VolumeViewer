@@ -11,6 +11,15 @@
 #include <itkVTKImageToImageFilter.h>
 #include <itkImageToVTKImageFilter.h>
 #include<vtkSmartPointer.h>
+#include <itkImage.h>
+#include <itkImageSeriesReader.h>
+#include <itkImageSeriesWriter.h>
+#include <itkNumericSeriesFileNames.h>
+#include <itkTIFFImageIO.h>
+#include <itkExtractImageFilter.h>
+#include<string>
+
+
 using namespace std;
 
 class itkthread : public QWidget
@@ -20,7 +29,7 @@ class itkthread : public QWidget
 
 public:
 	itkthread();
-	void process(vtkImageData *inputimage, double sigma, double alpha1, double alpha2);
+    void process(std::string fullprefix,int zlb, int zub, double sigma, double alpha1, double alpha2);
 
 	void threshold(vtkImageData *inputimage, double lthreshold, double uthreshold);
  

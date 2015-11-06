@@ -93,7 +93,7 @@
 #include<vtkParametricSpline.h>
 #include<vtkParametricFunctionSource.h>
 #include<QDesktopServices>
-
+#include <vtkThreshold.h>
 
 using namespace std;
 std::string inputFilename;
@@ -408,7 +408,7 @@ void VolumeViewer::on_actionHessian_triggered()
 void VolumeViewer::doHessian(double sigma,double alpha1,double alpha2)
 {
 
-	itkhess->process(vtkwid->mapper->GetInput(), sigma, alpha1, alpha2);
+    itkhess->process(fullprefix,0, N, sigma, alpha1, alpha2);
 
 }
 
@@ -1111,8 +1111,13 @@ void VolumeViewer::on_actionThreshold_triggered()
 
 void VolumeViewer::setthresh(double lthreshold, double uthreshold)
 {
-	
-	itkhess->threshold(vtkwid->mapper->GetInput(), lthreshold, uthreshold);
+    vtkSmartPointer <vtkThreshold> thresholdfilter = vtkSmartPointer<vtkThreshold>::New();
+    thresholdfilter->SetInputData(vtkwid->mapper->GetInput());
+    thresholdfilter->ThresholdBetween(lthreshold,uthreshold);
+    thresholdfilter->Update();
+    vtkwid->leftRenderer->ResetCamera();
+    vtkwid->GetRenderWindow()->Render();
+    //itkhess->threshold(vtkwid->mapper->GetInput(), lthreshold, uthreshold);
 //	vtkwid->volume->RemoveAllObservers();
 //	vtkwid->resample(itkhess->threshimg);
 	
@@ -1315,7 +1320,7 @@ void VolumeViewer::getfileprefix(QString ffile)
 	string prefiX;
 	for (int i = 0; i < list2.length() - 1; i++)
 	{
-		prefiX += list2[i].toStdString()+"\\\\";
+        prefiX += list2[i].toStdString()+"//";
 	}
 
 	//string fullprefix =FilePrefix+"%0"+std::to_string(num.length())+"d.tif";
