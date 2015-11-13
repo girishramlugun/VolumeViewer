@@ -294,7 +294,7 @@ void VolumeViewer::on_actionOpen_triggered()
       qDebug("Not empty");
     }
 
-    QString Filename = QFileDialog::getOpenFileName(this, tr("Open Volume"), "", tr("TIFF (*.tif);;VTK Files (*.vti);; MATLAB Files(*.mat);; PolyData Files(*.vtp)"));
+    QString Filename = QFileDialog::getOpenFileName(this, tr("Open Volume"), "", tr("TIFF (*.tif);;VTK Files (*.vti);; MATLAB Files(*.mat);; PolyData Files(*.pvtu)"));
     if (Filename.isEmpty()==0){
     QFileInfo fi(Filename);
     ext = fi.suffix();
@@ -465,7 +465,7 @@ void VolumeViewer::openvol(string inputFilename)
 		
 
 	
-	else if (ext == QString("vtp"))
+    else if (ext == QString("pvtu"))
 	{
 		vtkSmartPointer <vtkXMLPolyDataReader> poly_read = vtkSmartPointer <vtkXMLPolyDataReader>::New();
 		poly_read->SetFileName(inputFilename.c_str());
