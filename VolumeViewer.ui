@@ -145,7 +145,6 @@
      </widget>
      <addaction name="actionGPU_Texture"/>
      <addaction name="actionRay_Cast"/>
-     <addaction name="actionRay_Cast_Texture"/>
      <addaction name="menuInterpolation"/>
     </widget>
     <addaction name="menuPalette"/>
