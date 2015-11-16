@@ -988,22 +988,10 @@ void VolumeViewer::on_actionGPU_Texture_triggered()
 
 void VolumeViewer::on_actionRay_Cast_triggered()
 {
-	//vtkwid->mapper->SetRequestedRenderMode(vtkSmartVolumeMapper::RayCastRenderMode);
-	vtkwid->mapper->SetRequestedRenderModeToRayCast();
-vtkwid->GetRenderWindow()->Render();
+    vtkwid->mapper->SetRequestedRenderMode(vtkSmartVolumeMapper::RayCastRenderMode);
+    vtkwid->GetRenderWindow()->Render();
 }
 
-void VolumeViewer::on_actionCPU_Texture_triggered()
-{
-   vtkwid-> mapper->SetRequestedRenderMode(vtkSmartVolumeMapper::RayCastAndTextureRenderMode);
-  vtkwid->GetRenderWindow()->Render();
-}
-
-void VolumeViewer::on_actionSmart_triggered()
-{
-vtkwid->mapper->SetRequestedRenderModeToDefault();
-vtkwid->GetRenderWindow()->Render();
-}
 
 void VolumeViewer::on_actionSave_Volume_triggered()
 {

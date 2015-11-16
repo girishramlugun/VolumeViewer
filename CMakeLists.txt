@@ -16,11 +16,10 @@ include(${VTK_USE_FILE})
 
 
 
- find_package(Qt5 COMPONENTS Widgets PrintSupport  REQUIRED)
+find_package(Qt5 COMPONENTS Widgets PrintSupport  REQUIRED)
 include_directories(${Qt5Widgets_INCLUDE_DIRS} ${Qt5PrintSupport_INCLUDE_DIRS})
 
 IF(UNIX)
-
 include_directories(/usr/local/matlab/extern/include)
 set(MATLAB_LIB_DIR /usr/local/matlab/bin/glnxa64)
 set(MATLAB_INCLUDE_DIR /usr/local/matlab/extern/include)

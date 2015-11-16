@@ -94,8 +94,6 @@ private slots:
   void on_actionAxes_triggered();
   void on_actionGPU_Texture_triggered();
   void on_actionRay_Cast_triggered();
-  void on_actionCPU_Texture_triggered();
-  void on_actionSmart_triggered();
   void on_actionOpen_triggered();
   void on_actionExit_2_triggered();
   void on_actionBackground_triggered();

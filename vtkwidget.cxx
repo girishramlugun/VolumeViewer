@@ -24,7 +24,7 @@
 #include<vtkImageAppend.h>
 #include<vtkBMPReader.h>
 #include<vtkAbstractImageInterpolator.h>
-
+#include<vtkOctreePointLocator.h>
 
 vtkIdType vram;
 double imgmax;
@@ -188,8 +188,9 @@ void vtkwidget::initialize(vtkImageData *input)
 
 void vtkwidget::render()
 {
-	
+
 	mapper->SetBlendModeToComposite();
+    mapper->SetInteractiveAdjustSampleDistances(0);
 	volumeProperty->SetInterpolationType(VTK_CUBIC_INTERPOLATION);
 	//mapper->SetInputConnection(reader->GetOutputPort());
 
@@ -280,7 +281,19 @@ void vtkwidget::renderpoly()
 
 void vtkwidget::renderpol(vtkPolyData *pol)
 {
-	poly_mapper->SetInputData(pol);
+    // Create the tree
+    vtkSmartPointer<vtkOctreePointLocator> octree =
+      vtkSmartPointer<vtkOctreePointLocator>::New();
+    octree->SetDataSet(pol);
+    octree->BuildLocator();
+
+    vtkSmartPointer<vtkPolyData> octpolyd =
+      vtkSmartPointer<vtkPolyData>::New();
+    octree->GenerateRepresentation(2,octpolyd);
+
+
+    poly_mapper->SetInputData(octpolyd);
+
 	vtkSmartPointer<vtkActor> poly_actor = vtkSmartPointer<vtkActor>::New();
 	poly_mapper->SetColorModeToMapScalars();
 	poly_actor->SetMapper(poly_mapper);
