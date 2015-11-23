@@ -23,7 +23,7 @@ itkthread::itkthread()
 }
 
 
-void itkthread::process(std::string fullprefix,int zlb, int zub, double sigma, double alpha1, double alpha2)
+void itkthread::process(string fullprefix,int zlb, int zub, double sigma, double alpha1, double alpha2)
 {
     typedef unsigned char PixelType;
     const unsigned int Dimension = 3;

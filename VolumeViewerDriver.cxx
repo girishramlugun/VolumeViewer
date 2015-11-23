@@ -1,6 +1,6 @@
 #include <QApplication>
 #include "VolumeViewer.h"
-
+#include<qcoreapplication.h>
 
 
 int main( int argc, char** argv )
@@ -9,6 +9,10 @@ int main( int argc, char** argv )
   QApplication app( argc, argv );
   
   VolumeViewer VolumeViewer;
+
+  QCoreApplication::setOrganizationName("ABI");
+
+  QCoreApplication::setApplicationName("Volume Viewer");
 
   
   VolumeViewer.show();

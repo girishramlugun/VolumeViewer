@@ -94,13 +94,20 @@
 #include<vtkParametricFunctionSource.h>
 #include<QDesktopServices>
 #include <vtkThreshold.h>
+#include <QSettings>
+
 
 using namespace std;
 std::string inputFilename;
 QString ext;
 bool wrmv=0;
 int VRAM;
-std::string fullprefix;
+
+
+
+
+
+//string fullprefix;
 //template <typename Iterator > void setval(Iterator begin, Iterator end) {  }
 
 template <typename T>
@@ -226,6 +233,9 @@ VolumeViewer::VolumeViewer()
 	diafibre = new Dialog_Fibre(this);
 
 
+    appsettings = new QSettings(this);
+
+
     connect(this, SIGNAL(gpinf(int)), this, SLOT(getgpuinfo(int)));
     connect(this, SIGNAL(gpinf(int)), diagpu, SLOT(setvram(int)));
     string line; int vramval;
@@ -250,6 +260,7 @@ VolumeViewer::VolumeViewer()
   connect(diahessian, SIGNAL(sendhessparams(double, double, double)), this, SLOT(doHessian(double, double, double)));
   connect(diathresh, SIGNAL(sendthreshold(double, double)), this, SLOT(setthresh(double, double)));
   connect(diafibre, SIGNAL(sendfibreparams(int, int)), this, SLOT(setfibres(int, int)));
+
 
   }
 
@@ -294,7 +305,7 @@ void VolumeViewer::on_actionOpen_triggered()
       qDebug("Not empty");
     }
 
-    QString Filename = QFileDialog::getOpenFileName(this, tr("Open Volume"), "", tr("TIFF (*.tif);;VTK Files (*.vti);; MATLAB Files(*.mat);; PolyData Files(*.pvtu)"));
+    QString Filename = QFileDialog::getOpenFileName(this, tr("Open Volume"), "", tr("TIFF (*.tif);;VTK Files (*.vti);; MATLAB Files(*.mat);; PolyData Files(*.vtp)"));
     if (Filename.isEmpty()==0){
     QFileInfo fi(Filename);
     ext = fi.suffix();
@@ -345,26 +356,26 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 		dir.setNameFilters(filters);
 
 		// Create list of all *.dcm filenames
-		QStringList list = dir.entryList();
+        QStringList filelist = dir.entryList();
 		vtkSmartPointer<vtkStringArray> filenames = vtkSmartPointer<vtkStringArray>::New();
-		filenames->SetNumberOfValues(list.size());
+        filenames->SetNumberOfValues(filelist.size());
 
 
-		QString ffile = Dir_Str + "/" + list.at(0);
-		getfileprefix(ffile);
+        QString ffile = Dir_Str + "/" + filelist.at(0);
+
 
 		//ui->label->setText(QString::fromStdString(str1));
 
-		if (list.size() == 0) { QMessageBox::critical(0, QObject::tr("Error"), "No Files Found"); }
+        if (filelist.size() == 0) { QMessageBox::critical(0, QObject::tr("Error"), "No tiff Files Found"); }
 		else
 		{
 			// if there exist tiff files in directory, create vector containing them all
 
 			//filenames->SetNumberOfValues(list.size());
 			filenames->SetName("List_of_Filenames");
-			for (int i = 0; i < list.size(); i++)
+            for (int i = 0; i < filelist.size(); i++)
 			{
-     			QString temp = Dir_Str + "/" + list.at(i);
+                QString temp = Dir_Str + "/" + filelist.at(i);
 				QByteArray tempbyte = temp.toUtf8();
 
 				//to assign data use setnumberofvalues and setvalue or insertnextvalue
@@ -372,7 +383,12 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 
 				
 			}
-			 N = list.size();
+
+            appsettings->setValue("Numfiles",filelist.size());
+            getfileprefix(ffile);
+            int Numfiles = filelist.size();
+
+           // ui->label->setNum(Numfiles);
 			//Read first image to extract dimensions 
 
 
@@ -389,7 +405,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			connect(diacol, SIGNAL(wincol(double)), vtkwid, SLOT(updatewincol(double)));
 			connect(vtkwid, SIGNAL(sendhist(QVector<double>)), diatfn, SLOT(plothist(QVector<double>)));
             vtkwid->setvram(ui->label->text().toInt());
-			vtkwid->readimseq(filenames, N);
+            vtkwid->readimseq(filenames, Numfiles);
 			//ui->label->setText(QString::number(vtkwid->readimseq->dims[0]) + " " + QString::number(vtkwid->readimseq->dims[1]) + " " + QString::number(vtkwid->readimseq->dims[2]));
 
 		}
@@ -408,7 +424,9 @@ void VolumeViewer::on_actionHessian_triggered()
 void VolumeViewer::doHessian(double sigma,double alpha1,double alpha2)
 {
 
-    itkhess->process(fullprefix,0, N, sigma, alpha1, alpha2);
+string pre = appsettings->value("fullprefix").toString().toStdString();
+
+    itkhess->process(pre,0, appsettings->value("Numfiles").toInt(), sigma, alpha1, alpha2);
 
 }
 
@@ -465,11 +483,12 @@ void VolumeViewer::openvol(string inputFilename)
 		
 
 	
-    else if (ext == QString("pvtu"))
+    else if (ext == QString("vtp"))
 	{
 		vtkSmartPointer <vtkXMLPolyDataReader> poly_read = vtkSmartPointer <vtkXMLPolyDataReader>::New();
 		poly_read->SetFileName(inputFilename.c_str());
 		poly_read->Update();
+		ui->label->setText(QString::number(poly_read->GetOutput()->GetActualMemorySize()));
 		vtkwid->renderpol(poly_read->GetOutput());
 	}
 	else
@@ -781,6 +800,7 @@ void VolumeViewer::on_actionCrop_triggered()
 	{
 		if (ui->actionClip->isChecked())
 		{
+            vtkwid->mapper->SetRequestedRenderModeToRayCast();
 			//if (vtkwid->sample_rate = 1){
 			vtkIdType id = 0; double points[3];
 			vtkSmartPointer <vtkPolyData> Crop =  vtkSmartPointer <vtkPolyData>::New();
@@ -808,9 +828,9 @@ void VolumeViewer::on_actionCrop_triggered()
 			}
             ui->label->setText(QString::number(coord[0][0]) + " " + QString::number(coord[0][1]) + " " + QString::number(yb-coord[1][3]) + " " + QString::number(yb-coord[1][2]) + " " + QString::number(coord[2][4]) + " " + QString::number(coord[2][5]));
 
-
-			cutterthread = new Cutter();
-			cutterthread->Run(fullprefix,0, N-1, int(coord[0][0]), int(coord[0][1]), int(yb - coord[1][3]), int(yb - coord[1][2]), int(coord[2][4]), int(coord[2][5]));
+         //   string pre = appsettings->value("fullprefix").toString().toStdString();
+        //	cutterthread = new Cutter();
+         //   cutterthread->Run(pre,0, (appsettings->value("Numfiles").toInt())-1, int(coord[0][0]), int(coord[0][1]), int(yb - coord[1][3]), int(yb - coord[1][2]), int(coord[2][4]), int(coord[2][5]));
 
 
 			}
@@ -1171,8 +1191,8 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 		//	progress.setWindowModality(Qt::WindowModal);
 
 		vtkSmartPointer <vtkCellArray> lines = vtkSmartPointer <vtkCellArray> ::New();
-		vtkSmartPointer <vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-		points->SetDataTypeToShort();
+        vtkSmartPointer <vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+points->SetDataTypeToShort();
 
 		vtkIdType k = 0;
 		vtkDataArray *colors;
@@ -1221,11 +1241,11 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 
 					for (vtkIdType j = 0; j < matvtkarr->GetNumberOfTuples() - skip; j += skip)
 							{
-							float pt[3];
-							pt[0] = matvtkarr->GetComponent(j, 0);
-							pt[1] = matvtkarr->GetComponent(j, 1);
-							pt[2] = matvtkarr->GetComponent(j, 2);
-							points->InsertNextPoint(pt);
+			                               // float pt[3];
+							//pt[0] = matvtkarr->GetComponent(j, 0);
+							//pt[1] = matvtkarr->GetComponent(j, 1);
+							//pt[2] = matvtkarr->GetComponent(j, 2);
+							points->InsertNextPoint(matvtkarr->GetComponent(j, 0),matvtkarr->GetComponent(j, 1),matvtkarr->GetComponent(j, 2));
 							lines->InsertCellPoint(k);
 							k++;
 							}
@@ -1240,9 +1260,10 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 		matClose(matf);
 		mxDestroyArray(matarr);
 		mxDestroyArray(matcolarr);
-		
+        
 		vtkSmartPointer <vtkPolyData> polyd = vtkSmartPointer <vtkPolyData>::New();
-		polyd->Allocate();
+	//	polyd->Allocate();
+
 		polyd->SetPoints(points);
 		polyd->SetLines(lines);
 		polyd->GetCellData()->SetScalars(colors);
@@ -1250,7 +1271,7 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 		ui->label->setText(QString::number(points->GetDataType()) + " " + QString::number(points->GetActualMemorySize()) + " " + QString::number(lines->GetActualMemorySize()) + " " + QString::number(polyd->GetActualMemorySize()));
 
 
-		vtkwid->renderpol(polyd);
+        vtkwid->renderpol(polyd);
 		
 	}
 }
@@ -1312,8 +1333,10 @@ void VolumeViewer::getfileprefix(QString ffile)
 	}
 
 	//string fullprefix =FilePrefix+"%0"+std::to_string(num.length())+"d.tif";
-    fullprefix = prefiX + FilePrefix + "%0" + ToString(num.length()) + "d.tif";
-	ui->label->setText(QString::fromStdString(fullprefix));
-	//ui->label->setText(QString::fromStdString(num));
-	printf(fullprefix.c_str());
+    string fullprefix = prefiX + FilePrefix + "%0" + ToString(num.length()) + "d.tif";
+    //ui->label->setNum(666);
+    ui->label->setNum(appsettings->value("Numfiles").toInt());
+    appsettings->setValue("fullprefix" , QString::fromStdString(fullprefix));
+
+    //printf(fullprefix.c_str());
 }

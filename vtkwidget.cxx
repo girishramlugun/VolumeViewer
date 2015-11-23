@@ -281,6 +281,7 @@ void vtkwidget::renderpoly()
 
 void vtkwidget::renderpol(vtkPolyData *pol)
 {
+    /*
     // Create the tree
     vtkSmartPointer<vtkOctreePointLocator> octree =
       vtkSmartPointer<vtkOctreePointLocator>::New();
@@ -289,10 +290,10 @@ void vtkwidget::renderpol(vtkPolyData *pol)
 
     vtkSmartPointer<vtkPolyData> octpolyd =
       vtkSmartPointer<vtkPolyData>::New();
-    octree->GenerateRepresentation(2,octpolyd);
-
-
-    poly_mapper->SetInputData(octpolyd);
+    octree->GenerateRepresentation(0,octpolyd);
+    */
+	
+	poly_mapper->SetInputData(pol);
 
 	vtkSmartPointer<vtkActor> poly_actor = vtkSmartPointer<vtkActor>::New();
 	poly_mapper->SetColorModeToMapScalars();

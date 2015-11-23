@@ -39,6 +39,7 @@
 
 using namespace std;
 
+
 class Ui_VolumeViewer;
 
 class VolumeViewer : public QMainWindow
@@ -62,7 +63,7 @@ public:
   Dialog_Fibre *diafibre;
   vtkSmartPointer <vtkBoxWidget2> box;
   vtkwidget *vtkwid;
-
+QSettings *appsettings;
   itkthread *itkhess;
   Cutter *cutterthread;
 
@@ -70,7 +71,7 @@ public:
   void openvol(string);
   void openimg(string);
 
-  int N;
+
 
 signals:
  
@@ -110,7 +111,7 @@ private slots:
   void on_actionSave_Screenshot_triggered();
 
   void on_actionRotate_triggered();
-
+  void on_actionImage_Sequence_triggered();
   void on_actionClip_triggered();
 
   void on_actionDimensions_triggered();
@@ -135,7 +136,7 @@ private slots:
 
   void on_actionCubic_triggered();
 
-  void on_actionImage_Sequence_triggered();
+
 
   void on_actionLoadLUT_triggered();
 
