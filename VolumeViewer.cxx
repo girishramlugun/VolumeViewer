@@ -95,7 +95,7 @@
 #include<QDesktopServices>
 #include <vtkThreshold.h>
 #include <QSettings>
-
+#include <vtkMPIController.h>
 
 using namespace std;
 std::string inputFilename;
@@ -432,7 +432,21 @@ string pre = appsettings->value("fullprefix").toString().toStdString();
 
 void VolumeViewer::on_actionAdd_triggered()
 {
-	
+
+    vtkSmartPointer<vtkMPIController> controller = vtkSmartPointer<vtkMPIController>::New();
+    controller->Initialize(NULL, NULL);
+    controller->SetSingleMethod(process,0);
+    controller->SingleMethodExecute();
+    controller->Finalize();
+    controller->Delete();
+
+}
+
+void VolumeViewer::process (vtkMultiProcessController* controller, void* vtkNotUsed(arg))
+{
+    int myId = controller->GetLocalProcessId();
+    std::cout << "My process id is ";
+    std::cout << myId << "." << std::endl;
 }
 
 void VolumeViewer::openvol(string inputFilename)

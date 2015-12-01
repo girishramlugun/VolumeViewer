@@ -1,6 +1,8 @@
 #ifndef VolumeViewer_H
 #define VolumeViewer_H
 
+#include <vtkMultiProcessController.h>
+
 #include <vtkSmartPointer.h>
 
 #include <QMainWindow>
@@ -86,6 +88,7 @@ public slots:
   void updateopacity(int,bool);
   void rmovstat(int);
   void getgpuinfo(int vram);
+  void process(vtkMultiProcessController* controller, void* vtkNotUsed(arg));
 
 
 
