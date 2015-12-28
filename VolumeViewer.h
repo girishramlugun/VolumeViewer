@@ -164,6 +164,8 @@ private slots:
   void on_actionHelp_Topics_triggered();
 
   void getfileprefix(QString);
+
+  void on_actionReslice_triggered();
   
 private:
 

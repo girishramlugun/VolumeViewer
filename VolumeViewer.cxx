@@ -95,7 +95,12 @@
 #include<QDesktopServices>
 #include <vtkThreshold.h>
 #include <QSettings>
-#include <vtkMPIController.h>
+#include<vtkImageReslice.h>
+#include<vtkAbstractTransform.h>
+#include<vtkMatrix4x4.h>
+#include<vtkMatrixToLinearTransform.h>
+#include<vtkTypeInt16Array.h>
+#include <vtkImageChangeInformation.h>
 
 using namespace std;
 std::string inputFilename;
@@ -433,12 +438,7 @@ string pre = appsettings->value("fullprefix").toString().toStdString();
 void VolumeViewer::on_actionAdd_triggered()
 {
 
-    vtkSmartPointer<vtkMPIController> controller = vtkSmartPointer<vtkMPIController>::New();
-    controller->Initialize(NULL, NULL);
-    controller->SetSingleMethod(process,0);
-    controller->SingleMethodExecute();
-    controller->Finalize();
-    controller->Delete();
+
 
 }
 
@@ -502,6 +502,7 @@ void VolumeViewer::openvol(string inputFilename)
 		vtkSmartPointer <vtkXMLPolyDataReader> poly_read = vtkSmartPointer <vtkXMLPolyDataReader>::New();
 		poly_read->SetFileName(inputFilename.c_str());
 		poly_read->Update();
+
 		ui->label->setText(QString::number(poly_read->GetOutput()->GetActualMemorySize()));
 		vtkwid->renderpol(poly_read->GetOutput());
 	}
@@ -766,7 +767,7 @@ if (vtkwid->isVisible())
 		box = vtkSmartPointer<vtkBoxWidget2>::New();
 		vtkwid->leftRenderer->ResetCamera();
 
-
+        vtkwid->mapper->SetRequestedRenderModeToRayCast();
 		vtkSmartPointer <vtkBoxRepresentation> boxrep = vtkSmartPointer <vtkBoxRepresentation>::New();
 		boxrep->SetPlaceFactor(1.00);
 		boxrep->SetInsideOut(1);
@@ -814,14 +815,14 @@ void VolumeViewer::on_actionCrop_triggered()
 	{
 		if (ui->actionClip->isChecked())
 		{
-            vtkwid->mapper->SetRequestedRenderModeToRayCast();
+
 			//if (vtkwid->sample_rate = 1){
 			vtkIdType id = 0; double points[3];
 			vtkSmartPointer <vtkPolyData> Crop =  vtkSmartPointer <vtkPolyData>::New();
 			
 			static_cast<vtkBoxRepresentation*>(box->GetRepresentation())->GetPolyData(Crop);
 			
-			
+
 			Crop->GetPoint(id, points);
 
 
@@ -854,6 +855,48 @@ void VolumeViewer::on_actionCrop_triggered()
 		QMessageBox::critical(0, QObject::tr("Error"), "You need to clip the volume first.");
 	}
 	//}
+}
+
+
+
+void VolumeViewer::on_actionReslice_triggered()
+{
+    if (vtkwid->isVisible())
+    {
+        if (ui->actionClip->isChecked())
+        {
+            double *bounds;
+            bounds = box->GetRepresentation()->GetBounds();
+
+            vtkSmartPointer<vtkImageReslice> reslice =
+               vtkSmartPointer<vtkImageReslice>::New();
+            reslice->SetInputData(vtkwid->mapper->GetInput());
+            vtkSmartPointer<vtkMatrixToLinearTransform> mat2tran =
+                    vtkSmartPointer<vtkMatrixToLinearTransform>::New();
+            //mat2tran->SetInput(box->GetRepresentation()->GetMatrix());
+            vtkMatrix4x4 *mat;
+           mat = static_cast<vtkBoxRepresentation*>(box->GetRepresentation())->GetMatrix();
+                   mat2tran->SetInput(mat);
+            std::cout << "Matrix: " << endl << mat << std::endl;
+            mat2tran->Update();
+            reslice->SetResliceTransform(mat2tran->MakeTransform());
+
+            reslice->Update();
+            QString fileNameSave = QFileDialog::getSaveFileName(this,
+                tr("Save Volume"), "",
+                tr("VTK File (*.vti)"));
+            string volname = fileNameSave.toStdString();
+            vtkSmartPointer<vtkXMLImageDataWriter> volwrite = vtkSmartPointer<vtkXMLImageDataWriter>::New();
+            volwrite->SetInputData(reslice->GetOutput());
+            volwrite->SetFileName(volname.c_str());
+            volwrite->Write();
+
+
+ui->label->setText(QString::number(bounds[0]) + " " + QString::number(bounds[1]) +  " " + QString::number(bounds[2])+ " " + QString::number(bounds[3]) + " " + QString::number(bounds[4]) + " " + QString::number(bounds[5]) + " " + QString::number(bounds[6]));
+
+        }
+
+    }
 }
 
 void VolumeViewer::on_actionDimensions_triggered()
@@ -1153,7 +1196,7 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 	mxArray *matarr, *matcolarr;
 	MATFile *matf;
 
-
+vtkSmartPointer<vtkTypeInt16Array> pointarray = vtkSmartPointer<vtkTypeInt16Array>::New();
 	//vtkSmartPointer<vtkUnsignedShortArray> dataarr = vtkSmartPointer<vtkUnsignedShortArray>::New();
 	//vtkSmartPointer<vtkImageData> matimg = vtkSmartPointer<vtkImageData>::New();
 
@@ -1205,14 +1248,15 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 		//	progress.setWindowModality(Qt::WindowModal);
 
 		vtkSmartPointer <vtkCellArray> lines = vtkSmartPointer <vtkCellArray> ::New();
+
         vtkSmartPointer <vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-points->SetDataTypeToShort();
+    points->SetDataTypeToShort();
 
 		vtkIdType k = 0;
 		vtkDataArray *colors;
 		colors->CreateDataArray(VTK_TYPE_INT8);
 		//colors->SetNumberOfComponents(1);
-		//ui->label->setText(QString::number(readermat->GetMTime()));
+        //ui->label->setText(QString::number(readermat->GetMTime()));ee
 		colors = readermat->mxArrayTovtkDataArray(matcolarr);
 		
 		colors->SetName("Colors");
@@ -1255,11 +1299,15 @@ points->SetDataTypeToShort();
 
 					for (vtkIdType j = 0; j < matvtkarr->GetNumberOfTuples() - skip; j += skip)
 							{
-			                               // float pt[3];
+                                           // float pt[3];
 							//pt[0] = matvtkarr->GetComponent(j, 0);
 							//pt[1] = matvtkarr->GetComponent(j, 1);
 							//pt[2] = matvtkarr->GetComponent(j, 2);
-							points->InsertNextPoint(matvtkarr->GetComponent(j, 0),matvtkarr->GetComponent(j, 1),matvtkarr->GetComponent(j, 2));
+
+
+                        pointarray->InsertNextTuple3(matvtkarr->GetComponent(j, 0) ,matvtkarr->GetComponent(j, 1), matvtkarr->GetComponent(j, 2));
+
+                            points->InsertNextPoint(matvtkarr->GetComponent(j, 0),matvtkarr->GetComponent(j, 1),matvtkarr->GetComponent(j, 2));
 							lines->InsertCellPoint(k);
 							k++;
 							}
