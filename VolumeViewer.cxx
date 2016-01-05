@@ -101,6 +101,10 @@
 #include<vtkMatrixToLinearTransform.h>
 #include<vtkTypeInt16Array.h>
 #include <vtkImageChangeInformation.h>
+#include<vtkTransform.h>
+#include<vtkTransformFilter.h>
+#include<vtkXMLUnstructuredGridWriter.h>
+#include<vtkUnstructuredGrid.h>
 
 using namespace std;
 std::string inputFilename;
@@ -816,12 +820,28 @@ void VolumeViewer::on_actionCrop_triggered()
 		if (ui->actionClip->isChecked())
 		{
 
+            vtkSmartPointer<vtkPlanes> pcoll = vtkSmartPointer<vtkPlanes>::New();
+          //  vtkPlanes * clippingPlanes;
+            static_cast<vtkBoxRepresentation*>(box->GetRepresentation())->GetPlanes(pcoll);
+            vtkwid->volume->GetMapper()->SetClippingPlanes(pcoll);
+            vtkClipVolume* clipper = vtkClipVolume::New();
+            clipper->SetInputData(vtkwid->mapper->GetInput());
+            clipper->SetClipFunction(pcoll);
+            clipper->GenerateClipScalarsOn();
+            clipper->GenerateClippedOutputOn();
+
+            clipper->Update();
+            vtkSmartPointer<vtkXMLUnstructuredGridWriter> volwrite = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
+            volwrite->SetInputData(clipper->GetOutput());
+            volwrite->SetFileName("Clipped.vtu");
+            volwrite->Write();
+            /*
 			//if (vtkwid->sample_rate = 1){
 			vtkIdType id = 0; double points[3];
 			vtkSmartPointer <vtkPolyData> Crop =  vtkSmartPointer <vtkPolyData>::New();
 			
 			static_cast<vtkBoxRepresentation*>(box->GetRepresentation())->GetPolyData(Crop);
-			
+
 
 			Crop->GetPoint(id, points);
 
@@ -846,7 +866,7 @@ void VolumeViewer::on_actionCrop_triggered()
          //   string pre = appsettings->value("fullprefix").toString().toStdString();
         //	cutterthread = new Cutter();
          //   cutterthread->Run(pre,0, (appsettings->value("Numfiles").toInt())-1, int(coord[0][0]), int(coord[0][1]), int(yb - coord[1][3]), int(yb - coord[1][2]), int(coord[2][4]), int(coord[2][5]));
-
+*/
 
 			}
 		}
@@ -863,14 +883,15 @@ void VolumeViewer::on_actionReslice_triggered()
 {
     if (vtkwid->isVisible())
     {
-        if (ui->actionClip->isChecked())
-        {
-            double *bounds;
-            bounds = box->GetRepresentation()->GetBounds();
+      //  if (ui->actionClip->isChecked())
+       // {
+       //     double *bounds;
+       //     bounds = box->GetRepresentation()->GetBounds();
 
-            vtkSmartPointer<vtkImageReslice> reslice =
-               vtkSmartPointer<vtkImageReslice>::New();
-            reslice->SetInputData(vtkwid->mapper->GetInput());
+           // vtkSmartPointer<vtkImageReslice> reslice =
+           //    vtkSmartPointer<vtkImageReslice>::New();
+          //  reslice->SetInputData(vtkwid->mapper->GetInput());
+            /*
             vtkSmartPointer<vtkMatrixToLinearTransform> mat2tran =
                     vtkSmartPointer<vtkMatrixToLinearTransform>::New();
             //mat2tran->SetInput(box->GetRepresentation()->GetMatrix());
@@ -879,22 +900,60 @@ void VolumeViewer::on_actionReslice_triggered()
                    mat2tran->SetInput(mat);
             std::cout << "Matrix: " << endl << mat << std::endl;
             mat2tran->Update();
-            reslice->SetResliceTransform(mat2tran->MakeTransform());
 
-            reslice->Update();
+            // Matrices for axial, coronal, sagittal, oblique view orientations
+             static double sagittalElements[16] =
+             { 1,   0,     0,   0,
+               0,  0,      1,   0,
+               0,  -1,     0,   0,
+               0,   0,     0,   1 };
+
+
+            // Set the slice orientation
+               vtkSmartPointer<vtkMatrix4x4> resliceAxes =
+                 vtkSmartPointer<vtkMatrix4x4>::New();
+                resliceAxes->DeepCopy(sagittalElements);
+                // Set the point through which to slice
+               double * center;
+               center = vtkwid->volume->GetCenter();
+               resliceAxes->SetElement(0, 3, center[0]);
+               resliceAxes->SetElement(1, 3, center[1]);
+               resliceAxes->SetElement(2, 3, center[2]);
+              // reslice->SetResliceAxes(resliceAxes);
+               reslice->SetOutputDimensionality(3);
+               reslice->SetInterpolationModeToCubic();
+*/
+vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
+
+transform->RotateX(30);
+transform->RotateY(0);
+transform->RotateZ(90);
+transform->Update();
+
+vtkSmartPointer<vtkTransformFilter> transformModel =
+      vtkSmartPointer<vtkTransformFilter>::New();
+
+transformModel->SetTransform(transform);
+transformModel->SetInputData(vtkwid->mapper->GetInput());
+transformModel->SetOutputPointsPrecision(4);
+transformModel->Update();
+
+
+           // reslice->Update();
             QString fileNameSave = QFileDialog::getSaveFileName(this,
                 tr("Save Volume"), "",
-                tr("VTK File (*.vti)"));
+                tr("VTK File (*.vtu)"));
             string volname = fileNameSave.toStdString();
-            vtkSmartPointer<vtkXMLImageDataWriter> volwrite = vtkSmartPointer<vtkXMLImageDataWriter>::New();
-            volwrite->SetInputData(reslice->GetOutput());
+            vtkSmartPointer<vtkXMLUnstructuredGridWriter> volwrite = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
+            volwrite->SetInputData(transformModel->GetOutput());
+
             volwrite->SetFileName(volname.c_str());
             volwrite->Write();
 
 
-ui->label->setText(QString::number(bounds[0]) + " " + QString::number(bounds[1]) +  " " + QString::number(bounds[2])+ " " + QString::number(bounds[3]) + " " + QString::number(bounds[4]) + " " + QString::number(bounds[5]) + " " + QString::number(bounds[6]));
+//ui->label->setText(QString::number(bounds[0]) + " " + QString::number(bounds[1]) +  " " + QString::number(bounds[2])+ " " + QString::number(bounds[3]) + " " + QString::number(bounds[4]) + " " + QString::number(bounds[5]) + " " + QString::number(bounds[6]));
 
-        }
+      //  }
 
     }
 }
