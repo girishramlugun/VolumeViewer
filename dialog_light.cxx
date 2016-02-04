@@ -18,7 +18,7 @@ void dialog_light::on_ok_lights_accepted()
 {
 
    updateparams();
-    emit sendlights(kw,ki,ke,ka,fw,fkf,fe,fa,bw,bkb,be,ba,hw,hkh);
+    emit sendlights(kw,ki,ke,ka,fw,fkf,fe,fa,bw,bkb,be,ba,hw,hkh,shading);
 
 
 
@@ -43,4 +43,7 @@ void dialog_light::updateparams()
 
     hw=ui->headwarm->value();
     hkh=ui->headkh->value();
+
+	shading = ui->Shading->isDown();
+
 }

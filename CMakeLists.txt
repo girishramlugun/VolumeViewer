@@ -23,8 +23,6 @@ IF(UNIX)
 include_directories(/usr/local/matlab/extern/include)
 set(MATLAB_LIB_DIR /usr/local/matlab/bin/glnxa64)
 set(MATLAB_INCLUDE_DIR /usr/local/matlab/extern/include)
-endif()
-
 find_package(FFMPEG REQUIRED)
 include_directories(${FFMPEG_INCLUDE_DIR})
 set(_ffmpeg_libs ${FFMPEG_avformat_LIBRARY} ${FFMPEG_avcodec_LIBRARY}
@@ -32,6 +30,9 @@ set(_ffmpeg_libs ${FFMPEG_avformat_LIBRARY} ${FFMPEG_avcodec_LIBRARY}
 if(NOT VTK_FFMPEG_HAS_IMG_CONVERT)
   list(APPEND _ffmpeg_libs ${FFMPEG_swscale_LIBRARY})
 endif()
+endif()
+
+
 
 find_package(ITK REQUIRED)
 include(${ITK_USE_FILE})
@@ -72,7 +73,9 @@ include(UseMatlabMex)
   add_executable(VolumeViewer WIN32 MACOSX_BUNDLE ${CXX_FILES} ${UISrcs} ${MOCSrcs} ${VolumeViewer_RESOURCES_RCC})
 
 
-    target_link_libraries(VolumeViewer ${QT_QTMAIN_LIBRARY} ${VTK_LIBRARIES} ${Qt5Widgets_LIBRARIES}  ${Qt5PrintSupport_LIBRARIES} ${ITK_LIBRARIES} ${Glue} ${MEX_LIBRARIES} ${MATLAB_ENGINE_LIBRARIES} ${_ffmpeg_libs})
+    target_link_libraries(VolumeViewer ${QT_QTMAIN_LIBRARY} ${VTK_LIBRARIES} ${Qt5Widgets_LIBRARIES}  ${Qt5PrintSupport_LIBRARIES} ${ITK_LIBRARIES} ${Glue} ${MEX_LIBRARIES} ${MATLAB_ENGINE_LIBRARIES})
+
+# ${_ffmpeg_libs})
 
 
 IF(WIN32) # Check if we are on Windows

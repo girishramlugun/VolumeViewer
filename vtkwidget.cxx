@@ -81,6 +81,8 @@ vtkwidget::vtkwidget(QWidget *parent) :
 
 	widget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
 
+	poly_actor = vtkSmartPointer<vtkActor>::New();
+
 	
 
 }
@@ -125,6 +127,7 @@ void vtkwidget::initialize(vtkImageData *input)
 	//Set volumeProperty parameters
 	if (ncol < 3 )
     {
+
 		volumeColor->AddRGBPoint(0, 0, 0, 0);
         volumeColor->AddRGBPoint(imgmax, 1, 1, 1);
 
@@ -151,6 +154,9 @@ void vtkwidget::initialize(vtkImageData *input)
 
 	c3->AddRGBPoint(0, 0, 0, 0);
     c3->AddRGBPoint(imgmax, 0, 0, 1);
+
+
+	
 
 
 	volumeProperty->SetColor(0,c1);
@@ -295,7 +301,7 @@ void vtkwidget::renderpol(vtkPolyData *pol)
 	
 	poly_mapper->SetInputData(pol);
 
-	vtkSmartPointer<vtkActor> poly_actor = vtkSmartPointer<vtkActor>::New();
+	
 	poly_mapper->SetColorModeToMapScalars();
 	poly_actor->SetMapper(poly_mapper);
 	poly_actor->GetProperty()->EdgeVisibilityOff();
@@ -382,14 +388,17 @@ void vtkwidget::setdims(double dim_x,  double dim_y, double dim_z)
 	render();
 }
 
-void vtkwidget::updatelights(double kw, double ki, double ke, double ka, double fw, double fkf, double fe, double fa, double bw, double bkb, double be, double ba, double hw, double hkh)
+void vtkwidget::updatelights(double kw, double ki, double ke, double ka, double fw, double fkf, double fe, double fa, double bw, double bkb, double be, double ba, double hw, double hkh, bool shading)
 {
 	LightKit->SetKeyLightWarmth(kw); LightKit->SetKeyLightIntensity(ki); LightKit->SetKeyLightElevation(ke); LightKit->SetKeyLightAzimuth(ka);
 	LightKit->SetFillLightWarmth(fw); LightKit->SetKeyToFillRatio(fkf); LightKit->SetFillLightElevation(fe); LightKit->SetFillLightAzimuth(fa);
 	LightKit->SetBackLightWarmth(bw); LightKit->SetKeyToBackRatio(bkb); LightKit->SetBackLightElevation(be); LightKit->SetBackLightAzimuth(ba);
 	LightKit->SetHeadLightWarmth(hw); LightKit->SetKeyToHeadRatio(hkh);
 	LightKit->AddLightsToRenderer(leftRenderer);
-	GetInteractor()->Render();
+	volumeProperty->SetShade(int(shading));
+	volume->SetProperty(volumeProperty);
+	//GetInteractor()->Render();
+	render();
 }
 
 void vtkwidget::updatevolcol(double vc)

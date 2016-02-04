@@ -15,10 +15,11 @@ public:
     explicit dialog_light(QWidget *parent = 0);
     ~dialog_light();
     double kw,ki,ke,ka,fw,fkf,fe,fa,bw,bkb,be,ba,hw,hkh;
+	bool shading;
     void updateparams();
 
 signals:
-void sendlights(double,double,double,double,double,double,double,double,double,double,double,double,double,double);
+void sendlights(double,double,double,double,double,double,double,double,double,double,double,double,double,double,bool);
 
 private slots:
 

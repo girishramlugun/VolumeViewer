@@ -105,6 +105,7 @@
 #include<vtkTransformFilter.h>
 #include<vtkXMLUnstructuredGridWriter.h>
 #include<vtkUnstructuredGrid.h>
+#include<vtkTransformPolyDataFilter.h>
 
 using namespace std;
 std::string inputFilename;
@@ -923,28 +924,34 @@ void VolumeViewer::on_actionReslice_triggered()
                reslice->SetOutputDimensionality(3);
                reslice->SetInterpolationModeToCubic();
 */
+		double * center;
+		center = vtkwid->volume->GetCenter();
+
 vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
+transform->Translate(center[0], center[1], center[2]);
+transform->RotateWXYZ(45, 0, 0, 1);
+transform->Translate(-center[0], -center[1], -center[2]);
 
-transform->RotateX(30);
-transform->RotateY(0);
-transform->RotateZ(90);
-transform->Update();
+vtkSmartPointer<vtkImageReslice> transformModel =
+vtkSmartPointer<vtkImageReslice>::New();
 
-vtkSmartPointer<vtkTransformFilter> transformModel =
-      vtkSmartPointer<vtkTransformFilter>::New();
-
-transformModel->SetTransform(transform);
+transformModel->SetResliceTransform(transform);
 transformModel->SetInputData(vtkwid->mapper->GetInput());
-transformModel->SetOutputPointsPrecision(4);
+transformModel->SetInterpolationModeToCubic();
+transformModel->SetOutputSpacing(1, 1, 1);
+transformModel->SetOutputExtent(0, 500, 0, 500, 0, 500);
+//transformModel->SetOutputPointsPrecision(4);
 transformModel->Update();
 
 
            // reslice->Update();
             QString fileNameSave = QFileDialog::getSaveFileName(this,
                 tr("Save Volume"), "",
-                tr("VTK File (*.vtu)"));
+                tr("VTK File (*.vti)"));
             string volname = fileNameSave.toStdString();
-            vtkSmartPointer<vtkXMLUnstructuredGridWriter> volwrite = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
+
+			vtkSmartPointer<vtkXMLImageDataWriter> volwrite = vtkSmartPointer<vtkXMLImageDataWriter>::New();
+			
             volwrite->SetInputData(transformModel->GetOutput());
 
             volwrite->SetFileName(volname.c_str());
@@ -1077,7 +1084,11 @@ void VolumeViewer::rot()
 	   movie->Write();
 //#endif
      w2i->Modified();}
-  vtkwid->volume->RotateWXYZ(diarotat->rotang,diarotat->rotmat[0],diarotat->rotmat[1],diarotat->rotmat[2]);
+
+ //To add centre
+ vtkwid->poly_actor->RotateWXYZ(diarotat->rotang, diarotat->rotmat[0], diarotat->rotmat[1], diarotat->rotmat[2]);
+ // vtkwid->volume->RotateWXYZ(diarotat->rotang,diarotat->rotmat[0],diarotat->rotmat[1],diarotat->rotmat[2]);
+
   vtkwid->GetRenderWindow()->Render();
 
 }

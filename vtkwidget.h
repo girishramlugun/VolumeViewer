@@ -135,6 +135,8 @@ public:
 
    vtkSmartPointer<vtkOrientationMarkerWidget> widget;
 
+   vtkSmartPointer<vtkActor> poly_actor;
+
    double sample_rate;
    int dims[3];
 
@@ -146,7 +148,7 @@ signals:
 	   
    void setbg(double, double, double);
    void setdims(double, double, double);
-   void updatelights(double, double, double, double, double, double, double, double, double, double, double, double, double, double);
+   void updatelights(double, double, double, double, double, double, double, double, double, double, double, double, double, double,bool);
    void updatevolcol(double);
    void updatewincol(double);
    void readvti(string);
