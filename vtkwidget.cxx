@@ -300,12 +300,12 @@ void vtkwidget::renderpol(vtkPolyData *pol)
     */
 	
 	poly_mapper->SetInputData(pol);
-
+	
 	
 	poly_mapper->SetColorModeToMapScalars();
 	poly_actor->SetMapper(poly_mapper);
 	poly_actor->GetProperty()->EdgeVisibilityOff();
-
+	poly_actor->SetOrigin(poly_actor->GetCenter());
 
 
 	vtkSmartPointer<vtkScalarBarActor> scalarBar = vtkSmartPointer<vtkScalarBarActor>::New();

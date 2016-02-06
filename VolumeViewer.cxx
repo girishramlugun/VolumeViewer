@@ -112,7 +112,7 @@ std::string inputFilename;
 QString ext;
 bool wrmv=0;
 int VRAM;
-
+int vol_id;
 
 
 
@@ -161,7 +161,7 @@ public:
 			static_cast<vtkBoxRepresentation*>(widget->GetRepresentation())->GetPlanes(planes);
 		//widget->OutlineCursorWiresOff();
         //widget->GetPlanes(planes);
-		
+
 			
         this->Mapper->SetClippingPlanes(planes);
         planes->Delete();
@@ -177,7 +177,54 @@ protected:
 	{this->Mapper = 0;}
 
   vtkSmartVolumeMapper *Mapper;
+  
  };
+
+
+
+//create callback for clipping 
+class vtkPolyClipCallback : public vtkCommand
+{
+public:
+
+	static vtkPolyClipCallback *New()
+	{
+		return new vtkPolyClipCallback;
+	}
+	virtual void Execute(vtkObject *caller, unsigned long, void*)
+
+	{
+		vtkBoxWidget2 *widget = reinterpret_cast<vtkBoxWidget2*>(caller);
+
+
+		if (this->PolyMapper)
+		{
+			vtkPlanes *planes = vtkPlanes::New();
+			static_cast<vtkBoxRepresentation*>(widget->GetRepresentation())->GetPlanes(planes);
+			//widget->OutlineCursorWiresOff();
+			//widget->GetPlanes(planes);
+
+
+			this->PolyMapper->SetClippingPlanes(planes);
+			planes->Delete();
+		}
+	}
+
+
+	void SetMapper(vtkPolyDataMapper* m)
+	{
+		this->PolyMapper = m;
+	}
+
+protected:
+	vtkPolyClipCallback()
+	{
+		this->PolyMapper = 0;
+	}
+
+	vtkPolyDataMapper *PolyMapper;
+
+};
 
 
 
@@ -353,7 +400,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 
 	QString Dir_Str = QFileDialog::getExistingDirectory(this, tr("Set Directory"), "");
 
-	
+	vol_id = 0;
 
 	if (!Dir_Str.isEmpty()){
 
@@ -477,13 +524,14 @@ void VolumeViewer::openvol(string inputFilename)
 
 		if (ext == QString("vti"))
 		{
-
+			vol_id = 0;
 			vtkwid->readvti(inputFilename);
 			
 		}
 
         else if (ext == QString("tif"))
 		{
+			vol_id = 1;
 			vtkwid->readtif(inputFilename);
 			
 
@@ -491,7 +539,7 @@ void VolumeViewer::openvol(string inputFilename)
 		}
 		else if (ext == QString("mat"))
 		{
-
+			vol_id = 2;
 			diafibre->show();
 					
 		}
@@ -504,6 +552,7 @@ void VolumeViewer::openvol(string inputFilename)
 	
     else if (ext == QString("vtp"))
 	{
+		vol_id = 3;
 		vtkSmartPointer <vtkXMLPolyDataReader> poly_read = vtkSmartPointer <vtkXMLPolyDataReader>::New();
 		poly_read->SetFileName(inputFilename.c_str());
 		poly_read->Update();
@@ -769,6 +818,7 @@ if (vtkwid->isVisible())
 {
     if (ui->actionClip->isChecked())
 {
+	if (vol_id == 0 || vol_id == 1){
 		box = vtkSmartPointer<vtkBoxWidget2>::New();
 		vtkwid->leftRenderer->ResetCamera();
 
@@ -786,10 +836,37 @@ if (vtkwid->isVisible())
         box->SetInteractor(vtkwid->GetInteractor());
 
         vtkSmartPointer <vtkBoxWidgetCallback> callback = vtkSmartPointer <vtkBoxWidgetCallback>::New();
-        callback->SetMapper(vtkwid->mapper);
+    	callback->SetMapper(vtkwid->mapper);
+
         box->AddObserver(vtkCommand::InteractionEvent, callback);
 		box->On();
 		vtkwid->GetInteractor()->Render();
+	}
+	else if (vol_id == 2 || vol_id == 3)
+	{
+		box = vtkSmartPointer<vtkBoxWidget2>::New();
+		vtkwid->leftRenderer->ResetCamera();
+
+		//vtkwid->mapper->SetRequestedRenderModeToRayCast();
+		vtkSmartPointer <vtkBoxRepresentation> boxrep = vtkSmartPointer <vtkBoxRepresentation>::New();
+		boxrep->SetPlaceFactor(1.00);
+		boxrep->SetInsideOut(1);
+
+		boxrep->PlaceWidget(vtkwid->poly_mapper->GetBounds());
+		boxrep->SetRenderer(vtkwid->leftRenderer);
+		box->SetRepresentation(boxrep);
+		box->SetTranslationEnabled(1);
+		//box->SetInputData(vtkwid->mapper->GetInput());
+		// Add a box widget for clipping
+		box->SetInteractor(vtkwid->GetInteractor());
+
+		vtkSmartPointer <vtkPolyClipCallback> callback = vtkSmartPointer <vtkPolyClipCallback>::New();
+		callback->SetMapper(vtkwid->poly_mapper);
+
+		box->AddObserver(vtkCommand::InteractionEvent, callback);
+		box->On();
+		vtkwid->GetInteractor()->Render();
+	}
 			
         }
     else{
@@ -1086,9 +1163,15 @@ void VolumeViewer::rot()
      w2i->Modified();}
 
  //To add centre
- vtkwid->poly_actor->RotateWXYZ(diarotat->rotang, diarotat->rotmat[0], diarotat->rotmat[1], diarotat->rotmat[2]);
- // vtkwid->volume->RotateWXYZ(diarotat->rotang,diarotat->rotmat[0],diarotat->rotmat[1],diarotat->rotmat[2]);
-
+ if (vol_id == 3 || vol_id==2)
+ {
+	 vtkwid->poly_actor->RotateWXYZ(diarotat->rotang, diarotat->rotmat[0], diarotat->rotmat[1], diarotat->rotmat[2]);
+ }
+ //vtkwid->poly_actor->GetCenter
+ else if (vol_id == 0 || vol_id==1)
+ {
+	 vtkwid->volume->RotateWXYZ(diarotat->rotang,diarotat->rotmat[0],diarotat->rotmat[1],diarotat->rotmat[2]);
+ }
   vtkwid->GetRenderWindow()->Render();
 
 }
