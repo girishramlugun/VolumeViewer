@@ -893,10 +893,10 @@ else {
 
 void VolumeViewer::on_actionCrop_triggered()
 {
-	if (vtkwid->isVisible())
-	{
-		if (ui->actionClip->isChecked())
-		{
+    if (vtkwid->isVisible())
+    {
+        if (ui->actionClip->isChecked())
+        {
 
             vtkSmartPointer<vtkPlanes> pcoll = vtkSmartPointer<vtkPlanes>::New();
           //  vtkPlanes * clippingPlanes;
@@ -914,31 +914,31 @@ void VolumeViewer::on_actionCrop_triggered()
             volwrite->SetFileName("Clipped.vtu");
             volwrite->Write();
             /*
-			//if (vtkwid->sample_rate = 1){
-			vtkIdType id = 0; double points[3];
-			vtkSmartPointer <vtkPolyData> Crop =  vtkSmartPointer <vtkPolyData>::New();
-			
-			static_cast<vtkBoxRepresentation*>(box->GetRepresentation())->GetPolyData(Crop);
+            //if (vtkwid->sample_rate = 1){
+            vtkIdType id = 0; double points[3];
+            vtkSmartPointer <vtkPolyData> Crop =  vtkSmartPointer <vtkPolyData>::New();
+
+            static_cast<vtkBoxRepresentation*>(box->GetRepresentation())->GetPolyData(Crop);
 
 
-			Crop->GetPoint(id, points);
+            Crop->GetPoint(id, points);
 
 
-			vtkSmartPointer <vtkExtractVOI> extvoi = vtkSmartPointer <vtkExtractVOI>::New();
+            vtkSmartPointer <vtkExtractVOI> extvoi = vtkSmartPointer <vtkExtractVOI>::New();
 
-			double yb = (vtkwid->dims[1]-1);
+            double yb = (vtkwid->dims[1]-1);
 
-			
-			 
+
+
             double coord[3][6];
-			int j = 0;
-			for (vtkIdType i = 8; i < 14; i++)
-			{
-				double p[3];
-				Crop->GetPoint(i, p);
-				coord[0][j] = p[0]; coord[1][j] = p[1]; coord[2][j] = p[2];
-				j++;
-			}
+            int j = 0;
+            for (vtkIdType i = 8; i < 14; i++)
+            {
+                double p[3];
+                Crop->GetPoint(i, p);
+                coord[0][j] = p[0]; coord[1][j] = p[1]; coord[2][j] = p[2];
+                j++;
+            }
             ui->label->setText(QString::number(coord[0][0]) + " " + QString::number(coord[0][1]) + " " + QString::number(yb-coord[1][3]) + " " + QString::number(yb-coord[1][2]) + " " + QString::number(coord[2][4]) + " " + QString::number(coord[2][5]));
 
          //   string pre = appsettings->value("fullprefix").toString().toStdString();
@@ -946,13 +946,13 @@ void VolumeViewer::on_actionCrop_triggered()
          //   cutterthread->Run(pre,0, (appsettings->value("Numfiles").toInt())-1, int(coord[0][0]), int(coord[0][1]), int(yb - coord[1][3]), int(yb - coord[1][2]), int(coord[2][4]), int(coord[2][5]));
 */
 
-			}
-		}
-	
-	else {
-		QMessageBox::critical(0, QObject::tr("Error"), "You need to clip the volume first.");
-	}
-	//}
+            }
+        }
+
+    else {
+        QMessageBox::critical(0, QObject::tr("Error"), "You need to clip the volume first.");
+    }
+    //}
 }
 
 
@@ -1000,47 +1000,94 @@ void VolumeViewer::on_actionReslice_triggered()
               // reslice->SetResliceAxes(resliceAxes);
                reslice->SetOutputDimensionality(3);
                reslice->SetInterpolationModeToCubic();
-*/
-		double * center;
-		center = vtkwid->volume->GetCenter();
 
 vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
-transform->Translate(center[0], center[1], center[2]);
-transform->RotateWXYZ(45, 0, 0, 1);
-transform->Translate(-center[0], -center[1], -center[2]);
 
-vtkSmartPointer<vtkImageReslice> transformModel =
-vtkSmartPointer<vtkImageReslice>::New();
+transform->RotateX(30);
+transform->RotateY(0);
+transform->RotateZ(90);
+transform->Update();
 
-transformModel->SetResliceTransform(transform);
+vtkSmartPointer<vtkTransformFilter> transformModel =
+      vtkSmartPointer<vtkTransformFilter>::New();
+
+transformModel->SetTransform(transform);
 transformModel->SetInputData(vtkwid->mapper->GetInput());
-transformModel->SetInterpolationModeToCubic();
-transformModel->SetOutputSpacing(1, 1, 1);
-transformModel->SetOutputExtent(0, 500, 0, 500, 0, 500);
-//transformModel->SetOutputPointsPrecision(4);
+transformModel->SetOutputPointsPrecision(4);
 transformModel->Update();
 
 
            // reslice->Update();
             QString fileNameSave = QFileDialog::getSaveFileName(this,
                 tr("Save Volume"), "",
-                tr("VTK File (*.vti)"));
+                tr("VTK File (*.vtu)"));
             string volname = fileNameSave.toStdString();
-
-			vtkSmartPointer<vtkXMLImageDataWriter> volwrite = vtkSmartPointer<vtkXMLImageDataWriter>::New();
-			
+            vtkSmartPointer<vtkXMLUnstructuredGridWriter> volwrite = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
             volwrite->SetInputData(transformModel->GetOutput());
 
             volwrite->SetFileName(volname.c_str());
             volwrite->Write();
-
+*/
 
 //ui->label->setText(QString::number(bounds[0]) + " " + QString::number(bounds[1]) +  " " + QString::number(bounds[2])+ " " + QString::number(bounds[3]) + " " + QString::number(bounds[4]) + " " + QString::number(bounds[5]) + " " + QString::number(bounds[6]));
 
       //  }
 
+      vtkSmartPointer < vtkTransform> tran =vtkSmartPointer < vtkTransform>::New();
+static_cast<vtkBoxRepresentation*>(box->GetRepresentation())->GetTransform(tran);
+        double *ori;
+        ori=tran->GetOrientation();
+
+        double *center;
+        center=vtkwid->volume->GetCenter();
+
+             double *Bounds;
+           Bounds = box->GetRepresentation()->GetBounds();
+
+           ui->label->setText(QString::number(ori[0]) + " " + QString::number(ori[1])  + " " + QString::number(ori[2]) + " "+QString::number(Bounds[0]) + " " + QString::number(Bounds[1]) +  " " + QString::number(Bounds[2])+ " " +
+                   QString::number(Bounds[3]) + " " + QString::number(Bounds[4]) + " " + QString::number(Bounds[5]));
+
+/*
+        vtkSmartPointer<vtkTransform> transform =
+          vtkSmartPointer<vtkTransform>::New();
+        // Rotate about the center
+        transform->Translate(center[0], center[1], center[2]);
+        transform->RotateWXYZ(ori[0],ori[1],ori[2],ori[3]);
+        transform->Translate(-center[0], -center[1], -center[2]);
+
+
+        vtkSmartPointer<vtkImageReslice> reslice =
+            vtkSmartPointer<vtkImageReslice>::New();
+          reslice->SetInputData(vtkwid->mapper->GetInput());
+          reslice->SetResliceTransform(transform);
+          reslice->SetInterpolationModeToCubic();
+          reslice->SetOutputExtent(int(Bounds[0]),int(Bounds[1]),int(Bounds[2]),int(Bounds[3]),int(Bounds[4]),int(Bounds[5]));
+          reslice->SetOutputSpacing(1,1,1);
+          reslice->SetOutputOrigin(
+              vtkwid->volume->GetOrigin()[0],
+              vtkwid->volume->GetOrigin()[1],
+              vtkwid->volume->GetOrigin()[2]);
+
+
+
+          //Write the resampled data as a temporary file to be viewed
+          vtkSmartPointer<vtkTIFFWriter> volwrite = vtkSmartPointer<vtkTIFFWriter>::New();
+              //volwrite->SetFileName("/hpc/gram526/Segmented/Rabbit.tif");
+          volwrite-> SetFilePrefix("/hpc/gram526/Segmented/test/");
+          volwrite->SetFilePattern("%stestreslice%04d.tif");
+          //volwrite->SetDimensions(reslice->GetOutputPort()->GetDimensions());
+          //volwrite->SetCompressionToNoCompression ();
+          volwrite->SetInputConnection(reslice->GetOutputPort());
+          volwrite->SetFileDimensionality(3);
+          volwrite->Update();
+
+              volwrite->Write();
+
+*/
+
     }
 }
+
 
 void VolumeViewer::on_actionDimensions_triggered()
 {
