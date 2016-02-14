@@ -127,7 +127,8 @@ void vtkwidget::initialize(vtkImageData *input)
 	//Set volumeProperty parameters
 	if (ncol < 3 )
     {
-
+		
+		
 		volumeColor->AddRGBPoint(0, 0, 0, 0);
         volumeColor->AddRGBPoint(imgmax, 1, 1, 1);
 
@@ -297,8 +298,10 @@ void vtkwidget::renderpol(vtkPolyData *pol)
     vtkSmartPointer<vtkPolyData> octpolyd =
       vtkSmartPointer<vtkPolyData>::New();
     octree->GenerateRepresentation(0,octpolyd);
-    */
-	
+    
+
+	*/
+
 	poly_mapper->SetInputData(pol);
 	
 	
@@ -541,7 +544,7 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 
 
 		
-
+#pragma omp parallel for
 		for (int i = 0; i < num; i++)
 		{
 

@@ -106,6 +106,9 @@
 #include<vtkXMLUnstructuredGridWriter.h>
 #include<vtkUnstructuredGrid.h>
 #include<vtkTransformPolyDataFilter.h>
+#include<vtkTubeFilter.h>
+#include<vtkSplineFilter.h>
+
 
 using namespace std;
 std::string inputFilename;
@@ -1466,7 +1469,7 @@ vtkSmartPointer<vtkTypeInt16Array> pointarray = vtkSmartPointer<vtkTypeInt16Arra
 		progress.setWindowModality(Qt::WindowModal);
 
 		vtkDataArray *matvtkarr;
-
+#pragma omp parallel for
 		for (vtkIdType i = 0; i < matsize[1]; i++)
 			//	for (vtkIdType i = 0; i < 2; i++)
 
@@ -1526,14 +1529,29 @@ vtkSmartPointer<vtkTypeInt16Array> pointarray = vtkSmartPointer<vtkTypeInt16Arra
 		vtkSmartPointer <vtkPolyData> polyd = vtkSmartPointer <vtkPolyData>::New();
 	//	polyd->Allocate();
 
+
 		polyd->SetPoints(points);
 		polyd->SetLines(lines);
 		polyd->GetCellData()->SetScalars(colors);
 		polyd->Squeeze();
+		
+		vtkSmartPointer<vtkSplineFilter> splinefilter = vtkSmartPointer<vtkSplineFilter>::New();
+		splinefilter->SetInputData(polyd);
+		splinefilter->SetNumberOfSubdivisions(20);
+		splinefilter->Update();
+		
+		vtkSmartPointer<vtkTubeFilter> tubeFilter =
+			vtkSmartPointer<vtkTubeFilter>::New();
+		tubeFilter->SetInputData(splinefilter->GetOutput());
+		tubeFilter->SetRadius(0.5); //default is .5
+		tubeFilter->SetNumberOfSides(20);
+		tubeFilter->CappingOn();
+		tubeFilter->Update();
+		
 		ui->label->setText(QString::number(points->GetDataType()) + " " + QString::number(points->GetActualMemorySize()) + " " + QString::number(lines->GetActualMemorySize()) + " " + QString::number(polyd->GetActualMemorySize()));
 
 
-        vtkwid->renderpol(polyd);
+        vtkwid->renderpol(tubeFilter->GetOutput());
 		
 	}
 }
