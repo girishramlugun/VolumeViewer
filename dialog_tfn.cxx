@@ -120,6 +120,7 @@ void dialog_tfn::plot()
 {
 	
 	ui->Plot->clearGraphs(); 
+	ui->Plot->replot();
 	ui->Plot->yAxis2->setRange(0, 1);
 	model = ui->tableWidget->model();
 	QModelIndex index;

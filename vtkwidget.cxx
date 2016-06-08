@@ -26,8 +26,9 @@
 #include<vtkAbstractImageInterpolator.h>
 #include<vtkOctreePointLocator.h>
 
-vtkIdType vram;
+//vtkIdType vram;
 double imgmax;
+int vramvalue;
 
 
 vtkwidget::vtkwidget(QWidget *parent) :
@@ -373,10 +374,24 @@ void vtkwidget::setbg(double bg_r, double bg_g, double bg_b)
 	GetRenderWindow()->Render();
 }
 
-void vtkwidget::setvram(int vramVal)
+void vtkwidget::setvram()
 {
-    vram = 0.75* vramVal * 1024 * 1024;
-    mapper->SetMaxMemoryInBytes(vram);
+    //vram = 0.75* vramVal * 1024 * 1024;
+   // mapper->SetMaxMemoryInBytes(vram);
+
+	string line;
+	ifstream vram("vram.info");
+	if (vram.is_open())
+	{
+		while (getline(vram, line))
+		{
+			vramvalue = atoi(line.c_str())*1024;
+			// ui->vram_val->setCurrentIndex((vramval/1024)-1);
+		
+
+		}
+		vram.close();
+	}
 
 }
 
@@ -452,9 +467,9 @@ void vtkwidget::resample(vtkImageData *imgdata)
 
    // mapper->SetMaxMemoryInBytes(vram);
 	//Get the Graphics memory and find a scaling factor to match that, otherwise, render the imagedata without scaling
-	vtkIdType memsize = imgdata->GetActualMemorySize()*1024;
+	vtkIdType memsize = imgdata->GetActualMemorySize();
    // cout<<mapper->GetMaxMemoryInBytes();
-	double sf =ceil(memsize / mapper->GetMaxMemoryInBytes());
+	double sf = ceil(memsize / vramvalue);
 
     if (sf>=1 && sf<8){
 		sample_rate = 0.5;
@@ -502,7 +517,7 @@ void vtkwidget::resample(vtkImageData *imgdata)
 	buildhist(imgdata);
 	initialize(imgdata);
 	}
-
+	imgdata->ReleaseData();
 }
 
 void vtkwidget::readimseq(vtkStringArray *filenames, int N)
@@ -511,16 +526,16 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 
 	vtkSmartPointer<vtkTIFFReader>readimg = vtkSmartPointer<vtkTIFFReader>::New();
 	readimg->SetFileName(filenames->GetValue(0));
-
 	readimg->Update();
     imgmax=readimg->GetOutput()->GetScalarTypeMax();
+	int scalarsize = readimg->GetOutput()->GetScalarSize();
 	int cols = readimg->GetOutput()->GetNumberOfScalarComponents();
-	
 	readimg->GetOutput()->GetDimensions(dims);
 	dims[2] = N;
 	double size = (double(dims[0]) * double(dims[1]) * double(dims[2])* double(cols)) / (1024*1024*1024);
-	double sf = size / 0.75;
-	//cout << sf;
+	
+	double sf = size / (vramvalue * 0.75);
+	cout << size;
 	vtkSmartPointer<vtkImageAppend> appendmag = vtkSmartPointer<vtkImageAppend>::New();
 
 	

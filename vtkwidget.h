@@ -32,7 +32,6 @@
 #include <vtkLightKit.h>
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <vtkInteractorStyleImage.h>
-#include <vtkTIFFReader.h>
 #include <QLabel>
 #include <vtkWindowToImageFilter.h>
 #include <vtkPNGWriter.h>
@@ -63,6 +62,7 @@
 #include<vtkProgressObserver.h>
 #include<QVector>
 #include<vtkGlyph3DMapper.h>
+#include<vtkTIFFReader.h>
 
 using namespace std;
 
@@ -156,7 +156,7 @@ signals:
    void resample(vtkImageData*);
    void readimseq(vtkStringArray*, int);
    void buildhist(vtkImageData*);
-   void setvram(int);
+   void setvram();
 
 
 };

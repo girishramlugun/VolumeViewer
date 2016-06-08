@@ -116,7 +116,7 @@ QString ext;
 bool wrmv=0;
 int VRAM;
 int vol_id;
-
+int vramval;
 
 
 
@@ -298,7 +298,7 @@ VolumeViewer::VolumeViewer()
 
     connect(this, SIGNAL(gpinf(int)), this, SLOT(getgpuinfo(int)));
     connect(this, SIGNAL(gpinf(int)), diagpu, SLOT(setvram(int)));
-    string line; int vramval;
+    string line;
     ifstream vram ("vram.info");
     if (vram.is_open())
     {
@@ -410,12 +410,12 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 		// set path to user chosen folder
 		QDir dir = QDir(Dir_Str);
 
-		// set filter to only search for bmp files
+		// set filter to only search for tif files
 		QStringList filters;
 		filters << "*.tiff" << "*.tif";
 		dir.setNameFilters(filters);
 
-		// Create list of all *.dcm filenames
+		// Create list of all *.tif filenames
         QStringList filelist = dir.entryList();
 		vtkSmartPointer<vtkStringArray> filenames = vtkSmartPointer<vtkStringArray>::New();
         filenames->SetNumberOfValues(filelist.size());
@@ -464,9 +464,10 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			connect(diacol, SIGNAL(volcol(double)), vtkwid, SLOT(updatevolcol(double)));
 			connect(diacol, SIGNAL(wincol(double)), vtkwid, SLOT(updatewincol(double)));
 			connect(vtkwid, SIGNAL(sendhist(QVector<double>)), diatfn, SLOT(plothist(QVector<double>)));
-            vtkwid->setvram(ui->label->text().toInt());
+            vtkwid->setvram();
+			
             vtkwid->readimseq(filenames, Numfiles);
-			//ui->label->setText(QString::number(vtkwid->readimseq->dims[0]) + " " + QString::number(vtkwid->readimseq->dims[1]) + " " + QString::number(vtkwid->readimseq->dims[2]));
+			//ui->label->setText(QString::number(vtkwid->setvram->vram));
 
 		}
 		
@@ -522,7 +523,7 @@ void VolumeViewer::openvol(string inputFilename)
 
 		connect(diacol, SIGNAL(wincol(double)), vtkwid, SLOT(updatewincol(double)));
 		connect(vtkwid, SIGNAL(sendhist(QVector<double>)), diatfn, SLOT(plothist(QVector<double>)));
-        vtkwid->setvram(ui->label->text().toInt());
+        vtkwid->setvram();
 
 
 		if (ext == QString("vti"))
@@ -1534,24 +1535,24 @@ vtkSmartPointer<vtkTypeInt16Array> pointarray = vtkSmartPointer<vtkTypeInt16Arra
 		polyd->SetLines(lines);
 		polyd->GetCellData()->SetScalars(colors);
 		polyd->Squeeze();
-		
+		/*
 		vtkSmartPointer<vtkSplineFilter> splinefilter = vtkSmartPointer<vtkSplineFilter>::New();
 		splinefilter->SetInputData(polyd);
-		splinefilter->SetNumberOfSubdivisions(20);
+		splinefilter->SetNumberOfSubdivisions(1);
 		splinefilter->Update();
 		
 		vtkSmartPointer<vtkTubeFilter> tubeFilter =
 			vtkSmartPointer<vtkTubeFilter>::New();
 		tubeFilter->SetInputData(splinefilter->GetOutput());
 		tubeFilter->SetRadius(0.5); //default is .5
-		tubeFilter->SetNumberOfSides(20);
+		tubeFilter->SetNumberOfSides(10);
 		tubeFilter->CappingOn();
 		tubeFilter->Update();
-		
+		*/
 		ui->label->setText(QString::number(points->GetDataType()) + " " + QString::number(points->GetActualMemorySize()) + " " + QString::number(lines->GetActualMemorySize()) + " " + QString::number(polyd->GetActualMemorySize()));
 
 
-        vtkwid->renderpol(tubeFilter->GetOutput());
+        vtkwid->renderpol(polyd);
 		
 	}
 }
@@ -1567,6 +1568,7 @@ void VolumeViewer::getgpuinfo(int vram)
 {
   //  VRAM=vram;
     ui->label->setNum(vram);
+	
 }
 
 
