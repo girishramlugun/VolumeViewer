@@ -72,7 +72,7 @@ QSettings *appsettings;
   void savevol(string);
   void openvol(string);
   void openimg(string);
-
+  void opentimeseq(string);
 
 
 signals:
@@ -166,6 +166,10 @@ private slots:
   void getfileprefix(QString);
 
   void on_actionReslice_triggered();
+
+  void on_actionTime_Sequence_triggered();
+
+  
   
 private:
 

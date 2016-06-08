@@ -78,7 +78,7 @@
      <x>0</x>
      <y>0</y>
      <width>583</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -103,6 +103,7 @@
      <addaction name="actionImage"/>
      <addaction name="actionOpen"/>
      <addaction name="actionImage_Sequence"/>
+     <addaction name="actionTime_Sequence"/>
     </widget>
     <addaction name="menuLoad"/>
     <addaction name="menuSave"/>
@@ -236,8 +237,7 @@
   <action name="actionExit">
    <property name="icon">
     <iconset>
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Exit</string>
@@ -539,6 +539,11 @@
   <action name="actionReslice">
    <property name="text">
     <string>Reslice</string>
+   </property>
+  </action>
+  <action name="actionTime_Sequence">
+   <property name="text">
+    <string>Time Sequence</string>
    </property>
   </action>
  </widget>

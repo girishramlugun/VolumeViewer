@@ -475,6 +475,22 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 	
 }
 
+void VolumeViewer::on_actionTime_Sequence_triggered()
+{
+	QString Filename = QFileDialog::getOpenFileName(this, tr("Open Time Sequence Image"), "", tr("TIFF (*.tif)"));
+	if (Filename.isEmpty() == 0){
+		string inputimgname = Filename.toStdString();
+		opentimeseq(inputimgname);
+	}
+}
+
+void VolumeViewer::opentimeseq(string inputimagename)
+{
+	itkhess = new itkthread();
+	char* imdp = strcpy((char*)malloc(inputimagename.length() + 1), inputimagename.c_str());
+	itkhess->displaytimeseq(imdp);
+}
+
 void VolumeViewer::on_actionHessian_triggered()
 {
 	itkhess = new itkthread();

@@ -36,6 +36,8 @@ public:
 	vtkSmartPointer <vtkImageData> threshimg;
 
 	void display(char * imagefilename);
+
+	void itkthread::displaytimeseq(char * imagefilename);
 	
 signals:
 
