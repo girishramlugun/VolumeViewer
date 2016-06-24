@@ -37,7 +37,7 @@ public:
 
 	void display(char *imagefilename);
 
-	void displaytimeseq(char *imagefilename);
+	void itkthread::displaytimeseq(char *imagefilename);
 	
 signals:
 
