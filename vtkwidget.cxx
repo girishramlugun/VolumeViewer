@@ -385,7 +385,7 @@ void vtkwidget::setvram()
 	{
 		while (getline(vram, line))
 		{
-			vramvalue = atoi(line.c_str())*1024;
+			vramvalue = (atoi(line.c_str()))/1024;
 			// ui->vram_val->setCurrentIndex((vramval/1024)-1);
 		
 
@@ -464,7 +464,7 @@ void vtkwidget::readtif(string inputFilename)
 
 void vtkwidget::resample(vtkImageData *imgdata)
 {
-
+	setvram();
    // mapper->SetMaxMemoryInBytes(vram);
 	//Get the Graphics memory and find a scaling factor to match that, otherwise, render the imagedata without scaling
 	vtkIdType memsize = imgdata->GetActualMemorySize();
@@ -522,7 +522,7 @@ void vtkwidget::resample(vtkImageData *imgdata)
 
 void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 {
-
+	setvram();
 
 	vtkSmartPointer<vtkTIFFReader>readimg = vtkSmartPointer<vtkTIFFReader>::New();
 	readimg->SetFileName(filenames->GetValue(0));

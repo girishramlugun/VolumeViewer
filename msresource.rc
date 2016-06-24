@@ -7,8 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "windows.h"
-
+#include <windows.h>
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -45,7 +44,7 @@ BEGIN
             VALUE "FileDescription", "Volume Viewer"
             VALUE "FileVersion", "0.2.0.0"
             VALUE "InternalName", "Volume Viewer"
-            VALUE "LegalCopyright", "Copyright (C) 2015"
+            VALUE "LegalCopyright", "Copyright (C) 2016"
             VALUE "OriginalFilename", "Volume Viewer"
             VALUE "ProductName", "Volume Viewer"
             VALUE "ProductVersion", "0.2.0.0"
@@ -80,8 +79,7 @@ END
 
 2 TEXTINCLUDE 
 BEGIN
-    "#include ""afxres.h""\r\n"
-    "\0"
+    "#include <windows.h>\0"
 END
 
 3 TEXTINCLUDE 
