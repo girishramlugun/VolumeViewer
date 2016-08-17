@@ -469,7 +469,7 @@ void vtkwidget::resample(vtkImageData *imgdata)
 	//Get the Graphics memory and find a scaling factor to match that, otherwise, render the imagedata without scaling
 	vtkIdType memsize = imgdata->GetActualMemorySize();
    // cout<<mapper->GetMaxMemoryInBytes();
-	double sf = ceil(memsize / vramvalue);
+	double sf = ceil((memsize / vramvalue)/(1024*1024));
 
     if (sf>=1 && sf<8){
 		sample_rate = 0.5;
@@ -514,8 +514,10 @@ void vtkwidget::resample(vtkImageData *imgdata)
 	else if (sf<1)
 	{
 		sample_rate = 1;
-	buildhist(imgdata);
-	initialize(imgdata);
+		vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
+		imgrs->SetInputData(imgdata);
+		buildhist(imgrs->GetOutput());
+		initialize(imgrs->GetOutput());
 	}
 	imgdata->ReleaseData();
 }
@@ -559,7 +561,7 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 
 
 		
-#pragma omp parallel for
+#pragma parallel
 		for (int i = 0; i < num; i++)
 		{
 

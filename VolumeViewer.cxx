@@ -917,7 +917,7 @@ void VolumeViewer::on_actionCrop_triggered()
     {
         if (ui->actionClip->isChecked())
         {
-
+			/*
             vtkSmartPointer<vtkPlanes> pcoll = vtkSmartPointer<vtkPlanes>::New();
           //  vtkPlanes * clippingPlanes;
             static_cast<vtkBoxRepresentation*>(box->GetRepresentation())->GetPlanes(pcoll);
@@ -933,7 +933,8 @@ void VolumeViewer::on_actionCrop_triggered()
             volwrite->SetInputData(clipper->GetOutput());
             volwrite->SetFileName("Clipped.vtu");
             volwrite->Write();
-            /*
+			*/
+            
             //if (vtkwid->sample_rate = 1){
             vtkIdType id = 0; double points[3];
             vtkSmartPointer <vtkPolyData> Crop =  vtkSmartPointer <vtkPolyData>::New();
@@ -964,7 +965,7 @@ void VolumeViewer::on_actionCrop_triggered()
          //   string pre = appsettings->value("fullprefix").toString().toStdString();
         //	cutterthread = new Cutter();
          //   cutterthread->Run(pre,0, (appsettings->value("Numfiles").toInt())-1, int(coord[0][0]), int(coord[0][1]), int(yb - coord[1][3]), int(yb - coord[1][2]), int(coord[2][4]), int(coord[2][5]));
-*/
+
 
             }
         }
@@ -1486,7 +1487,7 @@ vtkSmartPointer<vtkTypeInt16Array> pointarray = vtkSmartPointer<vtkTypeInt16Arra
 		progress.setWindowModality(Qt::WindowModal);
 
 		vtkDataArray *matvtkarr;
-#pragma omp parallel for
+#pragma parallel 
 		for (vtkIdType i = 0; i < matsize[1]; i++)
 			//	for (vtkIdType i = 0; i < 2; i++)
 
