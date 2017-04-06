@@ -25,6 +25,7 @@
 #include<vtkBMPReader.h>
 #include<vtkAbstractImageInterpolator.h>
 #include<vtkOctreePointLocator.h>
+#include <vtkDICOMImageReader.h>
 
 //vtkIdType vram;
 double imgmax;
@@ -118,7 +119,7 @@ void vtkwidget::initialize(vtkImageData *input)
 
 
 
-
+	mapper->SetAverageIPScalarRange(20, 255);
 
 	//Adjust Rotation Style of Camera
 
@@ -522,46 +523,48 @@ void vtkwidget::resample(vtkImageData *imgdata)
 	imgdata->ReleaseData();
 }
 
-void vtkwidget::readimseq(vtkStringArray *filenames, int N)
+void vtkwidget::readimseq(QString filetype, vtkStringArray *filenames, int N)
 {
 	setvram();
+	if (filetype == QString("tiff"))
+	{
+		vtkSmartPointer<vtkTIFFReader>readimg = vtkSmartPointer<vtkTIFFReader>::New();
 
-	vtkSmartPointer<vtkTIFFReader>readimg = vtkSmartPointer<vtkTIFFReader>::New();
-	readimg->SetFileName(filenames->GetValue(0));
-	readimg->Update();
-    imgmax=readimg->GetOutput()->GetScalarTypeMax();
-	int scalarsize = readimg->GetOutput()->GetScalarSize();
-	int cols = readimg->GetOutput()->GetNumberOfScalarComponents();
-	readimg->GetOutput()->GetDimensions(dims);
-	dims[2] = N;
-	double size = (double(dims[0]) * double(dims[1]) * double(dims[2])* double(cols)) / (1024*1024*1024);
-	
-	double sf = size / (vramvalue * 0.75);
-	cout << size;
-	vtkSmartPointer<vtkImageAppend> appendmag = vtkSmartPointer<vtkImageAppend>::New();
+		readimg->SetFileName(filenames->GetValue(0));
+		readimg->Update();
+		imgmax = readimg->GetOutput()->GetScalarTypeMax();
+		int scalarsize = readimg->GetOutput()->GetScalarSize();
+		int cols = readimg->GetOutput()->GetNumberOfScalarComponents();
+		readimg->GetOutput()->GetDimensions(dims);
+		dims[2] = N;
+		double size = (double(dims[0]) * double(dims[1]) * double(dims[2])* double(cols)) / (1024 * 1024 * 1024);
 
-	
-	int mf; 
-	
-	appendmag->SetAppendAxis(2);
-	if (sf >= 1 && sf < 8){ mf = 2; sample_rate = 0.5; }
-	else if (sf >= 8 && sf< 64){ mf = 4; sample_rate = 0.25; }
-	else if (sf < 1){ mf = 1; sample_rate = 1; }
-	
+		double sf = size / (vramvalue * 0.75);
+		cout << size;
+		vtkSmartPointer<vtkImageAppend> appendmag = vtkSmartPointer<vtkImageAppend>::New();
+
+
+		int mf;
+
+		appendmag->SetAppendAxis(2);
+		if (sf >= 1 && sf < 8) { mf = 2; sample_rate = 0.5; }
+		else if (sf >= 8 && sf < 64) { mf = 4; sample_rate = 0.25; }
+		else if (sf < 1) { mf = 1; sample_rate = 1; }
+
 		int m = 0;
 		int num = ceil(N / mf) - 1;
 		QProgressDialog progress("Loading files...", "Abort", 0, num, this);
 		progress.setWindowModality(Qt::WindowModal);
 
-		
+
 
 		//imgrs->Update();
 		//imgrs->ReleaseDataFlagOn();
 
 
 
-		
-#pragma parallel
+
+#pragma omp parallel
 		for (int i = 0; i < num; i++)
 		{
 
@@ -574,10 +577,10 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 			//	vtkSmartPointer<vtkTIFFReader>readimg1 = vtkSmartPointer<vtkTIFFReader>::New();
 
 			vtkSmartPointer<vtkTIFFReader>readimg0 = vtkSmartPointer<vtkTIFFReader>::New();
-      
+
 			vtkSmartPointer<vtkImageAppend> append = vtkSmartPointer<vtkImageAppend>::New();
 			append->SetAppendAxis(2);
-						
+
 			for (int sc = 0; sc < mf; sc++)
 			{
 
@@ -598,20 +601,114 @@ void vtkwidget::readimseq(vtkStringArray *filenames, int N)
 			imgrs->SetAxisMagnificationFactor(2, sample_rate);
 			imgrs->SetInputConnection(append->GetOutputPort());
 			imgrs->Update();
-			
-			
-			
+
+
+
 			appendmag->AddInputData(imgrs->GetOutput());
 
-			
+
 
 
 		}
 
 		progress.setValue(num);
 		appendmag->Update();
-        buildhist(appendmag->GetOutput());
-    	initialize(appendmag->GetOutput());
+		buildhist(appendmag->GetOutput());
+		initialize(appendmag->GetOutput());
+	}
+
+	else if (filetype == QString("dcm"))
+	{
+		// Read all the DICOM files in the specified directory.
+		vtkSmartPointer<vtkDICOMImageReader> readimg =
+			vtkSmartPointer<vtkDICOMImageReader>::New();
+		readimg->SetFileName(filenames->GetValue(0));
+		readimg->Update();
+		imgmax = readimg->GetOutput()->GetScalarTypeMax();
+		int scalarsize = readimg->GetOutput()->GetScalarSize();
+		int cols = readimg->GetOutput()->GetNumberOfScalarComponents();
+		readimg->GetOutput()->GetDimensions(dims);
+		dims[2] = N;
+		double size = (double(dims[0]) * double(dims[1]) * double(dims[2])* double(cols)) / (1024 * 1024 * 1024);
+
+		double sf = size / (vramvalue * 0.75);
+		cout << size;
+		vtkSmartPointer<vtkImageAppend> appendmag = vtkSmartPointer<vtkImageAppend>::New();
+		
+
+		int mf;
+
+		appendmag->SetAppendAxis(2);
+		if (sf >= 1 && sf < 8) { mf = 2; sample_rate = 0.5; }
+		else if (sf >= 8 && sf < 64) { mf = 4; sample_rate = 0.25; }
+		else if (sf < 1) { mf = 1; sample_rate = 1; }
+
+		int m = 0;
+		int num = ceil(N / mf) - 1;
+		QProgressDialog progress("Loading files...", "Abort", 0, num, this);
+		progress.setWindowModality(Qt::WindowModal);
+
+
+
+		//imgrs->Update();
+		//imgrs->ReleaseDataFlagOn();
+
+
+
+
+#pragma omp parallel
+		for (int i = 0; i < num; i++)
+		{
+
+			progress.setValue(i);
+			if (progress.wasCanceled())
+			{
+				return;
+				this->deleteLater();
+			}
+			//	vtkSmartPointer<vtkTIFFReader>readimg1 = vtkSmartPointer<vtkTIFFReader>::New();
+
+			vtkSmartPointer<vtkDICOMImageReader>readimg0 = vtkSmartPointer<vtkDICOMImageReader>::New();
+
+			vtkSmartPointer<vtkImageAppend> append = vtkSmartPointer<vtkImageAppend>::New();
+			append->SetAppendAxis(2);
+
+			for (int sc = 0; sc < mf; sc++)
+			{
+
+				readimg0->SetFileName(filenames->GetValue(mf*i + sc));
+				readimg0->Update();
+				append->AddInputConnection(readimg0->GetOutputPort());
+				append->Update();
+
+
+			}
+
+			m++;
+
+			vtkSmartPointer <vtkImageResample> imgrs = vtkSmartPointer <vtkImageResample>::New();
+			imgrs->SetInterpolationModeToCubic();
+			imgrs->SetAxisMagnificationFactor(0, sample_rate);
+			imgrs->SetAxisMagnificationFactor(1, sample_rate);
+			imgrs->SetAxisMagnificationFactor(2, sample_rate);
+			imgrs->SetInputConnection(append->GetOutputPort());
+			imgrs->Update();
+
+
+
+			appendmag->AddInputData(imgrs->GetOutput());
+
+
+
+
+		}
+
+		progress.setValue(num);
+		appendmag->Update();
+		buildhist(appendmag->GetOutput());
+		initialize(appendmag->GetOutput());
+		
+	}
 }
 
 void vtkwidget::buildhist(vtkImageData* imgdata)

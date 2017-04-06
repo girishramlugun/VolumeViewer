@@ -154,7 +154,7 @@ signals:
    void readvti(string);
    void readtif(string);
    void resample(vtkImageData*);
-   void readimseq(vtkStringArray*, int);
+   void readimseq(QString, vtkStringArray*, int);
    void buildhist(vtkImageData*);
    void setvram();
 

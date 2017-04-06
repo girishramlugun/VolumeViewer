@@ -39,10 +39,6 @@ include(${ITK_USE_FILE})
 if (ITKVtkGlue_LOADED)
   find_package(VTK REQUIRED)
   include(${VTK_USE_FILE})
-else()
-  find_package(ItkVtkGlue REQUIRED)
-  include(${ItkVtkGlue_USE_FILE})
-  set(Glue ItkVtkGlue)
 endif()
 
  # We need add -DQT_WIDGETS_LIB when using QtWidgets in Qt 5.

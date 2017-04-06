@@ -108,6 +108,7 @@
 #include<vtkTransformPolyDataFilter.h>
 #include<vtkTubeFilter.h>
 #include<vtkSplineFilter.h>
+#include<vtkDICOMImageReader.h>
 
 
 using namespace std;
@@ -403,7 +404,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 
 	QString Dir_Str = QFileDialog::getExistingDirectory(this, tr("Set Directory"), "");
 
-	vol_id = 0;
+	int vol_id = 0;
 
 	if (!Dir_Str.isEmpty()){
 
@@ -412,17 +413,17 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 
 		// set filter to only search for tif files
 		QStringList filters;
-		filters << "*.tiff" << "*.tif";
+		filters << "*.tiff" << "*.tif" << "*.dcm";
 		dir.setNameFilters(filters);
 
 		// Create list of all *.tif filenames
         QStringList filelist = dir.entryList();
 		vtkSmartPointer<vtkStringArray> filenames = vtkSmartPointer<vtkStringArray>::New();
         filenames->SetNumberOfValues(filelist.size());
-
-
-        QString ffile = Dir_Str + "/" + filelist.at(0);
-
+		
+		QString ffile = Dir_Str + "/" + filelist.at(0);
+		QFileInfo f(ffile);
+		QString filetype = f.suffix();
 
 		//ui->label->setText(QString::fromStdString(str1));
 
@@ -448,7 +449,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
             getfileprefix(ffile);
             int Numfiles = filelist.size();
 
-           // ui->label->setNum(Numfiles);
+            ui->label->setNum(Numfiles);
 			//Read first image to extract dimensions 
 
 
@@ -466,8 +467,8 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 			connect(vtkwid, SIGNAL(sendhist(QVector<double>)), diatfn, SLOT(plothist(QVector<double>)));
             vtkwid->setvram();
 			
-            vtkwid->readimseq(filenames, Numfiles);
-			//ui->label->setText(QString::number(vtkwid->setvram->vram));
+            vtkwid->readimseq(filetype, filenames, Numfiles);
+			ui->label->setText(filetype);
 
 		}
 		
@@ -583,7 +584,7 @@ void VolumeViewer::openvol(string inputFilename)
 	else
 		QMessageBox::critical(0, QObject::tr("Error"), "Cannot Render; Wrong format!");
 
-}
+	}
 
 	else
 	{
@@ -671,7 +672,7 @@ void VolumeViewer::on_actionFibrosis_triggered()
 	vtkwid->volumeColor->AddRGBPoint(220, 0.992157, 0.937255, 0.627451,1,1);
 	vtkwid->volumeColor->AddRGBPoint(230, 0.992157, 0.968627, 0.752941,1,1);
 	vtkwid->volumeColor->AddRGBPoint(240, 0.992157, 0.984314, 0.823529,1,1);
-   vtkwid->volumeColor->AddRGBPoint(255, 0.992157, 0.992157, 0.980392,1,1);
+    vtkwid->volumeColor->AddRGBPoint(255, 0.992157, 0.992157, 0.980392,1,1);
    
    vtkwid->  volumeProperty->SetColor(vtkwid->volumeColor);
    vtkwid->GetRenderWindow()->Render();
@@ -842,7 +843,7 @@ if (vtkwid->isVisible())
 		box = vtkSmartPointer<vtkBoxWidget2>::New();
 		vtkwid->leftRenderer->ResetCamera();
 
-        vtkwid->mapper->SetRequestedRenderModeToRayCast();
+        //vtkwid->mapper->SetRequestedRenderModeToRayCast();
 		vtkSmartPointer <vtkBoxRepresentation> boxrep = vtkSmartPointer <vtkBoxRepresentation>::New();
 		boxrep->SetPlaceFactor(1.00);
 		boxrep->SetInsideOut(1);
