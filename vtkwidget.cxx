@@ -25,7 +25,8 @@
 #include<vtkBMPReader.h>
 #include<vtkAbstractImageInterpolator.h>
 #include<vtkOctreePointLocator.h>
-#include <vtkDICOMImageReader.h>
+#include<vtkBMPReader.h>
+#include<vtkDICOMImageReader.h>
 
 //vtkIdType vram;
 double imgmax;
@@ -305,8 +306,7 @@ void vtkwidget::renderpol(vtkPolyData *pol)
 	*/
 
 	poly_mapper->SetInputData(pol);
-	
-	
+
 	poly_mapper->SetColorModeToMapScalars();
 	poly_actor->SetMapper(poly_mapper);
 	poly_actor->GetProperty()->EdgeVisibilityOff();
@@ -314,7 +314,6 @@ void vtkwidget::renderpol(vtkPolyData *pol)
 
 
 	vtkSmartPointer<vtkScalarBarActor> scalarBar = vtkSmartPointer<vtkScalarBarActor>::New();
-
 	scalarBar->SetTitle("Inclination angle");
 	scalarBar->SetNumberOfLabels(2);
 	scalarBar->SetDisplayPosition(0, 0);
@@ -324,16 +323,31 @@ void vtkwidget::renderpol(vtkPolyData *pol)
 
 
 	vtkSmartPointer<vtkLookupTable> hueLut = vtkSmartPointer<vtkLookupTable>::New();
-	hueLut->SetTableRange(0, 90);
-	hueLut->SetHueRange(0.708333, 0);
+	hueLut->SetTableRange(-90, 90);
+	hueLut->SetHueRange(0, 1);
 	hueLut->SetSaturationRange(1, 1);
 	hueLut->SetValueRange(1, 1);
+	hueLut->SetRampToLinear();
 	hueLut->Build();
 
+	vtkSmartPointer<vtkLookupTable> belvinLUT = vtkSmartPointer<vtkLookupTable>::New();
+	
+
+
+	vtkSmartPointer<vtkColorTransferFunction> ctf =
+		vtkSmartPointer<vtkColorTransferFunction>::New();
+	belvinLUT->SetTableRange(0, 255);
+	belvinLUT->SetRampToLinear();
+	belvinLUT->SetHueRange(0, 1);
+	belvinLUT->SetSaturationRange(1, 1);
+	belvinLUT->SetValueRange(1, 1);
+	belvinLUT->Build();
+
+
 	scalarBar->SetLookupTable(hueLut);
-	poly_mapper->SetColorModeToMapScalars();
 	poly_mapper->SetScalarRange(0, 255);
 	poly_mapper->ImmediateModeRenderingOn();
+	poly_mapper->SetLookupTable(belvinLUT);
 	leftRenderer->AddActor(poly_actor);
 	leftRenderer->AddActor2D(scalarBar);
 	GetRenderWindow()->AddRenderer(leftRenderer);
@@ -526,7 +540,7 @@ void vtkwidget::resample(vtkImageData *imgdata)
 void vtkwidget::readimseq(QString filetype, vtkStringArray *filenames, int N)
 {
 	setvram();
-	if (filetype == QString("tiff"))
+	if (filetype == QString("tiff") || filetype == QString("tif"))
 	{
 		vtkSmartPointer<vtkTIFFReader>readimg = vtkSmartPointer<vtkTIFFReader>::New();
 
@@ -617,11 +631,11 @@ void vtkwidget::readimseq(QString filetype, vtkStringArray *filenames, int N)
 		initialize(appendmag->GetOutput());
 	}
 
-	else if (filetype == QString("dcm"))
+	else if (filetype == QString("bmp"))
 	{
 		// Read all the DICOM files in the specified directory.
-		vtkSmartPointer<vtkDICOMImageReader> readimg =
-			vtkSmartPointer<vtkDICOMImageReader>::New();
+		vtkSmartPointer<vtkBMPReader> readimg =
+			vtkSmartPointer<vtkBMPReader>::New();
 		readimg->SetFileName(filenames->GetValue(0));
 		readimg->Update();
 		imgmax = readimg->GetOutput()->GetScalarTypeMax();
@@ -668,7 +682,7 @@ void vtkwidget::readimseq(QString filetype, vtkStringArray *filenames, int N)
 			}
 			//	vtkSmartPointer<vtkTIFFReader>readimg1 = vtkSmartPointer<vtkTIFFReader>::New();
 
-			vtkSmartPointer<vtkDICOMImageReader>readimg0 = vtkSmartPointer<vtkDICOMImageReader>::New();
+			vtkSmartPointer<vtkBMPReader>readimg0 = vtkSmartPointer<vtkBMPReader>::New();
 
 			vtkSmartPointer<vtkImageAppend> append = vtkSmartPointer<vtkImageAppend>::New();
 			append->SetAppendAxis(2);
