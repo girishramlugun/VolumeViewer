@@ -122,6 +122,7 @@ void vtkwidget::initialize(vtkImageData *input)
 
 
 	mapper->SetAverageIPScalarRange(20, 255);
+	
 
 	//Adjust Rotation Style of Camera
 
@@ -205,19 +206,10 @@ void vtkwidget::render()
 	mapper->SetBlendModeToComposite();
     mapper->SetInteractiveAdjustSampleDistances(0);
 	volumeProperty->SetInterpolationType(VTK_CUBIC_INTERPOLATION);
-	//mapper->SetInputConnection(reader->GetOutputPort());
 
-        //mapper->SetRequestedRenderModeToRayCast();
-	//if (input->GetActualMemorySize() > 0.8*(mapper->GetMaxMemoryInBytes())/1024)
-	//{
-	//	mapper->SetRequestedRenderModeToRayCast();
-	//}
 	
 
 	leftRenderer->ResetCamera();
-	//mapper->SetInteractiveUpdateRate(2);
-	
-	//mapper->SetMaxMemoryFraction(0.5);
 	volume->SetMapper(mapper);
 	mapper->ReleaseDataFlagOn();
 	volume->SetProperty(volumeProperty);
@@ -227,18 +219,6 @@ void vtkwidget::render()
 	//leftRenderer->SetMaximumNumberOfPeels(100);
 	leftRenderer->AddVolume(volume);
 	volume->SetOrigin(volume->GetCenter());
-	//this->qvtkWidgetLeft->GetRenderWindow()->AddRenderer(leftRenderer);
-	//   vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
-	//     vtkSmartPointer<vtkRenderWindowInteractor>::New();
-	// renderWindowInteractor->SetRenderWindow(qvtkWidgetLeft->GetRenderWindow());
-	// VTK/Qt wedded
-
-	
-	// Render and interact
-	//  vtkwid-> renderWindow->Render();
-	// renderer->AutomaticLightCreationOn();
-	//   vtkwid-> renderWindow->SetWindowName("Volume Viewer");
-	//  vtkwid-> renderWindowInteractor->Start();
 	GetRenderWindow()->AddRenderer(leftRenderer);
 	this->show();
 	// Set up axes widget
@@ -294,27 +274,11 @@ void vtkwidget::renderpoly()
 
 void vtkwidget::renderpol(vtkPolyData *pol)
 {
-    /*
-    // Create the tree
-    vtkSmartPointer<vtkOctreePointLocator> octree =
-      vtkSmartPointer<vtkOctreePointLocator>::New();
-    octree->SetDataSet(pol);
-    octree->BuildLocator();
-
-    vtkSmartPointer<vtkPolyData> octpolyd =
-      vtkSmartPointer<vtkPolyData>::New();
-    octree->GenerateRepresentation(0,octpolyd);
-    
-
-	*/
-
 	poly_mapper->SetInputData(pol);
-
 	poly_mapper->SetColorModeToMapScalars();
 	poly_actor->SetMapper(poly_mapper);
 	poly_actor->GetProperty()->EdgeVisibilityOff();
 	poly_actor->SetOrigin(poly_actor->GetCenter());
-
 
 	vtkSmartPointer<vtkScalarBarActor> scalarBar = vtkSmartPointer<vtkScalarBarActor>::New();
 	scalarBar->SetTitle("Inclination angle");
