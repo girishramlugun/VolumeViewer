@@ -28,13 +28,14 @@
 #include<vtkBMPReader.h>
 #include<vtkDICOMImageReader.h>
 
+
 //vtkIdType vram;
 double imgmax;
 int vramvalue;
 
 
 vtkwidget::vtkwidget(QWidget *parent) :
-    QVTKWidget(parent)
+	QVTKOpenGLWidget(parent)
 {
     volpropchange = vtkSmartPointer<vtkImageChangeInformation>::New();
 
@@ -191,6 +192,8 @@ void vtkwidget::initialize(vtkImageData *input)
 	
 
 	input->RemoveAllObservers();
+	
+	
 
 	render();
 
@@ -346,7 +349,7 @@ void vtkwidget::renderpol(vtkPolyData *pol)
 
 	scalarBar->SetLookupTable(hueLut);
 	poly_mapper->SetScalarRange(0, 255);
-	poly_mapper->ImmediateModeRenderingOn();
+	//poly_mapper->ImmediateModeRenderingOn();
 	poly_mapper->SetLookupTable(belvinLUT);
 	leftRenderer->AddActor(poly_actor);
 	leftRenderer->AddActor2D(scalarBar);

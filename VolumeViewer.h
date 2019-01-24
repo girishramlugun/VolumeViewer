@@ -35,9 +35,7 @@
 
 #include <dialog_fibre.h>
 
-#include<itkthread.h>
 
-#include <cutter.h>
 
 using namespace std;
 
@@ -66,8 +64,7 @@ public:
   vtkSmartPointer <vtkBoxWidget2> box;
   vtkwidget *vtkwid;
 QSettings *appsettings;
-  itkthread *itkhess;
-  Cutter *cutterthread;
+
 
   void savevol(string);
   void openvol(string);

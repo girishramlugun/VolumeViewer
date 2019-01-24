@@ -1,7 +1,7 @@
 #ifndef VTKWIDGET_H
 #define VTKWIDGET_H
 
-#include <QVTKWidget.h>
+#include <QVTKOpenGLWidget.h>
 #include<QtCore>
 #include<vtkPolyDataMapper.h>
 //#include <vtkQtTableView.h>
@@ -66,7 +66,7 @@
 
 using namespace std;
 
-class vtkwidget : public QVTKWidget
+class vtkwidget : public QVTKOpenGLWidget
 {
     Q_OBJECT
 public:
@@ -136,6 +136,7 @@ public:
    vtkSmartPointer<vtkOrientationMarkerWidget> widget;
 
    vtkSmartPointer<vtkActor> poly_actor;
+
 
    double sample_rate;
    int dims[3];

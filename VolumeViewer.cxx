@@ -48,9 +48,6 @@
 #include <vtkPointData.h>
 #include <vtkClipVolume.h>
 #include <vtkDataSetMapper.h>
-#include<vtkMatlabMexAdapter.h>
-#include<mat.h>
-#include <matrix.h>
 #include<vtkDoubleArray.h>
 #include<vtkTypedArray.h>
 #include<vtkArrayIterator.h>
@@ -66,6 +63,7 @@
 #include<vtkOrientationMarkerWidget.h>
 #include<vtkAxesActor.h>
 #include<vtk_tiff.h>
+#include<vtk_hdf5.h>
 #include<vtkArrayIteratorIncludes.h>
 #include<vtkBMPReader.h>
 #include<vtkDenseArray.h>
@@ -109,7 +107,7 @@
 #include<vtkTubeFilter.h>
 #include<vtkSplineFilter.h>
 #include<vtkDICOMImageReader.h>
-
+#include<matio.h>
 
 using namespace std;
 std::string inputFilename;
@@ -135,10 +133,10 @@ string ToString(T val)
 
 #ifdef _WIN32
 #include<vtkAVIWriter.h>
-vtkSmartPointer<vtkAVIWriter> movie = vtkSmartPointer <vtkAVIWriter>::New();
-#else
-#include<vtkFFMPEGWriter.h>
-vtkSmartPointer<vtkFFMPEGWriter> movie = vtkSmartPointer<vtkFFMPEGWriter>::New();
+//vtkSmartPointer<vtkAVIWriter> movie = vtkSmartPointer <vtkAVIWriter>::New();
+//#else
+//#include<vtkFFMPEGWriter.h>
+//vtkSmartPointer<vtkFFMPEGWriter> movie = vtkSmartPointer<vtkFFMPEGWriter>::New();
 #endif
 
 
@@ -150,40 +148,45 @@ vtkSmartPointer <vtkWindowToImageFilter> w2i = vtkSmartPointer <vtkWindowToImage
 class vtkBoxWidgetCallback : public vtkCommand
 {
 public:
-	
-  static vtkBoxWidgetCallback *New()
-    { return new vtkBoxWidgetCallback; }
-  virtual void Execute(vtkObject *caller, unsigned long, void*)
 
-    {
-      vtkBoxWidget2 *widget = reinterpret_cast<vtkBoxWidget2*>(caller);
+	static vtkBoxWidgetCallback *New()
+	{
+		return new vtkBoxWidgetCallback;
+	}
+	virtual void Execute(vtkObject *caller, unsigned long, void*)
+
+	{
+		vtkBoxWidget2 *widget = reinterpret_cast<vtkBoxWidget2*>(caller);
 
 
-	  if (this->Mapper)
-        {
+		if (this->Mapper)
+		{
 			vtkPlanes *planes = vtkPlanes::New();
 			static_cast<vtkBoxRepresentation*>(widget->GetRepresentation())->GetPlanes(planes);
-		//widget->OutlineCursorWiresOff();
-        //widget->GetPlanes(planes);
+			//widget->OutlineCursorWiresOff();
+			//widget->GetPlanes(planes);
 
-			
-        this->Mapper->SetClippingPlanes(planes);
-        planes->Delete();
-        }
-    }
-  
 
-  void SetMapper(vtkSmartVolumeMapper* m)
-    { this->Mapper = m; }
+			this->Mapper->SetClippingPlanes(planes);
+			planes->Delete();
+		}
+	}
+
+
+	void SetMapper(vtkSmartVolumeMapper* m)
+	{
+		this->Mapper = m;
+	}
 
 protected:
-	vtkBoxWidgetCallback() 
-	{this->Mapper = 0;}
+	vtkBoxWidgetCallback()
+	{
+		this->Mapper = 0;
+	}
 
-  vtkSmartVolumeMapper *Mapper;
-  
- };
+	vtkSmartVolumeMapper *Mapper;
 
+};
 
 
 //create callback for clipping 
@@ -244,6 +247,7 @@ public:
 		vtkImplicitPlaneWidget *planeWidget =
 			reinterpret_cast<vtkImplicitPlaneWidget*>(caller);
 		planeWidget->GetPlane(this->Plane);
+		
 		
 	}
 	vtkIPWCallback() :Plane(0)  {}
@@ -366,7 +370,7 @@ void VolumeViewer::on_actionOpen_triggered()
       qDebug("Not empty");
     }
 
-    QString Filename = QFileDialog::getOpenFileName(this, tr("Open Volume"), "", tr("TIFF (*.tif);;VTK Files (*.vti);; MATLAB Files(*.mat);; PolyData Files(*.vtp)"));
+    QString Filename = QFileDialog::getOpenFileName(this, tr("Open Volume"), "", tr("TIFF (*.tif);;VTK Files (*.vti);; MATLAB Files(*.mat);; PolyData Files(*.vtp);; HDF5 Files(*.h5)"));
     if (Filename.isEmpty()==0){
     QFileInfo fi(Filename);
     ext = fi.suffix();
@@ -392,15 +396,13 @@ void VolumeViewer::on_actionImage_triggered()
 
 void VolumeViewer::openimg(string inputimgname)
 {
-	itkhess = new itkthread();
-	char* imdp = strcpy((char*)malloc(inputimgname.length() + 1), inputimgname.c_str());
-	itkhess->display(imdp);
+
 	
 }
 
 void VolumeViewer::on_actionImage_Sequence_triggered()
 {
-	//QString Filename = QFileDialog::getOpenFileName(this, tr("Open Image"), "", tr("TIFF (*.tif);;PNG Files (*.png)"));
+	//QString Filename = QFileDialog::getOpenFileName(this, tr("Open Image"), "", tr("TIFF (*.tif);;BITMAP Files (*.bmp)"));
 
 	QString Dir_Str = QFileDialog::getExistingDirectory(this, tr("Set Directory"), "");
 
@@ -413,7 +415,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
 
 		// set filter to only search for tif files
 		QStringList filters;
-		filters << "*.tiff" << "*.tif" << "*.dcm";
+		filters << "*.tiff" << "*.tif" << "*.bmp" << "*.dcm";
 		dir.setNameFilters(filters);
 
 		// Create list of all *.tif filenames
@@ -468,7 +470,7 @@ void VolumeViewer::on_actionImage_Sequence_triggered()
             vtkwid->setvram();
 			
             vtkwid->readimseq(filetype, filenames, Numfiles);
-			ui->label->setText(filetype);
+			//ui->label->setText(filetype);
 
 		}
 		
@@ -487,14 +489,12 @@ void VolumeViewer::on_actionTime_Sequence_triggered()
 
 void VolumeViewer::opentimeseq(string inputimagename)
 {
-	itkhess = new itkthread();
-	char* imdp = strcpy((char*)malloc(inputimagename.length() + 1), inputimagename.c_str());
-	itkhess->displaytimeseq(imdp);
+
 }
 
 void VolumeViewer::on_actionHessian_triggered()
 {
-	itkhess = new itkthread();
+
 	
 	diahessian->show();
 }
@@ -502,9 +502,6 @@ void VolumeViewer::on_actionHessian_triggered()
 void VolumeViewer::doHessian(double sigma,double alpha1,double alpha2)
 {
 
-string pre = appsettings->value("fullprefix").toString().toStdString();
-
-    itkhess->process(pre,0, appsettings->value("Numfiles").toInt(), sigma, alpha1, alpha2);
 
 }
 
@@ -558,7 +555,7 @@ void VolumeViewer::openvol(string inputFilename)
 
 			
 		}
-		else if (ext == QString("mat"))
+		else if (ext == QString("mat")|| ext == QString("h5"))
 		{
 			vol_id = 2;
 			diafibre->show();
@@ -749,7 +746,7 @@ void VolumeViewer::on_actionSave_Screenshot_triggered()
     vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter =
     vtkSmartPointer<vtkWindowToImageFilter>::New();
     windowToImageFilter->SetInput(vtkwid->GetRenderWindow());
-    windowToImageFilter->SetMagnification(1); //set the resolution of the output image (1 times the current resolution of vtk render window)
+    //windowToImageFilter->SetMagnification(1); //set the resolution of the output image (1 times the current resolution of vtk render window)
     windowToImageFilter->SetInputBufferTypeToRGBA(); //also record the alpha (transparency) channel
     windowToImageFilter->Update();
     vtkSmartPointer<vtkPNGWriter> writer =
@@ -792,8 +789,8 @@ void dialog_rotation::on_stoprot_clicked()
 
     if (wrmv==1){
 //#ifdef _WIN32
-		movie->End();
-		movie->Delete();
+		//movie->End();
+		//movie->Delete();
 //#endif
     w2i->Delete();
     wrmv=0;}
@@ -833,84 +830,85 @@ void VolumeViewer::on_actionAxes_triggered()
 void VolumeViewer::on_actionClip_triggered()
 {
 
-    //Check Clip button
+	//Check Clip button
 	//vtkwid->leftRenderer->ResetCamera();
-if (vtkwid->isVisible())
-{
-    if (ui->actionClip->isChecked())
-{
-	if (vol_id == 0 || vol_id == 1){
-		box = vtkSmartPointer<vtkBoxWidget2>::New();
-		vtkwid->leftRenderer->ResetCamera();
-
-        //vtkwid->mapper->SetRequestedRenderModeToRayCast();
-		vtkSmartPointer <vtkBoxRepresentation> boxrep = vtkSmartPointer <vtkBoxRepresentation>::New();
-		boxrep->SetPlaceFactor(1.00);
-		boxrep->SetInsideOut(1);
-		
-		boxrep->PlaceWidget(vtkwid->mapper->GetInput()->GetBounds());
-		boxrep->SetRenderer(vtkwid->leftRenderer);
-		box->SetRepresentation(boxrep);
-		box->SetTranslationEnabled(1);
-		//box->SetInputData(vtkwid->mapper->GetInput());
-       // Add a box widget for clipping
-        box->SetInteractor(vtkwid->GetInteractor());
-
-        vtkSmartPointer <vtkBoxWidgetCallback> callback = vtkSmartPointer <vtkBoxWidgetCallback>::New();
-    	callback->SetMapper(vtkwid->mapper);
-
-        box->AddObserver(vtkCommand::InteractionEvent, callback);
-		box->On();
-		vtkwid->GetInteractor()->Render();
-	}
-	else if (vol_id == 2 || vol_id == 3)
+	if (vtkwid->isVisible())
 	{
-		box = vtkSmartPointer<vtkBoxWidget2>::New();
-		vtkwid->leftRenderer->ResetCamera();
+		if (ui->actionClip->isChecked())
+		{
+			if (vol_id == 0 || vol_id == 1) {
+				box = vtkSmartPointer<vtkBoxWidget2>::New();
+				vtkwid->leftRenderer->ResetCamera();
 
-		//vtkwid->mapper->SetRequestedRenderModeToRayCast();
-		vtkSmartPointer <vtkBoxRepresentation> boxrep = vtkSmartPointer <vtkBoxRepresentation>::New();
-		boxrep->SetPlaceFactor(1.00);
-		boxrep->SetInsideOut(1);
+				//vtkwid->mapper->SetRequestedRenderModeToRayCast();
+				vtkSmartPointer <vtkBoxRepresentation> boxrep = vtkSmartPointer <vtkBoxRepresentation>::New();
+				boxrep->SetPlaceFactor(1.00);
+				boxrep->SetInsideOut(1);
 
-		boxrep->PlaceWidget(vtkwid->poly_mapper->GetBounds());
-		boxrep->SetRenderer(vtkwid->leftRenderer);
-		box->SetRepresentation(boxrep);
-		box->SetTranslationEnabled(1);
-		//box->SetInputData(vtkwid->mapper->GetInput());
-		// Add a box widget for clipping
-		box->SetInteractor(vtkwid->GetInteractor());
+				boxrep->PlaceWidget(vtkwid->mapper->GetInput()->GetBounds());
+				boxrep->SetRenderer(vtkwid->leftRenderer);
+				box->SetRepresentation(boxrep);
+				box->SetTranslationEnabled(1);
+				//box->SetInputData(vtkwid->mapper->GetInput());
+				// Add a box widget for clipping
+				box->SetInteractor(vtkwid->GetInteractor());
 
-		vtkSmartPointer <vtkPolyClipCallback> callback = vtkSmartPointer <vtkPolyClipCallback>::New();
-		callback->SetMapper(vtkwid->poly_mapper);
+				vtkSmartPointer <vtkBoxWidgetCallback> callback = vtkSmartPointer <vtkBoxWidgetCallback>::New();
+				callback->SetMapper(vtkwid->mapper);
 
-		box->AddObserver(vtkCommand::InteractionEvent, callback);
-		box->On();
-		vtkwid->GetInteractor()->Render();
+				box->AddObserver(vtkCommand::InteractionEvent, callback);
+				box->On();
+				vtkwid->GetInteractor()->Render();
+			}
+			else if (vol_id == 2 || vol_id == 3)
+			{
+				box = vtkSmartPointer<vtkBoxWidget2>::New();
+				vtkwid->leftRenderer->ResetCamera();
+
+				//vtkwid->mapper->SetRequestedRenderModeToRayCast();
+				vtkSmartPointer <vtkBoxRepresentation> boxrep = vtkSmartPointer <vtkBoxRepresentation>::New();
+				boxrep->SetPlaceFactor(1.00);
+				boxrep->SetInsideOut(1);
+
+				boxrep->PlaceWidget(vtkwid->poly_mapper->GetBounds());
+				boxrep->SetRenderer(vtkwid->leftRenderer);
+				box->SetRepresentation(boxrep);
+				box->SetTranslationEnabled(1);
+				//box->SetInputData(vtkwid->mapper->GetInput());
+				// Add a box widget for clipping
+				box->SetInteractor(vtkwid->GetInteractor());
+
+				vtkSmartPointer <vtkPolyClipCallback> callback = vtkSmartPointer <vtkPolyClipCallback>::New();
+				callback->SetMapper(vtkwid->poly_mapper);
+
+				box->AddObserver(vtkCommand::InteractionEvent, callback);
+				box->On();
+				vtkwid->GetInteractor()->Render();
+			}
+
+		}
+		else {
+			{
+
+				//box->RemoveAllObservers();
+				box->Off();
+				//box->Delete();
+				vtkwid->leftRenderer->ResetCameraClippingRange();
+				vtkwid->leftRenderer->ResetCamera();
+				vtkwid->GetInteractor()->Render();
+
+
+			}
+		}
 	}
-			
-        }
-    else{
-        {
-			
-			//box->RemoveAllObservers();
-			box->Off();
-			//box->Delete();
-			vtkwid->leftRenderer->ResetCameraClippingRange();
-			vtkwid->leftRenderer->ResetCamera();
-            vtkwid->GetInteractor()->Render();
-		
 
-        }
-    }
-}
-
-else {
-    QMessageBox::critical(0, QObject::tr("Error"), "No volume loaded.\nPlease load the volume first.");
-}
+	else {
+		QMessageBox::critical(0, QObject::tr("Error"), "No volume loaded.\nPlease load the volume first.");
+	}
 
 
 }
+
 
 void VolumeViewer::on_actionCrop_triggered()
 {
@@ -1059,14 +1057,14 @@ transformModel->Update();
 static_cast<vtkBoxRepresentation*>(box->GetRepresentation())->GetTransform(tran);
         double *ori;
         ori=tran->GetOrientation();
-
+		
         double *center;
         center=vtkwid->volume->GetCenter();
 
              double *Bounds;
-           Bounds = box->GetRepresentation()->GetBounds();
+           Bounds = static_cast<vtkBoxRepresentation*>(box->GetRepresentation())->GetBounds();
 
-           ui->label->setText(QString::number(ori[0]) + " " + QString::number(ori[1])  + " " + QString::number(ori[2]) + " "+QString::number(Bounds[0]) + " " + QString::number(Bounds[1]) +  " " + QString::number(Bounds[2])+ " " +
+           ui->label->setText(QString::number(ori[0]) + " " + QString::number(ori[1])  + " " + QString::number(ori[2]) + " " + QString::number(ori[3]) + " "+QString::number(Bounds[0]) + " " + QString::number(Bounds[1]) +  " " + QString::number(Bounds[2])+ " " +
                    QString::number(Bounds[3]) + " " + QString::number(Bounds[4]) + " " + QString::number(Bounds[5]));
 
 /*
@@ -1205,10 +1203,10 @@ void VolumeViewer::rmovstat(int wr)
 		w2i->SetInput(vtkwid->GetRenderWindow());
 //#ifdef _WIN32
        // movie->SetCompression(0);
-        movie->SetFileName(diarotat->movname.c_str());
-		movie->SetInputConnection(w2i->GetOutputPort());
-		movie->SetRate(30);
-		movie->Start();
+       // movie->SetFileName(diarotat->movname.c_str());
+	//	movie->SetInputConnection(w2i->GetOutputPort());
+	//	movie->SetRate(30);
+	//	movie->Start();
 //#endif
     diarotat->rtimer->start();
     wrmv=1;
@@ -1227,7 +1225,7 @@ void VolumeViewer::rot()
  if (wrmv==1)
    {
 //#ifdef _WIN32
-	   movie->Write();
+	  // movie->Write();
 //#endif
      w2i->Modified();}
 
@@ -1261,7 +1259,6 @@ void VolumeViewer::on_actionSlice_triggered()
 	planeWidget->SetInteractor(vtkwid->GetInteractor());
 	planeWidget->SetInputData(vtkwid->mapper->GetInput());
 	planeWidget->SetDefaultRenderer(vtkwid->leftRenderer);
-
 	planeWidget->SetPlaceFactor(1.05);
 	planeWidget->PlaceWidget();
 	planeWidget->SetOrigin(vtkwid->volume->GetOrigin());
@@ -1287,7 +1284,7 @@ void VolumeViewer::on_actionGPU_Texture_triggered()
 
 void VolumeViewer::on_actionRay_Cast_triggered()
 {
-    vtkwid->mapper->SetRequestedRenderMode(vtkSmartVolumeMapper::RayCastRenderMode);
+	vtkwid->mapper->SetRequestedRenderMode(vtkSmartVolumeMapper::RayCastRenderMode);
     vtkwid->GetRenderWindow()->Render();
 }
 
@@ -1389,10 +1386,7 @@ void VolumeViewer::on_actionInterlaced_triggered()
 
 void VolumeViewer::on_actionThreshold_triggered()
 {
-	itkhess = new itkthread();
-	//connect(itkhess, SIGNAL(sendimgdata(vtkImageData)), vtkwid, SLOT(resample(vtkImageData)));
 
-	diathresh->show();
 	
 }
 
@@ -1413,57 +1407,39 @@ void VolumeViewer::setthresh(double lthreshold, double uthreshold)
 
 void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 {
+	const char * ipfname = inputFilename.c_str();
+	mat_t *matfp;
+	matvar_t *matarr;
+	matvar_t *matcolarr;
 
-	vtkSmartPointer<vtkMatlabMexAdapter> readermat = vtkSmartPointer<vtkMatlabMexAdapter>::New();
-	mxArray *matarr, *matcolarr;
-	MATFile *matf;
+	matfp = Mat_Open(ipfname, MAT_ACC_RDONLY);
+	if (NULL == matfp) {
+		fprintf(stderr, "Error opening MAT file %s\n", ipfname);
+		return ;
+	}
 
-vtkSmartPointer<vtkTypeInt16Array> pointarray = vtkSmartPointer<vtkTypeInt16Array>::New();
+	
+	
+	
+	
+	//qDebug() << status;
+
+	
+	matarr = Mat_VarRead(matfp, "fibres");
+	matcolarr = Mat_VarRead(matfp, "MeasureAngles");
+
+	const size_t * matsize = matarr->dims;
+
+	ui->label->setText(QString::number(matsize[1]) );
+	
+	
+
+	//ui->label->setText("Success loading array");
+
+
+	vtkSmartPointer<vtkTypeInt16Array> pointarray = vtkSmartPointer<vtkTypeInt16Array>::New();
 	//vtkSmartPointer<vtkUnsignedShortArray> dataarr = vtkSmartPointer<vtkUnsignedShortArray>::New();
 	//vtkSmartPointer<vtkImageData> matimg = vtkSmartPointer<vtkImageData>::New();
-
-	matf = matOpen(inputFilename.c_str(), "r");
-	if (matf == NULL)	
-	{
-		QMessageBox::critical(0, QObject::tr("Error"), "Error Loading File");
-	}
-	
-	
-	else {
-
-
-		const char **dir;
-		const char *name;
-		int	  ndir;
-		int i;
-		dir = (const char **)matGetDir(matf, &ndir);
-		if (dir == NULL) 
-						{
-							QMessageBox::critical(0, QObject::tr("Error"), "Error reading directory of file");
-
-						}
-
-			else {
-                    matarr = matGetVariable(matf, "fibres");
-                    matcolarr = matGetVariable(matf, "MeasureAngles");
-			     }
-		
-
-
-
-		const mwSize * matsize = mxGetDimensions(matarr);
-
-		ui->label->setText(QString::number(matsize[1]));
-
-
-		if (matarr == NULL) 
-							{
-								QMessageBox::critical(0, QObject::tr("Error"), "Could not copy to array");
-							}
-
-
-
-
 
 
 		//QProgressDialog progress("Loading...", "Abort", 0, matimg->GetNumberOfPoints(), this);
@@ -1471,16 +1447,16 @@ vtkSmartPointer<vtkTypeInt16Array> pointarray = vtkSmartPointer<vtkTypeInt16Arra
 
 		vtkSmartPointer <vtkCellArray> lines = vtkSmartPointer <vtkCellArray> ::New();
 
-        vtkSmartPointer <vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-    points->SetDataTypeToShort();
+		vtkSmartPointer <vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+		points->SetDataTypeToShort();
 
 		vtkIdType k = 0;
 		vtkDataArray *colors;
 		colors->CreateDataArray(VTK_TYPE_INT8);
 		//colors->SetNumberOfComponents(1);
-        //ui->label->setText(QString::number(readermat->GetMTime()));ee
-		colors = readermat->mxArrayTovtkDataArray(matcolarr);
-		
+		//ui->label->setText(QString::number(readermat->GetMTime()));ee
+		//colors = readermat->mxArrayTovtkDataArray(matcolarr);
+
 		colors->SetName("Colors");
 		colors->Squeeze();
 
@@ -1488,92 +1464,42 @@ vtkSmartPointer<vtkTypeInt16Array> pointarray = vtkSmartPointer<vtkTypeInt16Arra
 		progress.setWindowModality(Qt::WindowModal);
 
 		vtkDataArray *matvtkarr;
+
 #pragma parallel 
-		for (vtkIdType i = 0; i < matsize[1]; i++)
+	//#for (vtkIdType i = 0; i < 2; i++)
 			//	for (vtkIdType i = 0; i < 2; i++)
 
-		{
+		//{
+			matvar_t *cell;
+			int i = 0;
 			progress.setValue(i);
 			if (progress.wasCanceled())
 			{
-				
-				matClose(matf);
-				mxDestroyArray(matarr);
-				mxDestroyArray(matcolarr);
-
+				Mat_Close(matfp);
 				return;
 			}
-			//	mxArray *mline = mxGetCell(matarr, i);
-
-			matvtkarr = readermat->mxArrayTovtkDataArray(mxGetCell(matarr, i));
-			//matvtkarr->SetNumberOfComponents(1);
-			matvtkarr->Squeeze();
-
-			if (matvtkarr->GetNumberOfTuples() % 2 == 0)
-			{
-				matvtkarr->RemoveLastTuple();
+			
+			cell = Mat_VarGetCell(matarr, i);
+			if (NULL == cell) {
+				ui->label->setText( "Error getting 'ing{%lu}'\n");
+				
 			}
-			//ui->label->setText(QString::number(L));
-
-			if (matvtkarr->GetNumberOfTuples()>fiblen)
-						{
-						lines->InsertNextCell(ceil(matvtkarr->GetNumberOfTuples() / skip));
-
-					for (vtkIdType j = 0; j < matvtkarr->GetNumberOfTuples() - skip; j += skip)
-							{
-                                           // float pt[3];
-							//pt[0] = matvtkarr->GetComponent(j, 0);
-							//pt[1] = matvtkarr->GetComponent(j, 1);
-							//pt[2] = matvtkarr->GetComponent(j, 2);
-
-
-                        pointarray->InsertNextTuple3(matvtkarr->GetComponent(j, 0) ,matvtkarr->GetComponent(j, 1), matvtkarr->GetComponent(j, 2));
-
-                            points->InsertNextPoint(matvtkarr->GetComponent(j, 0),matvtkarr->GetComponent(j, 1),matvtkarr->GetComponent(j, 2));
-							lines->InsertCellPoint(k);
-							k++;
-							}
-	
-
-						}
-		}
-
-		progress.setValue(matsize[1]);
-		lines->Squeeze();
-		points->Squeeze();
-		matClose(matf);
-		mxDestroyArray(matarr);
-		mxDestroyArray(matcolarr);
-        
-		vtkSmartPointer <vtkPolyData> polyd = vtkSmartPointer <vtkPolyData>::New();
-	//	polyd->Allocate();
-
-
-		polyd->SetPoints(points);
-		polyd->SetLines(lines);
-		polyd->GetCellData()->SetScalars(colors);
-		polyd->Squeeze();
-		/*
-		vtkSmartPointer<vtkSplineFilter> splinefilter = vtkSmartPointer<vtkSplineFilter>::New();
-		splinefilter->SetInputData(polyd);
-		splinefilter->SetNumberOfSubdivisions(1);
-		splinefilter->Update();
+			else if (MAT_C_CELL != cell->class_type) {
+				ui->label->setText("Variable 'ing{%lu}' is not a struct-arrayn\n");
+			}
 		
-		vtkSmartPointer<vtkTubeFilter> tubeFilter =
-			vtkSmartPointer<vtkTubeFilter>::New();
-		tubeFilter->SetInputData(splinefilter->GetOutput());
-		tubeFilter->SetRadius(0.5); //default is .5
-		tubeFilter->SetNumberOfSides(10);
-		tubeFilter->CappingOn();
-		tubeFilter->Update();
-		*/
-		ui->label->setText(QString::number(points->GetDataType()) + " " + QString::number(points->GetActualMemorySize()) + " " + QString::number(lines->GetActualMemorySize()) + " " + QString::number(polyd->GetActualMemorySize()));
+			//int* matData = (int*)(cell->data);
 
-
-        vtkwid->renderpol(polyd);
-		
-	}
+			//const size_t * nCols = cell->dims;
+			
+			//ui->label->setText(QString::number(cell->class_type));
+			
+			
+			
+			
+		//}
 }
+
 
 void VolumeViewer::setfibres(int fiblen, int skip)
 {

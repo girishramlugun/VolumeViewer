@@ -6,40 +6,13 @@ endif()
 
 PROJECT(VolumeViewer)
 
-IF(UNIX)
-set(VTK_DIR /hpc/gram526/VTK/Build)
-set(ITK_DIR /hpc/gram526/ITK/Build)
-endif()
 
 find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
 
 
-
 find_package(Qt5 COMPONENTS Widgets PrintSupport  REQUIRED)
 include_directories(${Qt5Widgets_INCLUDE_DIRS} ${Qt5PrintSupport_INCLUDE_DIRS})
-
-IF(UNIX)
-include_directories(/usr/local/matlab/extern/include)
-set(MATLAB_LIB_DIR /usr/local/matlab/bin/glnxa64)
-set(MATLAB_INCLUDE_DIR /usr/local/matlab/extern/include)
-find_package(FFMPEG REQUIRED)
-include_directories(${FFMPEG_INCLUDE_DIR})
-set(_ffmpeg_libs ${FFMPEG_avformat_LIBRARY} ${FFMPEG_avcodec_LIBRARY}
-  ${FFMPEG_avutil_LIBRARY}  ${FFMPEG_swresample_LIBRARY})
-if(NOT VTK_FFMPEG_HAS_IMG_CONVERT)
-  list(APPEND _ffmpeg_libs ${FFMPEG_swscale_LIBRARY})
-endif()
-endif()
-
-
-
-find_package(ITK REQUIRED)
-include(${ITK_USE_FILE})
-if (ITKVtkGlue_LOADED)
-  find_package(VTK REQUIRED)
-  include(${VTK_USE_FILE})
-endif()
 
  # We need add -DQT_WIDGETS_LIB when using QtWidgets in Qt 5.
   add_definitions(${Qt5Widgets_DEFINITIONS})
@@ -57,8 +30,7 @@ file(GLOB UI_FILES *.ui)
 file(GLOB QT_WRAP *.h)
 file(GLOB CXX_FILES *.cxx)
 
-find_package(MatlabMex REQUIRED)
-include(UseMatlabMex)
+
 
 
   QT5_WRAP_UI(UISrcs ${UI_FILES})
@@ -69,9 +41,8 @@ include(UseMatlabMex)
   add_executable(VolumeViewer WIN32 MACOSX_BUNDLE ${CXX_FILES} ${UISrcs} ${MOCSrcs} ${VolumeViewer_RESOURCES_RCC})
 
 
-    target_link_libraries(VolumeViewer ${QT_QTMAIN_LIBRARY} ${VTK_LIBRARIES} ${Qt5Widgets_LIBRARIES}  ${Qt5PrintSupport_LIBRARIES} ${ITK_LIBRARIES} ${Glue} ${MEX_LIBRARIES} ${MATLAB_ENGINE_LIBRARIES})
+    target_link_libraries(VolumeViewer ${QT_QTMAIN_LIBRARY} ${VTK_LIBRARIES} ${Qt5Widgets_LIBRARIES}  ${Qt5PrintSupport_LIBRARIES}  )
 
-# ${_ffmpeg_libs})
 
 
 IF(WIN32) # Check if we are on Windows
