@@ -1,0 +1,3 @@
+/home/girish/VolumeViewer/Build/CMakeFiles/rebuild_cache.dir
+/home/girish/VolumeViewer/Build/CMakeFiles/VolumeViewer.dir
+/home/girish/VolumeViewer/Build/CMakeFiles/edit_cache.dir

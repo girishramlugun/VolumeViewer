@@ -101,7 +101,7 @@ void vtkwidget::initialize(vtkImageData *input)
 	leftRenderer->RemoveAllViewProps();
 
 	//Set default light parameters
-	leftRenderer->SetAutomaticLightCreation(1);
+	//leftRenderer->SetAutomaticLightCreation(1);
 
 	mapper->SetAverageIPScalarRange(20, 255);
 
@@ -169,7 +169,7 @@ void vtkwidget::initialize(vtkImageData *input)
 	// volumeProperty->SetGradientOpacity(volumeGradientOpacity);
 	//volumeProperty->SetInterpolationType(VTK_NEAREST_INTERPOLATION);
 	//volumeProperty->ShadeOff();
-	LightKit->AddLightsToRenderer(leftRenderer);
+	//LightKit->AddLightsToRenderer(leftRenderer);
 	mapper->SetInputData(input);
 	
 
@@ -192,7 +192,7 @@ void vtkwidget::render()
         //mapper->SetRequestedRenderModeToRayCast();
 	//if (input->GetActualMemorySize() > 0.8*(mapper->GetMaxMemoryInBytes())/1024)
 	//{
-	mapper->SetRequestedRenderModeToGPU();
+	
 	//}
 	
 
@@ -569,7 +569,7 @@ void vtkwidget::readimseq(QString filetype, vtkStringArray *filenames, int N)
 			progress.setValue(i);
 			if (progress.wasCanceled())
 			{
-				return;
+				
 				this->deleteLater();
 			}
 			//	vtkSmartPointer<vtkTIFFReader>readimg1 = vtkSmartPointer<vtkTIFFReader>::New();
@@ -661,7 +661,7 @@ void vtkwidget::readimseq(QString filetype, vtkStringArray *filenames, int N)
 			progress.setValue(i);
 			if (progress.wasCanceled())
 			{
-				return;
+				
 				this->deleteLater();
 			}
 			//	vtkSmartPointer<vtkTIFFReader>readimg1 = vtkSmartPointer<vtkTIFFReader>::New();

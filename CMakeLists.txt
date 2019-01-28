@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 3.8)
 
 PROJECT(VolumeViewer)
 
-find_package(VTK REQUIRED)
-include(${VTK_USE_FILE})
+find_package(VTK REQUIRED )
 
-find_package(Matlab REQUIRED)
+
+find_package(Matlab REQUIRED MX_LIBRARY ENG_LIBRARY MAT_LIBRARY)
 include_directories(${Matlab_INCLUDE_DIRS})
 
 find_package(Qt5 COMPONENTS Widgets PrintSupport  REQUIRED)
@@ -38,9 +38,12 @@ file(GLOB CXX_FILES *.cxx)
 add_executable(VolumeViewer WIN32 MACOSX_BUNDLE ${CXX_FILES} ${UISrcs} ${MOCSrcs} ${VolumeViewer_RESOURCES_RCC})
 
 
-target_link_libraries(VolumeViewer ${QT_QTMAIN_LIBRARY} ${VTK_LIBRARIES} ${Qt5Widgets_LIBRARIES}  ${Qt5PrintSupport_LIBRARIES} ${MATLAB_MEX_LIBRARY} ${MATLAB_ENG_LIBRARY} ${Matlab_MX_LIBRARY} )
+target_link_libraries(VolumeViewer ${QT_QTMAIN_LIBRARY} ${VTK_LIBRARIES} ${Qt5Widgets_LIBRARIES}  ${Qt5PrintSupport_LIBRARIES} ${Matlab_MAT_LIBRARY} ${Matlab_MX_LIBRARY} )
 
-
+vtk_module_autoinit(
+    TARGETS VolumeViewer
+    MODULES ${VTK_LIBRARIES}
+    )
 
 IF(WIN32) # Check if we are on Windows
   if(MSVC) # Check if we are using the Visual Studio compiler
