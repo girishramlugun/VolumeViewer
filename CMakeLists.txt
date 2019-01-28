@@ -1,15 +1,12 @@
-cmake_minimum_required(VERSION 2.8)
-
-if(POLICY CMP0020)
-  cmake_policy(SET CMP0020 NEW)
-endif()
+cmake_minimum_required(VERSION 3.8)
 
 PROJECT(VolumeViewer)
-
 
 find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
 
+find_package(Matlab REQUIRED)
+include_directories(${Matlab_INCLUDE_DIRS})
 
 find_package(Qt5 COMPONENTS Widgets PrintSupport  REQUIRED)
 include_directories(${Qt5Widgets_INCLUDE_DIRS} ${Qt5PrintSupport_INCLUDE_DIRS})
@@ -38,10 +35,10 @@ file(GLOB CXX_FILES *.cxx)
   QT5_ADD_RESOURCES(VolumeViewer_RESOURCES_RCC ${VolumeViewer_RESOURCES})
 
 
-  add_executable(VolumeViewer WIN32 MACOSX_BUNDLE ${CXX_FILES} ${UISrcs} ${MOCSrcs} ${VolumeViewer_RESOURCES_RCC})
+add_executable(VolumeViewer WIN32 MACOSX_BUNDLE ${CXX_FILES} ${UISrcs} ${MOCSrcs} ${VolumeViewer_RESOURCES_RCC})
 
 
-    target_link_libraries(VolumeViewer ${QT_QTMAIN_LIBRARY} ${VTK_LIBRARIES} ${Qt5Widgets_LIBRARIES}  ${Qt5PrintSupport_LIBRARIES}  )
+target_link_libraries(VolumeViewer ${QT_QTMAIN_LIBRARY} ${VTK_LIBRARIES} ${Qt5Widgets_LIBRARIES}  ${Qt5PrintSupport_LIBRARIES} ${MATLAB_MEX_LIBRARY} ${MATLAB_ENG_LIBRARY} ${Matlab_MX_LIBRARY} )
 
 
 

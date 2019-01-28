@@ -35,12 +35,25 @@
 
 #include <dialog_fibre.h>
 
+#include <mat.h>
+
+#include<mex.h>
+
+#include <vtkObject.h>
+
+#include<vtkArrayData.h>
+
+#include<vtkArray.h>
+
+#include<vtkDataArrayCollection.h>
+
 
 
 using namespace std;
 
 
 class Ui_VolumeViewer;
+
 
 class VolumeViewer : public QMainWindow
 {
@@ -162,6 +175,11 @@ private slots:
 
   void getfileprefix(QString);
 
+  vtkDataArray * mxArrayTovtkDataArray(const mxArray * mxa, bool ShallowCopy);
+
+  vtkDataArray * GetVTKDataType(mxClassID cid);
+
+
   void on_actionReslice_triggered();
 
   void on_actionTime_Sequence_triggered();
@@ -172,7 +190,7 @@ private:
 
 	
 Ui_VolumeViewer *ui;
-
+vtkDataArrayCollection* vdac;
 
 };
 

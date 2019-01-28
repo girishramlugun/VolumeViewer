@@ -27,6 +27,8 @@
 #include<vtkOctreePointLocator.h>
 #include<vtkBMPReader.h>
 #include<vtkDICOMImageReader.h>
+#include<vtkSplineFilter.h>
+#include<vtkTubeFilter.h>
 
 
 //vtkIdType vram;
@@ -34,9 +36,11 @@ double imgmax;
 int vramvalue;
 
 
+
 vtkwidget::vtkwidget(QWidget *parent) :
 	QVTKOpenGLWidget(parent)
 {
+
     volpropchange = vtkSmartPointer<vtkImageChangeInformation>::New();
 
     readervti = vtkSmartPointer<vtkXMLImageDataReader>::New();
@@ -98,31 +102,8 @@ void vtkwidget::initialize(vtkImageData *input)
 
 	//Set default light parameters
 	leftRenderer->SetAutomaticLightCreation(1);
-	/*
-	LightKit->SetKeyLightWarmth(0.6); LightKit->SetKeyLightIntensity(0.75); LightKit->SetKeyLightElevation(50); LightKit->SetKeyLightAzimuth(10);
-	LightKit->SetFillLightWarmth(0.40); LightKit->SetKeyToFillRatio(3); LightKit->SetFillLightElevation(-75); LightKit->SetFillLightAzimuth(-10);
-	LightKit->SetBackLightWarmth(0.5); LightKit->SetKeyToBackRatio(3.5); LightKit->SetBackLightElevation(0); LightKit->SetBackLightAzimuth(110);
-	LightKit->SetHeadLightWarmth(0.5); LightKit->SetKeyToHeadRatio(3);
-	*/
-
-	//Add Volume Gradient Opacity
-	//vtkwid->volumeGradientOpacity->AddPoint(0,0);
-	//vtkwid->volumeGradientOpacity->AddPoint(100,1);
-
-	// The opacity transfer function is used to control the opacity
-	// of different tissue types.
-
-
-
-	// The color transfer function maps voxel intensities to colors.
-	// It is modality-specific, and often anatomy-specific as well.
-	// The goal is to one color for flesh (between 500 and 1000)
-	// and another color for bone (1150 and over).
-
-
 
 	mapper->SetAverageIPScalarRange(20, 255);
-	
 
 	//Adjust Rotation Style of Camera
 
@@ -192,7 +173,7 @@ void vtkwidget::initialize(vtkImageData *input)
 	mapper->SetInputData(input);
 	
 
-	input->RemoveAllObservers();
+	//input->RemoveAllObservers();
 	
 	
 
@@ -203,15 +184,24 @@ void vtkwidget::initialize(vtkImageData *input)
 void vtkwidget::render()
 {
 
-	mapper->SetBlendModeToComposite();
-    mapper->SetInteractiveAdjustSampleDistances(0);
-	volumeProperty->SetInterpolationType(VTK_CUBIC_INTERPOLATION);
+	//mapper->SetBlendModeToComposite();
+   //mapper->SetInteractiveAdjustSampleDistances(0);
+	//volumeProperty->SetInterpolationType(VTK_CUBIC_INTERPOLATION);
+	//mapper->SetInputConnection(reader->GetOutputPort());
 
+        //mapper->SetRequestedRenderModeToRayCast();
+	//if (input->GetActualMemorySize() > 0.8*(mapper->GetMaxMemoryInBytes())/1024)
+	//{
+	mapper->SetRequestedRenderModeToGPU();
+	//}
 	
 
-	leftRenderer->ResetCamera();
+	//leftRenderer->ResetCamera();
+	//mapper->SetInteractiveUpdateRate(2);
+	
+	//mapper->SetMaxMemoryFraction(0.5);
 	volume->SetMapper(mapper);
-	mapper->ReleaseDataFlagOn();
+	//mapper->ReleaseDataFlagOn();
 	volume->SetProperty(volumeProperty);
 	
 	// Add Volume to renderer
@@ -219,7 +209,15 @@ void vtkwidget::render()
 	//leftRenderer->SetMaximumNumberOfPeels(100);
 	leftRenderer->AddVolume(volume);
 	volume->SetOrigin(volume->GetCenter());
+	
+	
+	// Render and interact
+	//  vtkwid-> renderWindow->Render();
+	// renderer->AutomaticLightCreationOn();
+	//   vtkwid-> renderWindow->SetWindowName("Volume Viewer");
+	//  vtkwid-> renderWindowInteractor->Start();
 	GetRenderWindow()->AddRenderer(leftRenderer);
+	GetRenderWindow()->Render();
 	this->show();
 	// Set up axes widget
 	
@@ -274,11 +272,23 @@ void vtkwidget::renderpoly()
 
 void vtkwidget::renderpol(vtkPolyData *pol)
 {
+	/*
+	vtkSmartPointer<vtkSplineFilter> spline_filter = vtkSmartPointer<vtkSplineFilter>::New();
+	spline_filter->SetInputData(pol);
+	spline_filter->SetNumberOfSubdivisions(10);
+	spline_filter->Update();
+
+	vtkSmartPointer<vtkTubeFilter> tube_filter = vtkSmartPointer<vtkTubeFilter>::New();
+	tube_filter->SetInputData(spline_filter->GetOutput());
+	tube_filter->SetRadius(1);
+	tube_filter->Update();
+	*/
 	poly_mapper->SetInputData(pol);
 	poly_mapper->SetColorModeToMapScalars();
 	poly_actor->SetMapper(poly_mapper);
 	poly_actor->GetProperty()->EdgeVisibilityOff();
 	poly_actor->SetOrigin(poly_actor->GetCenter());
+
 
 	vtkSmartPointer<vtkScalarBarActor> scalarBar = vtkSmartPointer<vtkScalarBarActor>::New();
 	scalarBar->SetTitle("Inclination angle");
@@ -311,7 +321,7 @@ void vtkwidget::renderpol(vtkPolyData *pol)
 	belvinLUT->Build();
 
 
-	scalarBar->SetLookupTable(hueLut);
+	scalarBar->SetLookupTable(belvinLUT);
 	poly_mapper->SetScalarRange(0, 255);
 	//poly_mapper->ImmediateModeRenderingOn();
 	poly_mapper->SetLookupTable(belvinLUT);
@@ -423,9 +433,9 @@ void vtkwidget::readvti(string inputFilename)
 
 	rvti->SetFileName(inputFilename.c_str());
 	rvti->Update();
-       imgmax=rvti->GetOutput()->GetScalarTypeMax();
+    imgmax=rvti->GetOutput()->GetScalarTypeMax();
 	resample(rvti->GetOutput());
-	rvti->Delete();
+	//rvti->Delete();
 	
 }
 
@@ -433,12 +443,16 @@ void vtkwidget::readtif(string inputFilename)
 {
 	//vtkTIFFReader *rtiff = vtkTIFFReader::New();
 	readertiff->SetFileName(inputFilename.c_str());
+	readertiff->SetFileDimensionality(3);
     //readertiff->SetOrientationType(ORIENTATION_LEFTTOP);
 
 	readertiff->Update();
+	vtkSmartPointer<vtkImageData> output_tiff = vtkSmartPointer<vtkImageData>::New();
 
     imgmax=readertiff->GetOutput()->GetScalarTypeMax();
-	resample(readertiff->GetOutput());
+
+	output_tiff->ShallowCopy(readertiff->GetOutput());
+	initialize(output_tiff);
 
 	//rtiff->Delete();
 
@@ -452,7 +466,7 @@ void vtkwidget::resample(vtkImageData *imgdata)
 	vtkIdType memsize = imgdata->GetActualMemorySize();
    // cout<<mapper->GetMaxMemoryInBytes();
 	double sf = ceil((memsize / vramvalue)/(1024*1024));
-
+	/*
     if (sf>=1 && sf<8){
 		sample_rate = 0.5;
 	vtkSmartPointer <vtkImageResample> imgrs =vtkSmartPointer <vtkImageResample>::New();
@@ -501,6 +515,9 @@ void vtkwidget::resample(vtkImageData *imgdata)
 		buildhist(imgrs->GetOutput());
 		initialize(imgrs->GetOutput());
 	}
+	*/
+	buildhist(imgdata);
+	initialize(imgdata);
 	imgdata->ReleaseData();
 }
 

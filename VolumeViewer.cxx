@@ -14,6 +14,7 @@
 #include <vtkPiecewiseFunction.h>
 #include <vtkCommand.h>
 #include <qfiledialog.h>
+#include <mat.h>
 #include <qstring.h>
 #include <vtkImageDataGeometryFilter.h>
 #include <vtkGPUVolumeRayCastMapper.h>
@@ -107,7 +108,18 @@
 #include<vtkTubeFilter.h>
 #include<vtkSplineFilter.h>
 #include<vtkDICOMImageReader.h>
-#include<matio.h>
+#include<vtkTypedArray.h>
+#include<mex.h>
+#include<vtkFloatArray.h>
+#include<vtkCharArray.h>
+#include<vtkTypeInt8Array.h>
+#include<vtkTypeUInt8Array.h>
+#include<vtkTypeUInt16Array.h>
+#include<vtkTypeUInt32Array.h>
+#include<vtkTypeUInt64Array.h>
+#include<vtkTypeInt32Array.h>
+#include<vtkTypeInt64Array.h>
+
 
 using namespace std;
 std::string inputFilename;
@@ -1407,39 +1419,57 @@ void VolumeViewer::setthresh(double lthreshold, double uthreshold)
 
 void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 {
-	const char * ipfname = inputFilename.c_str();
-	mat_t *matfp;
-	matvar_t *matarr;
-	matvar_t *matcolarr;
-
-	matfp = Mat_Open(ipfname, MAT_ACC_RDONLY);
-	if (NULL == matfp) {
-		fprintf(stderr, "Error opening MAT file %s\n", ipfname);
-		return ;
-	}
 
 	
-	
-	
-	
-	//qDebug() << status;
+	mxArray *matarr, *matcolarr;
+	MATFile *matf;
 
-	
-	matarr = Mat_VarRead(matfp, "fibres");
-	matcolarr = Mat_VarRead(matfp, "MeasureAngles");
-
-	const size_t * matsize = matarr->dims;
-
-	ui->label->setText(QString::number(matsize[1]) );
-	
-	
-
-	//ui->label->setText("Success loading array");
-
-
-	vtkSmartPointer<vtkTypeInt16Array> pointarray = vtkSmartPointer<vtkTypeInt16Array>::New();
+	vtkSmartPointer<vtkTypeUInt16Array> pointarray = vtkSmartPointer<vtkTypeUInt16Array>::New();
 	//vtkSmartPointer<vtkUnsignedShortArray> dataarr = vtkSmartPointer<vtkUnsignedShortArray>::New();
 	//vtkSmartPointer<vtkImageData> matimg = vtkSmartPointer<vtkImageData>::New();
+
+	matf = matOpen(inputFilename.c_str(), "r");
+	if (matf == NULL)
+	{
+		QMessageBox::critical(0, QObject::tr("Error"), "Error Loading File");
+	}
+
+
+	else {
+
+
+		const char **dir;
+		const char *name;
+		int	  ndir;
+		int i;
+		dir = (const char **)matGetDir(matf, &ndir);
+		if (dir == NULL)
+		{
+			QMessageBox::critical(0, QObject::tr("Error"), "Error reading directory of file");
+
+		}
+
+		else {
+			matarr = matGetVariable(matf, "fibres");
+			matcolarr = matGetVariable(matf, "MeasureAngles");
+		}
+
+
+
+
+		const mwSize * matsize = mxGetDimensions(matarr);
+
+		ui->label->setText(QString::number(matsize[1]));
+
+
+		if (matarr == NULL)
+		{
+			QMessageBox::critical(0, QObject::tr("Error"), "Could not copy to array");
+		}
+
+
+
+
 
 
 		//QProgressDialog progress("Loading...", "Abort", 0, matimg->GetNumberOfPoints(), this);
@@ -1455,7 +1485,7 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 		colors->CreateDataArray(VTK_TYPE_INT8);
 		//colors->SetNumberOfComponents(1);
 		//ui->label->setText(QString::number(readermat->GetMTime()));ee
-		//colors = readermat->mxArrayTovtkDataArray(matcolarr);
+		colors = mxArrayTovtkDataArray(matcolarr,1);
 
 		colors->SetName("Colors");
 		colors->Squeeze();
@@ -1463,41 +1493,82 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 		QProgressDialog progress("Loading...", "Abort", 0, matsize[1], this);
 		progress.setWindowModality(Qt::WindowModal);
 
-		vtkDataArray *matvtkarr;
+		vtkDataArray* matvtkarr;
 
+		
 #pragma parallel 
-	//#for (vtkIdType i = 0; i < 2; i++)
-			//	for (vtkIdType i = 0; i < 2; i++)
-
-		//{
-			matvar_t *cell;
-			int i = 0;
+		for (vtkIdType i = 0; i <matsize[1]; i++)
+		{
 			progress.setValue(i);
 			if (progress.wasCanceled())
 			{
-				Mat_Close(matfp);
+
+				matClose(matf);
+				mxDestroyArray(matarr);
+				mxDestroyArray(matcolarr);
+
 				return;
 			}
+			//	mxArray *mline = mxGetCell(matarr, i);
 			
-			cell = Mat_VarGetCell(matarr, i);
-			if (NULL == cell) {
-				ui->label->setText( "Error getting 'ing{%lu}'\n");
-				
-			}
-			else if (MAT_C_CELL != cell->class_type) {
-				ui->label->setText("Variable 'ing{%lu}' is not a struct-arrayn\n");
-			}
-		
-			//int* matData = (int*)(cell->data);
+			matvtkarr = mxArrayTovtkDataArray(mxGetCell(matarr, i),1);
+			ui->label->setText(QString::number(matvtkarr->GetNumberOfComponents()));
 
-			//const size_t * nCols = cell->dims;
-			
-			//ui->label->setText(QString::number(cell->class_type));
-			
-			
-			
-			
-		//}
+			//matvtkarr->SetNumberOfComponents(1);
+			matvtkarr->Squeeze();
+
+			//ui->label->setText(QString::number(L));
+
+			if (matvtkarr->GetNumberOfTuples() > fiblen)
+			{
+				lines->InsertNextCell(matvtkarr->GetNumberOfTuples());
+
+				for (vtkIdType j = 0; j < matvtkarr->GetNumberOfTuples() ; j ++)
+				{
+					pointarray->InsertNextTuple3(matvtkarr->GetComponent(j, 0), matvtkarr->GetComponent(j, 1), matvtkarr->GetComponent(j, 2));
+					points->InsertNextPoint(matvtkarr->GetComponent(j, 0), matvtkarr->GetComponent(j, 1), matvtkarr->GetComponent(j, 2));
+					lines->InsertCellPoint(k);
+					k++;
+				}
+
+
+			}
+		}
+
+		progress.setValue(matsize[1]);
+		lines->Squeeze();
+		points->Squeeze();
+		matClose(matf);
+		mxDestroyArray(matarr);
+		mxDestroyArray(matcolarr);
+
+		vtkSmartPointer <vtkPolyData> polyd = vtkSmartPointer <vtkPolyData>::New();
+		//	polyd->Allocate();
+
+
+		polyd->SetPoints(points);
+		polyd->SetLines(lines);
+		polyd->GetCellData()->SetScalars(colors);
+		polyd->Squeeze();
+		/*
+		vtkSmartPointer<vtkSplineFilter> splinefilter = vtkSmartPointer<vtkSplineFilter>::New();
+		splinefilter->SetInputData(polyd);
+		splinefilter->SetNumberOfSubdivisions(10);
+		splinefilter->Update();
+
+		vtkSmartPointer<vtkTubeFilter> tubeFilter =
+			vtkSmartPointer<vtkTubeFilter>::New();
+		tubeFilter->SetInputData(splinefilter->GetOutput());
+		tubeFilter->SetRadius(1); //default is .5
+		tubeFilter->CappingOn();
+		tubeFilter->Update();
+		*/
+		//ui->label->setText(QString::number(points->GetDataType()) + " " + QString::number(points->GetActualMemorySize()) + " " + QString::number(lines->GetActualMemorySize()) + " " + QString::number(polyd->GetActualMemorySize()));
+
+
+		vtkwid->renderpol(polyd);
+
+	}
 }
 
 
@@ -1566,3 +1637,128 @@ void VolumeViewer::getfileprefix(QString ffile)
 
     //printf(fullprefix.c_str());
 }
+
+
+vtkDataArray* VolumeViewer::mxArrayTovtkDataArray(const mxArray* mxa, bool ShallowCopy)
+{
+
+	vtkDataArray* da;
+	void *dp;
+	double* tuple;
+	int nr;
+	int nc;
+	int i, j, k;
+	int nbytes;
+	unsigned char* dest;
+	unsigned char* source;
+
+	if (mxa == NULL)
+	{
+		vtkGenericWarningMacro(<< "NULL input to mxArrayTovtkDataArray()");
+		return(NULL);
+	}
+
+	if (mxGetNumberOfDimensions(mxa) > 2)
+	{
+		vtkGenericWarningMacro(<< "Input to mxArrayTovtkDataArray() has more than two dimensions, cannot convert to vtkDataArray");
+		return(NULL);
+	}
+
+	if (mxIsCell(mxa))
+	{
+		vtkGenericWarningMacro(<< "Input to mxArrayTovtkDataArray() is a Cell Array, cannot convert to vtkDataArray");
+		return(NULL);
+	}
+
+	if (mxIsSparse(mxa))
+	{
+		vtkGenericWarningMacro(<< "Input to mxArrayTovtkDataArray() is a Sparse Array, cannot convert to vtkDataArray");
+		return(NULL);
+	}
+
+	nr = mxGetM(mxa);
+	nc = mxGetN(mxa);
+
+	da = this->GetVTKDataType(mxGetClassID(mxa));
+
+	nbytes = mxGetElementSize(mxa);
+
+	if (nbytes != da->GetElementComponentSize())
+	{
+		da->Delete();
+		vtkGenericWarningMacro(<< "Data size mismatch between Matlab and VTK");
+		return(NULL);
+	}
+
+	da->SetNumberOfTuples(nr);
+	da->SetNumberOfComponents(nc);
+
+	if (ShallowCopy)
+	{
+		da->SetVoidArray(mxGetData(mxa), (vtkIdType)nr*nc, 1);
+		return(da);
+	}
+
+	tuple = (double*)mxMalloc(sizeof(double)*nc);
+	dp = mxGetData(mxa);
+	source = (unsigned char*)dp;
+
+	for (i = 0; i < nr; i++)
+	{
+		da->InsertTuple(i, tuple);
+
+		for (j = 0; j < nc; j++)
+		{
+			dest = (unsigned char*)da->GetVoidPointer(i*nc + j);
+
+			for (k = 0; k < nbytes; k++)
+			{
+				dest[k] = source[j*(nr*nbytes) + i * nbytes + k];
+			}
+		}
+	}
+
+	mxFree(tuple);
+	vdac->AddItem(da);
+	da->Delete();
+	return(da);
+
+}
+
+vtkDataArray* VolumeViewer::GetVTKDataType(mxClassID cid)
+{
+
+	switch (cid)
+	{
+	case mxCHAR_CLASS:
+		return(vtkCharArray::New());
+	case mxLOGICAL_CLASS:
+		return(vtkUnsignedShortArray::New());
+	case mxDOUBLE_CLASS:
+		return(vtkDoubleArray::New());
+	case mxSINGLE_CLASS:
+		return(vtkFloatArray::New());
+	case mxINT8_CLASS:
+		return(vtkTypeInt8Array::New());
+	case mxUINT8_CLASS:
+		return(vtkTypeUInt8Array::New());
+	case mxINT16_CLASS:
+		return(vtkTypeInt16Array::New());
+	case mxUINT16_CLASS:
+		return(vtkTypeUInt16Array::New());
+	case mxINT32_CLASS:
+		return(vtkTypeInt32Array::New());
+	case mxUINT32_CLASS:
+		return(vtkTypeUInt32Array::New());
+	case mxINT64_CLASS:
+		return(vtkTypeInt64Array::New());
+	case mxUINT64_CLASS:
+		return(vtkTypeUInt64Array::New());
+	default:
+		return(vtkDoubleArray::New());
+	}
+
+}
+
+
+
