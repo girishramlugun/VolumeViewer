@@ -14,7 +14,6 @@
 #include <vtkPiecewiseFunction.h>
 #include <vtkCommand.h>
 #include <qfiledialog.h>
-#include <mat.h>
 #include <qstring.h>
 #include <vtkImageDataGeometryFilter.h>
 #include <vtkGPUVolumeRayCastMapper.h>
@@ -84,7 +83,6 @@
 #include<vtkCellArray.h>
 #include<vtkVariantExtract.h>
 #include<vtkPolyLine.h>
-#include <math.h> 
 #include<vtkCellData.h>
 #include <vtkXMLPolyDataWriter.h>
 #include<vtkXMLPolyDataReader.h>
@@ -109,7 +107,6 @@
 #include<vtkSplineFilter.h>
 #include<vtkDICOMImageReader.h>
 #include<vtkTypedArray.h>
-#include<mex.h>
 #include<vtkFloatArray.h>
 #include<vtkCharArray.h>
 #include<vtkTypeInt8Array.h>
@@ -1422,6 +1419,7 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 {
 
 	
+/*
 	mxArray *matarr, *matcolarr;
 	MATFile *matf;
 
@@ -1563,13 +1561,14 @@ void VolumeViewer::generatefibres(string inputFilename, int fiblen, int skip)
 		tubeFilter->SetRadius(1); //default is .5
 		tubeFilter->CappingOn();
 		tubeFilter->Update();
-		*/
+		
 		//ui->label->setText(QString::number(points->GetDataType()) + " " + QString::number(points->GetActualMemorySize()) + " " + QString::number(lines->GetActualMemorySize()) + " " + QString::number(polyd->GetActualMemorySize()));
 
 
 		vtkwid->renderpol(polyd);
-
+		
 	}
+	*/
 }
 
 
@@ -1640,126 +1639,7 @@ void VolumeViewer::getfileprefix(QString ffile)
 }
 
 
-vtkDataArray* VolumeViewer::mxArrayTovtkDataArray(const mxArray* mxa, bool ShallowCopy)
-{
 
-	vtkDataArray* da;
-	void *dp;
-	double* tuple;
-	int nr;
-	int nc;
-	int i, j, k;
-	int nbytes;
-	unsigned char* dest;
-	unsigned char* source;
-
-	if (mxa == NULL)
-	{
-		vtkGenericWarningMacro(<< "NULL input to mxArrayTovtkDataArray()");
-		return(NULL);
-	}
-
-	if (mxGetNumberOfDimensions(mxa) > 2)
-	{
-		vtkGenericWarningMacro(<< "Input to mxArrayTovtkDataArray() has more than two dimensions, cannot convert to vtkDataArray");
-		return(NULL);
-	}
-
-	if (mxIsCell(mxa))
-	{
-		vtkGenericWarningMacro(<< "Input to mxArrayTovtkDataArray() is a Cell Array, cannot convert to vtkDataArray");
-		return(NULL);
-	}
-
-	if (mxIsSparse(mxa))
-	{
-		vtkGenericWarningMacro(<< "Input to mxArrayTovtkDataArray() is a Sparse Array, cannot convert to vtkDataArray");
-		return(NULL);
-	}
-
-	nr = mxGetM(mxa);
-	nc = mxGetN(mxa);
-
-	da = this->GetVTKDataType(mxGetClassID(mxa));
-
-	nbytes = mxGetElementSize(mxa);
-
-	if (nbytes != da->GetElementComponentSize())
-	{
-		da->Delete();
-		vtkGenericWarningMacro(<< "Data size mismatch between Matlab and VTK");
-		return(NULL);
-	}
-
-	da->SetNumberOfTuples(nr);
-	da->SetNumberOfComponents(nc);
-
-	if (ShallowCopy)
-	{
-		da->SetVoidArray(mxGetData(mxa), (vtkIdType)nr*nc, 1);
-		return(da);
-	}
-
-	tuple = (double*)mxMalloc(sizeof(double)*nc);
-	dp = mxGetData(mxa);
-	source = (unsigned char*)dp;
-
-	for (i = 0; i < nr; i++)
-	{
-		da->InsertTuple(i, tuple);
-
-		for (j = 0; j < nc; j++)
-		{
-			dest = (unsigned char*)da->GetVoidPointer(i*nc + j);
-
-			for (k = 0; k < nbytes; k++)
-			{
-				dest[k] = source[j*(nr*nbytes) + i * nbytes + k];
-			}
-		}
-	}
-
-	mxFree(tuple);
-	vdac->AddItem(da);
-	da->Delete();
-	return(da);
-
-}
-
-vtkDataArray* VolumeViewer::GetVTKDataType(mxClassID cid)
-{
-
-	switch (cid)
-	{
-	case mxCHAR_CLASS:
-		return(vtkCharArray::New());
-	case mxLOGICAL_CLASS:
-		return(vtkUnsignedShortArray::New());
-	case mxDOUBLE_CLASS:
-		return(vtkDoubleArray::New());
-	case mxSINGLE_CLASS:
-		return(vtkFloatArray::New());
-	case mxINT8_CLASS:
-		return(vtkTypeInt8Array::New());
-	case mxUINT8_CLASS:
-		return(vtkTypeUInt8Array::New());
-	case mxINT16_CLASS:
-		return(vtkTypeInt16Array::New());
-	case mxUINT16_CLASS:
-		return(vtkTypeUInt16Array::New());
-	case mxINT32_CLASS:
-		return(vtkTypeInt32Array::New());
-	case mxUINT32_CLASS:
-		return(vtkTypeUInt32Array::New());
-	case mxINT64_CLASS:
-		return(vtkTypeInt64Array::New());
-	case mxUINT64_CLASS:
-		return(vtkTypeUInt64Array::New());
-	default:
-		return(vtkDoubleArray::New());
-	}
-
-}
 
 
 

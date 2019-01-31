@@ -272,7 +272,7 @@ void vtkwidget::renderpoly()
 
 void vtkwidget::renderpol(vtkPolyData *pol)
 {
-	/*
+	
 	vtkSmartPointer<vtkSplineFilter> spline_filter = vtkSmartPointer<vtkSplineFilter>::New();
 	spline_filter->SetInputData(pol);
 	spline_filter->SetNumberOfSubdivisions(10);
@@ -282,8 +282,8 @@ void vtkwidget::renderpol(vtkPolyData *pol)
 	tube_filter->SetInputData(spline_filter->GetOutput());
 	tube_filter->SetRadius(1);
 	tube_filter->Update();
-	*/
-	poly_mapper->SetInputData(pol);
+	
+	poly_mapper->SetInputData(tube_filter->GetOutput());
 	poly_mapper->SetColorModeToMapScalars();
 	poly_actor->SetMapper(poly_mapper);
 	poly_actor->GetProperty()->EdgeVisibilityOff();
@@ -315,9 +315,9 @@ void vtkwidget::renderpol(vtkPolyData *pol)
 		vtkSmartPointer<vtkColorTransferFunction>::New();
 	belvinLUT->SetTableRange(0, 255);
 	belvinLUT->SetRampToLinear();
-	belvinLUT->SetHueRange(0, 1);
-	belvinLUT->SetSaturationRange(1, 1);
-	belvinLUT->SetValueRange(1, 1);
+	//belvinLUT->SetHueRange(0, 1);
+	//belvinLUT->SetSaturationRange(1, 1);
+	//belvinLUT->SetValueRange(1, 1);
 	belvinLUT->Build();
 
 
@@ -466,7 +466,7 @@ void vtkwidget::resample(vtkImageData *imgdata)
 	vtkIdType memsize = imgdata->GetActualMemorySize();
    // cout<<mapper->GetMaxMemoryInBytes();
 	double sf = ceil((memsize / vramvalue)/(1024*1024));
-	/*
+	
     if (sf>=1 && sf<8){
 		sample_rate = 0.5;
 	vtkSmartPointer <vtkImageResample> imgrs =vtkSmartPointer <vtkImageResample>::New();
@@ -515,7 +515,7 @@ void vtkwidget::resample(vtkImageData *imgdata)
 		buildhist(imgrs->GetOutput());
 		initialize(imgrs->GetOutput());
 	}
-	*/
+	
 	buildhist(imgdata);
 	initialize(imgdata);
 	imgdata->ReleaseData();

@@ -4,10 +4,6 @@ PROJECT(VolumeViewer)
 
 find_package(VTK REQUIRED )
 
-
-find_package(Matlab REQUIRED MX_LIBRARY ENG_LIBRARY MAT_LIBRARY)
-include_directories(${Matlab_INCLUDE_DIRS})
-
 find_package(Qt5 COMPONENTS Widgets PrintSupport  REQUIRED)
 include_directories(${Qt5Widgets_INCLUDE_DIRS} ${Qt5PrintSupport_INCLUDE_DIRS})
 
@@ -38,7 +34,7 @@ file(GLOB CXX_FILES *.cxx)
 add_executable(VolumeViewer WIN32 MACOSX_BUNDLE ${CXX_FILES} ${UISrcs} ${MOCSrcs} ${VolumeViewer_RESOURCES_RCC})
 
 
-target_link_libraries(VolumeViewer ${QT_QTMAIN_LIBRARY} ${VTK_LIBRARIES} ${Qt5Widgets_LIBRARIES}  ${Qt5PrintSupport_LIBRARIES} ${Matlab_MAT_LIBRARY} ${Matlab_MX_LIBRARY} )
+target_link_libraries(VolumeViewer ${QT_QTMAIN_LIBRARY} ${VTK_LIBRARIES} ${Qt5Widgets_LIBRARIES}  ${Qt5PrintSupport_LIBRARIES})
 
 vtk_module_autoinit(
     TARGETS VolumeViewer
