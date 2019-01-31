@@ -154,6 +154,7 @@ signals:
    void updatewincol(double);
    void readvti(string);
    void readtif(string);
+   void readhdr(string inputFilename);
    void resample(vtkImageData*);
    void readimseq(QString, vtkStringArray*, int);
    void buildhist(vtkImageData*);

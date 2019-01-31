@@ -29,7 +29,7 @@
 #include<vtkDICOMImageReader.h>
 #include<vtkSplineFilter.h>
 #include<vtkTubeFilter.h>
-
+#include<vtkNIFTIImageReader.h>
 
 //vtkIdType vram;
 double imgmax;
@@ -456,6 +456,18 @@ void vtkwidget::readtif(string inputFilename)
 
 	//rtiff->Delete();
 
+}
+
+void vtkwidget::readhdr(string inputFilename)
+{
+	vtkSmartPointer<vtkNIFTIImageReader> niftireader = vtkSmartPointer<vtkNIFTIImageReader>::New();
+	niftireader->SetFileName(inputFilename.c_str());
+	niftireader->Update();
+	vtkSmartPointer<vtkImageData> output_tiff = vtkSmartPointer<vtkImageData>::New();
+	imgmax = niftireader->GetOutput()->GetScalarTypeMax();
+	output_tiff->ShallowCopy(niftireader->GetOutput());
+	initialize(output_tiff);
+	
 }
 
 void vtkwidget::resample(vtkImageData *imgdata)

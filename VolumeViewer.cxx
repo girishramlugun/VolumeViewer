@@ -380,7 +380,7 @@ void VolumeViewer::on_actionOpen_triggered()
       qDebug("Not empty");
     }
 
-    QString Filename = QFileDialog::getOpenFileName(this, tr("Open Volume"), "", tr("TIFF (*.tif);;VTK Files (*.vti);; MATLAB Files(*.mat);; PolyData Files(*.vtp);; HDF5 Files(*.h5)"));
+    QString Filename = QFileDialog::getOpenFileName(this, tr("Open Volume"), "", tr("TIFF (*.tif);;VTK Files (*.vti);; MATLAB Files(*.mat);;Analyze Files(*.hdr);;Nifti Files(*.nii);; PolyData Files(*.vtp);; HDF5 Files(*.h5)"));
     if (Filename.isEmpty()==0){
     QFileInfo fi(Filename);
     ext = fi.suffix();
@@ -571,13 +571,15 @@ void VolumeViewer::openvol(string inputFilename)
 			diafibre->show();
 					
 		}
+		else if (ext == QString("hdr") || ext == QString("nii"))
+		{
+			vol_id = 1;
+			vtkwid->readhdr(inputFilename);
 
-		
 
-		
-		
 
-	
+		}
+
     else if (ext == QString("vtp"))
 	{
 		vol_id = 3;
